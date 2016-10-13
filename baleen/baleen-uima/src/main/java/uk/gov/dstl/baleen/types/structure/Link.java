@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** A link in a Document to an Anchor or other.
- * Updated by JCasGen Thu Oct 13 15:37:31 BST 2016
+ * Updated by JCasGen Thu Oct 13 15:55:24 BST 2016
  * XML source: baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Link extends Structure {
@@ -73,6 +73,26 @@ public class Link extends Structure {
    */
   private void readObject() {/*default - does nothing empty block */}
      
-}
+  //*--------------*
+  //* Feature: target
+
+  /** getter for target - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getTarget() {
+    if (Link_Type.featOkTst && ((Link_Type)jcasType).casFeat_target == null)
+      jcasType.jcas.throwFeatMissing("target", "uk.gov.dstl.baleen.types.structure.Link");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((Link_Type)jcasType).casFeatCode_target);}
+    
+  /** setter for target - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setTarget(String v) {
+    if (Link_Type.featOkTst && ((Link_Type)jcasType).casFeat_target == null)
+      jcasType.jcas.throwFeatMissing("target", "uk.gov.dstl.baleen.types.structure.Link");
+    jcasType.ll_cas.ll_setStringValue(addr, ((Link_Type)jcasType).casFeatCode_target, v);}    
+  }
 
     

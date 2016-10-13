@@ -178,6 +178,13 @@ This XML file classified as UK OFFICIAL.</description>
       <name>uk.gov.dstl.baleen.types.structure.Link</name>
       <description>A link in a Document to an Anchor or other.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>target</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Footnote</name>
