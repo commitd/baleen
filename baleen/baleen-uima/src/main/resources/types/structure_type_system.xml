@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
+  <name>Baleen Type System - Structure</name>
+  <description>XML definition of the Baleen type system for document structure.
+
+This XML file classified as UK OFFICIAL.</description>
+  <version>2.0</version>
+  <vendor>Dstl</vendor>
+  <imports>
+    <import name="types/base_type_system"/>
+  </imports>
+  <types>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Structure</name>
+      <description>A base type for all Structure types.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.Base</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Document</name>
+      <description>A document.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.TextDocument</name>
+      <description>A text based document.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Document</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.SpreadSheet</name>
+      <description>A spread sheet file.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Document</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.SlideShow</name>
+      <description>A slide show.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Document</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Page</name>
+      <description>A page of a Docuemnt.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>PageNumber</name>
+          <description>The number of this page in the document</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Sheet</name>
+      <description>A sheet of a spread sheet.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Page</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Slide</name>
+      <description>A slide of a slide show.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Page</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Section</name>
+      <description>A generic section of a Docuemnt.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Header</name>
+      <description>A header of a Docuemnt.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>page</name>
+          <description>The page this is on.</description>
+          <rangeTypeName>uk.gov.dstl.baleen.types.structure.Page</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Footer</name>
+      <description>A Footer of a Docuemnt.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>page</name>
+          <description>The page this is on.</description>
+          <rangeTypeName>uk.gov.dstl.baleen.types.structure.Page</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Heading</name>
+      <description>A heading in a Docuemnt.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>level</name>
+          <description>The heading level, the lower the number for more important.</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Table</name>
+      <description>A Table in a Docuemnt.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.TablePart</name>
+      <description>A header of a Table.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>table</name>
+          <description>The table this is part of</description>
+          <rangeTypeName>uk.gov.dstl.baleen.types.structure.Table</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.TableHeader</name>
+      <description>A header of a Table.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.TablePart</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.TableFooter</name>
+      <description>A footer of a Table.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.TablePart</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.TableBody</name>
+      <description>A Body of a table.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.TablePart</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.TableRow</name>
+      <description>A Row in a Table.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.TablePart</supertypeName>
+    <features>
+        <featureDescription>
+          <name>row</name>
+          <description>The row number in the table</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.TableCell</name>
+      <description>A cell in a Table.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.TablePart</supertypeName>
+    <features>
+        <featureDescription>
+          <name>row</name>
+          <description>The row number in the table</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>column</name>
+          <description>The column number of the cell in the table</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Paragraph</name>
+      <description>A paragraph of a Document.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Sentence</name>
+      <description>A sentence of a Document.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Anchor</name>
+      <description>An anchor in a document.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Link</name>
+      <description>A link in a Document to an Anchor or other.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Footnote</name>
+      <description>A footnote in a Document.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>page</name>
+          <description>The page this is on</description>
+          <rangeTypeName>uk.gov.dstl.baleen.types.structure.Page</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Ordered</name>
+      <description>An ordered component of a document such as a list.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>level</name>
+          <description>The level of the item.</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Figure</name>
+      <description>A figure (or embedded media).</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Caption</name>
+      <description>A caption of a Figure.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>figure</name>
+          <description>The figure this caption refers to.</description>
+          <rangeTypeName>uk.gov.dstl.baleen.types.structure.Figure</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+  </types>
+</typeSystemDescription>
