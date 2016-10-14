@@ -116,7 +116,7 @@ public class PipelineCpeBuilderTest {
 			fail("CpeBuilder didn't throw expected exception - invalid cr on config3");
 		} catch (BaleenException be) {
 			assertEquals(
-					"Could not find or instantiate analysis engine uk.gov.dstl.baleen.testing.MissingCollectionReader",
+					"Could not find or instantiate collection reader uk.gov.dstl.baleen.testing.MissingCollectionReader",
 					be.getMessage());
 		}
 	}

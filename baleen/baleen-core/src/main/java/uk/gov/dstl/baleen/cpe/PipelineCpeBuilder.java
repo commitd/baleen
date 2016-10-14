@@ -188,7 +188,7 @@ public class PipelineCpeBuilder extends AbstractCpeBuilder {
 		} else {
 			// Whilst this would be caught by the build() process throwing an exception here is
 			// compatible with existing Baleen tests.
-			throw new BaleenException(String.format("Could not find or instantiate analysis engine %s", className));
+			throw new BaleenException(String.format("Could not find or instantiate collection reader %s", className));
 		}
 	}
 
