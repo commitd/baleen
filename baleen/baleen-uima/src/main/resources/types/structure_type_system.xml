@@ -227,5 +227,33 @@ This XML file classified as UK OFFICIAL.</description>
         </featureDescription>
       </features>
     </typeDescription>
+        <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Style</name>
+      <description>To capture the style applied to a span of text.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>font</name>
+          <description>The font</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      <featureDescription>
+          <name>color</name>
+          <description>The color of the text</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>decoration</name>
+          <description>Decoration applied to the text. For example, [italic, bold, underline]. </description>
+          <rangeTypeName>uima.cas.StringArray</rangeTypeName>
+          <multipleReferencesAllowed>false</multipleReferencesAllowed>
+        </featureDescription>
+        <featureDescription>
+          <name>size</name>
+          <description>The size of the text</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
   </types>
 </typeSystemDescription>
