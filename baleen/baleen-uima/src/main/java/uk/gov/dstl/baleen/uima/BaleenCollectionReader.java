@@ -15,6 +15,7 @@ import org.apache.uima.util.Progress;
 
 import uk.gov.dstl.baleen.core.history.BaleenHistory;
 import uk.gov.dstl.baleen.core.metrics.MetricsFactory;
+import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.cpe.PipelineCpeBuilder;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.uima.utils.UimaUtils;
@@ -220,18 +221,12 @@ public abstract class BaleenCollectionReader extends JCasCollectionReader_ImplBa
 	 * @return The class specified
 	 */
 	public static IContentExtractor getContentExtractor(String className) throws InvalidParameterException {
-		IContentExtractor clazz;
 		try {
-			clazz = (IContentExtractor) Class.forName("uk.gov.dstl.baleen.contentextractors." + className).newInstance();
+			return (IContentExtractor) CpeBuilderUtils
+					.getClassFromString(className, "uk.gov.dstl.baleen.contentextractors").newInstance();
 		} catch (Exception e1) {
-			try {
-				clazz = (IContentExtractor) Class.forName(className).newInstance();
-			} catch (Exception e2) {
-				throw new InvalidParameterException("Could not find or instantiate content extractor " + className, e2);
-			}
+			throw new InvalidParameterException("Could not find or instantiate content extractor " + className, e1);
 		}
-
-		return clazz;
 	}
 
 	protected UimaMonitor getMonitor() {
