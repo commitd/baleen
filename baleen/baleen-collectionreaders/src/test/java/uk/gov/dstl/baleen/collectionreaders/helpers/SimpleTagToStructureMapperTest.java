@@ -2,6 +2,8 @@ package uk.gov.dstl.baleen.collectionreaders.helpers;
 
 import static org.junit.Assert.assertEquals;
 
+import com.tenode.baleen.extraction.Tag;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,9 +13,6 @@ import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.tenode.baleen.extraction.tika.Tag;
-
 import uk.gov.dstl.baleen.contentextractors.helpers.SimpleTagToStructureMapper;
 import uk.gov.dstl.baleen.types.structure.Anchor;
 import uk.gov.dstl.baleen.types.structure.Document;

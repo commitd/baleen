@@ -2,7 +2,7 @@ package uk.gov.dstl.baleen.contentextractors.helpers;
 
 import java.util.Optional;
 
-import com.tenode.baleen.extraction.tika.Tag;
+import com.tenode.baleen.extraction.Tag;
 
 import uk.gov.dstl.baleen.types.structure.Structure;
 

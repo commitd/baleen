@@ -23,8 +23,8 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.tenode.baleen.extraction.Extraction;
 import com.tenode.baleen.extraction.FormatExtractor;
+import com.tenode.baleen.extraction.Tag;
 import com.tenode.baleen.extraction.exception.ExtractionException;
-import com.tenode.baleen.extraction.tika.Tag;
 import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
