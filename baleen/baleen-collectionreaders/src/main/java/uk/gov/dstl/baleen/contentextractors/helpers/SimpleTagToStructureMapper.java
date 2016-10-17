@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.apache.uima.jcas.JCas;
 
-import com.tenode.baleen.extraction.Extraction;
 import com.tenode.baleen.extraction.Tag;
 
 import uk.gov.dstl.baleen.types.structure.Anchor;
