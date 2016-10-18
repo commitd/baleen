@@ -97,6 +97,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 			Extraction extraction = formatExtractor.parse(stream, metadata, context);
 
 			JCas input = JCasFactory.createJCas();
+			JCas ouput = JCasFactory.createJCas();
 
 			input.setDocumentText(extraction.getText());
 
@@ -107,9 +108,11 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 			}
 
 			for (IContentProcessor processor : processors) {
-				JCas ouput = JCasFactory.createJCas();
 				processor.process(input, ouput);
+				JCas tmp = input;
+				tmp.reset();
 				input = ouput;
+				ouput = tmp;
 			}
 
 			CasCopier.copyCas(input.getCas(), jCas.getCas(), true);
