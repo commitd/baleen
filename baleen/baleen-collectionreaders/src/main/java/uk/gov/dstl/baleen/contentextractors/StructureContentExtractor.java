@@ -6,11 +6,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.parser.ParseContext;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.factory.JCasFactory;
@@ -21,10 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.tenode.baleen.extraction.Extraction;
-import com.tenode.baleen.extraction.FormatExtractor;
-import com.tenode.baleen.extraction.Tag;
 import com.tenode.baleen.extraction.exception.ExtractionException;
+import com.tenode.baleen.extraction.tika.TikaExtraction;
 import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
@@ -32,7 +27,6 @@ import uk.gov.dstl.baleen.contentextractors.helpers.SimpleTagToStructureMapper;
 import uk.gov.dstl.baleen.contentextractors.processor.IContentProcessor;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
-import uk.gov.dstl.baleen.types.structure.Structure;
 
 /**
  * Extracts metadata, structure and text content from the supplied input.
@@ -89,34 +83,28 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 		super.doProcessStream(stream, source, jCas);
 
 		try {
-			Metadata metadata = new Metadata();
-			ParseContext context = new ParseContext();
+			TikaFormatExtractor formatExtractor = new TikaFormatExtractor();
 
-			FormatExtractor formatExtractor = new TikaFormatExtractor(new AutoDetectParser());
-
-			Extraction extraction = formatExtractor.parse(stream, metadata, context);
+			TikaExtraction extraction = formatExtractor.parse(stream);
 
 			JCas input = JCasFactory.createJCas();
-			JCas ouput = JCasFactory.createJCas();
-
 			input.setDocumentText(extraction.getText());
 
 			SimpleTagToStructureMapper mapper = new SimpleTagToStructureMapper(input);
-			for (Tag tag : extraction.getTags()) {
-				Optional<Structure> structure = mapper.map(tag);
-				structure.ifPresent(this::addToJCasIndex);
-			}
+			extraction.getTags().stream().map(mapper::map).forEach(s -> s.ifPresent(this::addToJCasIndex));
 
+			JCas output = JCasFactory.createJCas();
 			for (IContentProcessor processor : processors) {
-				processor.process(input, ouput);
+				processor.process(input, output);
 				JCas tmp = input;
 				tmp.reset();
-				input = ouput;
-				ouput = tmp;
+				input = output;
+				output = tmp;
 			}
 
 			CasCopier.copyCas(input.getCas(), jCas.getCas(), true);
 
+			Metadata metadata = extraction.getMetadata();
 			for (String name : metadata.names()) {
 				addMetadata(jCas, name, metadata.get(name));
 			}
