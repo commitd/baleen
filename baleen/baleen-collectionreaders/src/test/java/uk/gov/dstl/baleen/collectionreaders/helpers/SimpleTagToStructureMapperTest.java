@@ -7,6 +7,7 @@ import com.tenode.baleen.extraction.Tag;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.apache.uima.UIMAException;
 import org.apache.uima.fit.factory.JCasFactory;
@@ -44,7 +45,7 @@ public class SimpleTagToStructureMapperTest {
 	@Test
 	public void testMapping() {
 		for (Entry<String, Class<? extends Structure>> entry : typeToClassMapping.entrySet()) {
-			Tag tag = new Tag(0, entry.getKey(),null, null);
+			Tag tag = new Tag(0, entry.getKey(), null, Optional.<Tag>empty());
 			assertEquals(mapper.map(tag).get().getClass(), entry.getValue());
 		}
 	}
