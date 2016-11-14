@@ -52,30 +52,27 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 			try {
 				processors = createContentProcessors(context, (String[]) config);
 			} catch (InvalidParameterException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			  throw new ResourceInitializationException(e);
 			}
 		}
 
 	}
 
-	public List<IContentProcessor> createContentProcessors(UimaContext context, String[] contentProcesors)
+	private List<IContentProcessor> createContentProcessors(UimaContext context, String[] contentProcesors)
 			throws InvalidParameterException {
-		List<IContentProcessor> processors = new ArrayList<>();
+		List<IContentProcessor> newProcessors = new ArrayList<>();
 		for (String contentProcesor : contentProcesors) {
-			IContentProcessor processor;
 			try {
-				processor = (IContentProcessor) CpeBuilderUtils
+				IContentProcessor processor = (IContentProcessor) CpeBuilderUtils
 						.getClassFromString(contentProcesor, CONTENT_PROCESSOR_DEFAULT_PACKAGE).newInstance();
 
 				processor.initialize(context, getSupport(), getMonitor()); // Consider params
-				processors.add(processor);
+				newProcessors.add(processor);
 			} catch (InstantiationException | IllegalAccessException | ResourceInitializationException e) {
 				LOGGER.info("Could not find or instantiate content processor " + contentProcesor, e);
 			}
-
 		}
-		return processors;
+		return newProcessors;
 	}
 
 	@Override
