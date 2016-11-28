@@ -88,6 +88,8 @@ public class StructuralHtml extends AbstractHtml {
       final Heading h = (Heading) s;
       final int level = Math.min(6, Math.max(1, h.getLevel()));
       e = createElement("h" + level);
+    } else if (s instanceof Ordered) {
+      e = createElement("ol");
     } else if (s instanceof Paragraph) {
       e = createElement("p");
     } else if (s instanceof Section) {
@@ -123,6 +125,11 @@ public class StructuralHtml extends AbstractHtml {
     final Node root = StructureHierarchy.build(jCas);
 
     walk(body, root);
+
+    // We need to create the proper li tags under ol and ul
+
+    body.select("ul > p").wrap("<li></li>");
+    body.select("ol > p").wrap("<li></li>");
   }
 
 }
