@@ -45,7 +45,7 @@ public class SimpleTagToStructureMapperTest {
 	@Test
 	public void testMapping() {
 		for (Entry<String, Class<? extends Structure>> entry : typeToClassMapping.entrySet()) {
-			Tag tag = new Tag(0, entry.getKey(), null, Optional.<Tag>empty());
+			Tag tag = new Tag(0, entry.getKey(), null, Optional.<Tag>empty(), 0);
 			assertEquals(mapper.map(tag).get().getClass(), entry.getValue());
 		}
 	}
