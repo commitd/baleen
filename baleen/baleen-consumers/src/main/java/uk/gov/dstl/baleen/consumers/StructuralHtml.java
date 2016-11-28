@@ -27,6 +27,7 @@ import uk.gov.dstl.baleen.types.structure.TableCell;
 import uk.gov.dstl.baleen.types.structure.TableFooter;
 import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
+import uk.gov.dstl.baleen.types.structure.Unordered;
 
 /**
  * Creates a HTML5 version of the structured annotations of a document.
@@ -92,6 +93,8 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("h" + level);
     } else if (s instanceof Ordered) {
       e = createElement("ol");
+    } else if (s instanceof Unordered) {
+      e = createElement("ul");
     } else if (s instanceof Paragraph) {
       e = createElement("p");
     } else if (s instanceof Section) {
