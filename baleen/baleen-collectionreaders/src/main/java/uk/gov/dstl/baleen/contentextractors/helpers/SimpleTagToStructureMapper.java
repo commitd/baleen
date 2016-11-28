@@ -31,7 +31,11 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
 	@Override
 	public Optional<Structure> map(final Tag tag) {
-		return Optional.ofNullable(mapInternal(tag));
+		Structure structure = mapInternal(tag);
+		if (structure != null) {
+			structure.setDepth(tag.getDepth());
+		}
+		return Optional.ofNullable(structure);
 	}
 
 	private Structure mapInternal(Tag tag) {
