@@ -15,6 +15,7 @@ import uk.gov.dstl.baleen.types.structure.Footnote;
 import uk.gov.dstl.baleen.types.structure.Header;
 import uk.gov.dstl.baleen.types.structure.Heading;
 import uk.gov.dstl.baleen.types.structure.Link;
+import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.types.structure.Section;
 import uk.gov.dstl.baleen.types.structure.Sentence;
@@ -49,15 +50,19 @@ public class StructuralHtml extends AbstractHtml {
       final String text = structure.getCoveredText();
       int offset = 0;
       for (final Node child : n.getChildren()) {
-        e.appendText(text.substring(offset, child.getBegin() - n.getBegin()));
+        appendText(e, text, offset, child.getBegin() - n.getBegin());
         walk(e, child);
         offset = child.getEnd() - n.getBegin();
       }
-      e.appendText(text.substring(offset, n.getEnd() - n.getBegin()));
-
-
+      appendText(e, text, offset, n.getEnd() - n.getBegin());
     }
 
+  }
+
+  private void appendText(Element e, String text, int start, int end) {
+    if (start < end && end <= text.length()) {
+      e.appendText(text.substring(start, end));
+    }
   }
 
   private Element createElement(String tag) {
