@@ -18,6 +18,8 @@ import uk.gov.dstl.baleen.types.structure.TableBody;
 import uk.gov.dstl.baleen.types.structure.TableCell;
 import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
+import uk.gov.dstl.baleen.types.structure.Unordered;
+
 
 public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
@@ -77,7 +79,7 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
 		}
 		case "ul": {
-			return new Ordered(jcas, tag.getStart(), tag.getEnd());
+			return new Unordered(jcas, tag.getStart(), tag.getEnd());
 		}
 		case "ol": {
 			return new Ordered(jcas, tag.getStart(), tag.getEnd());
@@ -86,7 +88,7 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
 		}
 		case "dl": {
-			return new Ordered(jcas, tag.getStart(), tag.getEnd());
+			return new Unordered(jcas, tag.getStart(), tag.getEnd());
 		}
 		case "dt": {
 			return new Paragraph(jcas, tag.getStart(), tag.getEnd());

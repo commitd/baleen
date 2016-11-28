@@ -3,6 +3,7 @@ package uk.gov.dstl.baleen.collectionreaders.helpers;
 import static org.junit.Assert.assertEquals;
 
 import com.tenode.baleen.extraction.Tag;
+import org.apache.tika.metadata.Metadata;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +28,8 @@ import uk.gov.dstl.baleen.types.structure.TableBody;
 import uk.gov.dstl.baleen.types.structure.TableCell;
 import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
+import uk.gov.dstl.baleen.types.structure.Unordered;
+
 
 public class SimpleTagToStructureMapperTest {
 
@@ -39,7 +42,7 @@ public class SimpleTagToStructureMapperTest {
 	@Before
 	public void setup() throws UIMAException {
 		this.jcas = JCasFactory.createJCas();
-		this.mapper = new SimpleTagToStructureMapper(jcas);
+		this.mapper = new SimpleTagToStructureMapper(jcas, new Metadata());
 	}
 
 	@Test
@@ -62,10 +65,10 @@ public class SimpleTagToStructureMapperTest {
 		map.put("pre", Paragraph.class);
 		map.put("blockquote", Paragraph.class);
 		map.put("q", Paragraph.class);
-		map.put("ul", Ordered.class);
+		map.put("ul", Unordered.class);
 		map.put("ol", Ordered.class);
 		map.put("li", Paragraph.class);
-		map.put("dl", Ordered.class);
+		map.put("dl", Unordered.class);
 		map.put("dt", Paragraph.class);
 		map.put("dd", Paragraph.class);
 		map.put("table", Table.class);
