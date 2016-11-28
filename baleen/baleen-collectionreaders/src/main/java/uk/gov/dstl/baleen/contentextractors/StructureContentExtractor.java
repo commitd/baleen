@@ -85,7 +85,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 		try {
 			TikaFormatExtractor formatExtractor = new TikaFormatExtractor();
 
-			TikaExtraction extraction = formatExtractor.parse(stream);
+			TikaExtraction extraction = formatExtractor.parse(stream, source);
 
 			JCas input = JCasFactory.createJCas();
 			input.setDocumentText(extraction.getText());
