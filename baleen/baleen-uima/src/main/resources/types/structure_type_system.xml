@@ -206,6 +206,18 @@ This XML file classified as UK OFFICIAL.</description>
       </features>
     </typeDescription>
     <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Unordered</name>
+      <description>An unordered component of a document such as an unordered list.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    <features>
+        <featureDescription>
+          <name>level</name>
+          <description>The level of the item.</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Ordered</name>
       <description>An ordered component of a document such as a list.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
