@@ -37,15 +37,15 @@ public class StructuralHtml extends AbstractHtml {
 
   public void walk(Element parentElement, Node n) {
     final Structure structure = n.getElement();
+    final Element e = createTag(structure);
+    parentElement.appendChild(e);
 
     if (structure == null || structure.getCoveredText() == null) {
       // Descend into the children directly
       for (final Node child : n.getChildren()) {
-        walk(parentElement, child);
+        walk(e, child);
       }
     } else {
-      final Element e = createTag(structure);
-      parentElement.appendChild(e);
 
       final String text = structure.getCoveredText();
       int offset = 0;
@@ -72,7 +72,9 @@ public class StructuralHtml extends AbstractHtml {
   private Element createTag(Structure s) {
     Element e;
 
-    if (s instanceof Anchor || s instanceof Link) {
+    if (s == null) {
+      e = createElement("div");
+    } else if (s instanceof Anchor || s instanceof Link) {
       e = createElement("a");
     } else if (s instanceof Caption) {
       e = createElement("caption");
@@ -114,7 +116,9 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("div");
     }
 
-    e.attr("class", s.getType().getShortName());
+    if (s != null) {
+      e.attr("class", s.getType().getShortName());
+    }
 
     return e;
   }
