@@ -1,9 +1,10 @@
 package uk.gov.dstl.baleen.contentextractors.helpers;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.apache.uima.jcas.JCas;
-
+import org.xml.sax.Attributes;
 import com.tenode.baleen.extraction.Tag;
 
 import uk.gov.dstl.baleen.types.structure.Anchor;
@@ -12,6 +13,8 @@ import uk.gov.dstl.baleen.types.structure.Figure;
 import uk.gov.dstl.baleen.types.structure.Heading;
 import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
+import uk.gov.dstl.baleen.types.structure.Section;
+import uk.gov.dstl.baleen.types.structure.Slide;
 import uk.gov.dstl.baleen.types.structure.Structure;
 import uk.gov.dstl.baleen.types.structure.Table;
 import uk.gov.dstl.baleen.types.structure.TableBody;
@@ -20,8 +23,9 @@ import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.Unordered;
 
-
 public class SimpleTagToStructureMapper implements TagToStructureMapper {
+
+	private static final String URI = "http://www.w3.org/1999/xhtml";
 
 	private final JCas jcas;
 
@@ -136,9 +140,22 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 		case "body": {
 			return new Document(jcas, tag.getStart(), tag.getEnd());
 		}
+		case "div": {
+			return processDiv(tag);
+		}
 		default: {
 			return null;
 		}
 		}
 	}
+
+	private Structure processDiv(Tag tag) {
+		Attributes attributes = tag.getAttributes();
+		String divClass = attributes.getValue(URI, "class");
+		if (Objects.equals("slide-content", divClass)) {
+			return new Slide(jcas, tag.getStart(), tag.getEnd());
+		}
+		return new Section(jcas, tag.getStart(), tag.getEnd());
+	}
+
 }
