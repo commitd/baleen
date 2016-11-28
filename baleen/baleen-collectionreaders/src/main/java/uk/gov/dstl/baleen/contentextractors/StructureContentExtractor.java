@@ -77,7 +77,6 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
 	@Override
 	public void doProcessStream(InputStream stream, String source, JCas jCas) throws IOException {
-		super.doProcessStream(stream, source, jCas);
 
 		try {
 			TikaFormatExtractor formatExtractor = new TikaFormatExtractor();
@@ -100,6 +99,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 			}
 
 			CasCopier.copyCas(input.getCas(), jCas.getCas(), true);
+	        super.doProcessStream(stream, source, jCas);
 
 			Metadata metadata = extraction.getMetadata();
 			for (String name : metadata.names()) {
