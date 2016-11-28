@@ -54,6 +54,9 @@ public class StructureHierarchy {
       if (compare == 0) {
         compare = Integer.compare(s2.getEnd(), s1.getEnd());
       }
+      if (compare == 0) {
+        compare = Integer.compare(s1.getDepth(), s2.getDepth());
+      }
       return compare;
     });
 
