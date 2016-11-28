@@ -8,7 +8,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** A slide of a slide show.
- * Updated by JCasGen Thu Oct 13 15:37:31 BST 2016
+ * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
  * @generated */
 public class Slide_Type extends Page_Type {
   /** @generated */

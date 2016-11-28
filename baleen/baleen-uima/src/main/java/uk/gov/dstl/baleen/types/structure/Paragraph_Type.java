@@ -8,7 +8,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** A paragraph of a Document.
- * Updated by JCasGen Thu Oct 13 15:37:31 BST 2016
+ * Updated by JCasGen Mon Nov 28 16:26:00 GMT 2016
  * @generated */
 public class Paragraph_Type extends Structure_Type {
   /** @generated */

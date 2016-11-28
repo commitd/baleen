@@ -8,7 +8,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** A Body of a table.
- * Updated by JCasGen Thu Oct 13 15:37:31 BST 2016
+ * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
  * @generated */
 public class TableBody_Type extends TablePart_Type {
   /** @generated */

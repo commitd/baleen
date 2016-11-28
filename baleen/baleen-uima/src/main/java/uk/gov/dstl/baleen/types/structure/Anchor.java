@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** An anchor in a document.
- * Updated by JCasGen Thu Oct 13 15:37:31 BST 2016
- * XML source: baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+ * Updated by JCasGen Mon Nov 28 16:26:00 GMT 2016
+ * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Anchor extends Structure {
   /** @generated

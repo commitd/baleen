@@ -11,8 +11,8 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** A base type for all Structure types.
- * Updated by JCasGen Thu Oct 13 15:37:31 BST 2016
- * XML source: baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+ * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
+ * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Structure extends Base {
   /** @generated
@@ -74,6 +74,26 @@ public class Structure extends Base {
    */
   private void readObject() {/*default - does nothing empty block */}
      
-}
+  //*--------------*
+  //* Feature: depth
+
+  /** getter for depth - gets The depth of the structural component.
+   * @generated
+   * @return value of the feature 
+   */
+  public int getDepth() {
+    if (Structure_Type.featOkTst && ((Structure_Type)jcasType).casFeat_depth == null)
+      jcasType.jcas.throwFeatMissing("depth", "uk.gov.dstl.baleen.types.structure.Structure");
+    return jcasType.ll_cas.ll_getIntValue(addr, ((Structure_Type)jcasType).casFeatCode_depth);}
+    
+  /** setter for depth - sets The depth of the structural component. 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setDepth(int v) {
+    if (Structure_Type.featOkTst && ((Structure_Type)jcasType).casFeat_depth == null)
+      jcasType.jcas.throwFeatMissing("depth", "uk.gov.dstl.baleen.types.structure.Structure");
+    jcasType.ll_cas.ll_setIntValue(addr, ((Structure_Type)jcasType).casFeatCode_depth, v);}    
+  }
 
     

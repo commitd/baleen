@@ -11,8 +11,8 @@ import org.apache.uima.jcas.cas.StringArray;
 
 
 /** To capture the style applied to a span of text.
- * Updated by JCasGen Fri Oct 14 12:12:15 BST 2016
- * XML source: /baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+ * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
+ * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Style extends Structure {
   /** @generated
@@ -123,7 +123,7 @@ public class Style extends Structure {
   //*--------------*
   //* Feature: decoration
 
-  /** getter for decoration - gets Decoration applied to the text. For example, [italic, bold, underline]. 
+  /** getter for decoration - gets Decoration applied to the text. For example, [italic, bold, underline].
    * @generated
    * @return value of the feature 
    */
@@ -132,7 +132,7 @@ public class Style extends Structure {
       jcasType.jcas.throwFeatMissing("decoration", "uk.gov.dstl.baleen.types.structure.Style");
     return (StringArray)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((Style_Type)jcasType).casFeatCode_decoration)));}
     
-  /** setter for decoration - sets Decoration applied to the text. For example, [italic, bold, underline].  
+  /** setter for decoration - sets Decoration applied to the text. For example, [italic, bold, underline]. 
    * @generated
    * @param v value to set into the feature 
    */

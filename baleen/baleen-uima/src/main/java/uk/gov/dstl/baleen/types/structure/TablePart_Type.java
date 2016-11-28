@@ -10,7 +10,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** A header of a Table.
- * Updated by JCasGen Thu Oct 13 15:37:31 BST 2016
+ * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
  * @generated */
 public class TablePart_Type extends Structure_Type {
   /** @generated */

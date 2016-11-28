@@ -10,7 +10,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** To capture the style applied to a span of text.
- * Updated by JCasGen Fri Oct 14 12:12:15 BST 2016
+ * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
  * @generated */
 public class Style_Type extends Structure_Type {
   /** @generated */
@@ -102,7 +102,7 @@ public class Style_Type extends Structure_Type {
     if (lowLevelTypeChecks)
       return ll_cas.ll_getStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_decoration), i, true);
     jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_decoration), i);
-	return ll_cas.ll_getStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_decoration), i);
+  return ll_cas.ll_getStringArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_decoration), i);
   }
    
   /** @generated
