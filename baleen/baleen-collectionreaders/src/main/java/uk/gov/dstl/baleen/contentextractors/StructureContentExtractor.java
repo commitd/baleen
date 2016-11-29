@@ -86,7 +86,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 			JCas input = JCasFactory.createJCas();
 			input.setDocumentText(extraction.getText());
 
-			SimpleTagToStructureMapper mapper = new SimpleTagToStructureMapper(input);
+			SimpleTagToStructureMapper mapper = new SimpleTagToStructureMapper(input, extraction.getMetadata());
 			extraction.getTags().stream().map(mapper::map).forEach(s -> s.ifPresent(this::addToJCasIndex));
 
 			JCas output = JCasFactory.createJCas();

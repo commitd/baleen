@@ -3,6 +3,7 @@ package uk.gov.dstl.baleen.contentextractors.helpers;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.tika.metadata.Metadata;
 import org.apache.uima.jcas.JCas;
 import org.xml.sax.Attributes;
 import com.tenode.baleen.extraction.Tag;
@@ -14,7 +15,10 @@ import uk.gov.dstl.baleen.types.structure.Heading;
 import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.types.structure.Section;
+import uk.gov.dstl.baleen.types.structure.Sheet;
 import uk.gov.dstl.baleen.types.structure.Slide;
+import uk.gov.dstl.baleen.types.structure.SlideShow;
+import uk.gov.dstl.baleen.types.structure.SpreadSheet;
 import uk.gov.dstl.baleen.types.structure.Structure;
 import uk.gov.dstl.baleen.types.structure.Table;
 import uk.gov.dstl.baleen.types.structure.TableBody;
@@ -25,12 +29,69 @@ import uk.gov.dstl.baleen.types.structure.Unordered;
 
 public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
+	private enum DocumentType {
+		SPREADSHEET, DOCUMENT, SLIDESHOW, UNKNOWN
+	}
+
 	private static final String URI = "http://www.w3.org/1999/xhtml";
 
 	private final JCas jcas;
 
-	public SimpleTagToStructureMapper(JCas jcas) {
+	private final Metadata metadata;
+
+	private final DocumentType documentType;
+
+	public SimpleTagToStructureMapper(JCas jcas, Metadata metadata) {
 		this.jcas = jcas;
+		this.metadata = metadata;
+		this.documentType = getDocumentType(metadata.get(Metadata.CONTENT_TYPE));
+	}
+
+	private DocumentType getDocumentType(String type) {
+		switch (type == null ? "" : type) {
+		case "application/vnd.ms-excel":
+			// fall through
+		case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+			// fall through
+		case "application/vnd.openxmlformats-officedocument.spreadsheetml.template":
+			// fall through
+		case "application/vnd.ms-excel.sheet.macroEnabled.12":
+			// fall through
+		case "application/vnd.ms-excel.template.macroEnabled.12":
+			// fall through
+		case "application/vnd.ms-excel.addin.macroEnabled.12":
+			// fall through
+		case "application/vnd.ms-excel.sheet.binary.macroEnabled.12":
+			return DocumentType.SPREADSHEET;
+		case "application/msword":
+			// fall through
+		case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+			// fall through
+		case "application/vnd.openxmlformats-officedocument.wordprocessingml.template":
+			// fall through
+		case "application/vnd.ms-word.document.macroEnabled.12":
+			// fall through
+		case "application/vnd.ms-word.template.macroEnabled.12":
+			return DocumentType.DOCUMENT;
+		case "application/vnd.ms-powerpoint":
+			// fall through
+		case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+			// fall through
+		case "application/vnd.openxmlformats-officedocument.presentationml.template":
+			// fall through
+		case "application/vnd.openxmlformats-officedocument.presentationml.slideshow":
+			// fall through
+		case "application/vnd.ms-powerpoint.addin.macroEnabled.12":
+			// fall through
+		case "application/vnd.ms-powerpoint.presentation.macroEnabled.12":
+			// fall through
+		case "application/vnd.ms-powerpoint.template.macroEnabled.12":
+			// fall through
+		case "application/vnd.ms-powerpoint.slideshow.macroEnabled.12":
+			return DocumentType.SLIDESHOW;
+		default:
+			return DocumentType.UNKNOWN;
+		}
 	}
 
 	@Override
@@ -44,118 +105,117 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
 	private Structure mapInternal(Tag tag) {
 		switch (tag.getType()) {
-		case "h1": {
+		case "h1":
 			Heading h = new Heading(jcas, tag.getStart(), tag.getEnd());
 			h.setLevel(1);
 			return h;
-		}
-		case "h2": {
-			Heading h = new Heading(jcas, tag.getStart(), tag.getEnd());
+		case "h2":
+			h = new Heading(jcas, tag.getStart(), tag.getEnd());
 			h.setLevel(2);
 			return h;
-		}
-		case "h3": {
-			Heading h = new Heading(jcas, tag.getStart(), tag.getEnd());
+		case "h3":
+			h = new Heading(jcas, tag.getStart(), tag.getEnd());
 			h.setLevel(3);
 			return h;
-		}
-		case "h4": {
-			Heading h = new Heading(jcas, tag.getStart(), tag.getEnd());
+		case "h4":
+			h = new Heading(jcas, tag.getStart(), tag.getEnd());
 			h.setLevel(4);
 			return h;
-		}
-		case "h5": {
-			Heading h = new Heading(jcas, tag.getStart(), tag.getEnd());
+		case "h5":
+			h = new Heading(jcas, tag.getStart(), tag.getEnd());
 			h.setLevel(5);
 			return h;
-		}
-		case "h6": {
-			Heading h = new Heading(jcas, tag.getStart(), tag.getEnd());
+		case "h6":
+			h = new Heading(jcas, tag.getStart(), tag.getEnd());
 			h.setLevel(6);
 			return h;
-		}
-		case "p": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "pre": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "blockquote": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "q": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "ul": {
+
+		case "ul":
+			// fall through
+		case "dl":
 			return new Unordered(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "ol": {
+
+		case "ol":
 			return new Ordered(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "li": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "dl": {
-			return new Unordered(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "dt": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "dd": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "table": {
+
+		case "table":
 			return new Table(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "thead": {
+
+		case "thead":
 			return new TableHeader(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "tbody": {
+
+		case "tbody":
 			return new TableBody(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "tr": {
+
+		case "tr":
 			return new TableRow(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "th": {
+
+		case "th":
+			// fall through
+		case "td":
 			return new TableCell(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "td": {
-			return new TableCell(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "address": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "a": {
+
+		case "a":
 			return new Anchor(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "img": {
+
+		case "img":
 			return new Figure(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "ins": {
+
+		case "p":
+			// fall through
+		case "pre":
+			// fall through
+		case "blockquote":
+			// fall through
+		case "q":
+			// fall through
+		case "li":
+			// fall through
+		case "dt":
+			// fall through
+		case "dd":
+			// fall through
+		case "address":
+			// fall through
+		case "ins":
+			// fall through
+		case "del":
 			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "del": {
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "body": {
-			return new Document(jcas, tag.getStart(), tag.getEnd());
-		}
-		case "div": {
+		case "body":
+			return processBody(tag);
+
+		case "div":
 			return processDiv(tag);
-		}
-		default: {
+
+		default:
 			return null;
 		}
+
+	}
+
+	private Structure processBody(Tag tag) {
+		switch (documentType) {
+		case SPREADSHEET:
+			return new SpreadSheet(jcas, tag.getStart(), tag.getEnd());
+		case SLIDESHOW:
+			return new SlideShow(jcas, tag.getStart(), tag.getEnd());
+		case DOCUMENT:
+			// fall through
+		default:
+			return new Document(jcas, tag.getStart(), tag.getEnd());
 		}
 	}
 
 	private Structure processDiv(Tag tag) {
 		Attributes attributes = tag.getAttributes();
 		String divClass = attributes.getValue(URI, "class");
-		if (Objects.equals("slide-content", divClass)) {
+		if (Objects.equals(DocumentType.SLIDESHOW, documentType) && Objects.equals("slide-content", divClass)) {
 			return new Slide(jcas, tag.getStart(), tag.getEnd());
+		} else if (Objects.equals(DocumentType.SPREADSHEET, documentType) && Objects.equals("page", divClass)) {
+			return new Sheet(jcas, tag.getStart(), tag.getEnd());
+		} else {
+			return new Section(jcas, tag.getStart(), tag.getEnd());
 		}
-		return new Section(jcas, tag.getStart(), tag.getEnd());
 	}
 
 }
