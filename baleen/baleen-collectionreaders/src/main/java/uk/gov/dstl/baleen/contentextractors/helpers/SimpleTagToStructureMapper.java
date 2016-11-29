@@ -37,13 +37,10 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
 	private final JCas jcas;
 
-	private final Metadata metadata;
-
 	private final DocumentType documentType;
 
 	public SimpleTagToStructureMapper(JCas jcas, Metadata metadata) {
 		this.jcas = jcas;
-		this.metadata = metadata;
 		this.documentType = getDocumentType(metadata.get(Metadata.CONTENT_TYPE));
 	}
 
