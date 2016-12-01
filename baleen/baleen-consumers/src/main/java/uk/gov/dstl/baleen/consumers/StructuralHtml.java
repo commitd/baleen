@@ -20,6 +20,7 @@ import uk.gov.dstl.baleen.types.structure.Footnote;
 import uk.gov.dstl.baleen.types.structure.Header;
 import uk.gov.dstl.baleen.types.structure.Heading;
 import uk.gov.dstl.baleen.types.structure.Link;
+import uk.gov.dstl.baleen.types.structure.ListItem;
 import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Page;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
@@ -74,7 +75,7 @@ public class StructuralHtml extends AbstractHtml {
    */
 
   public static final String PARAM_OUTPUT_DATA = "outputData";
-  @ConfigurationParameter(name = PARAM_OUTPUT_DATA, defaultValue = "true")
+  @ConfigurationParameter(name = PARAM_OUTPUT_DATA, defaultValue = "false")
   private Boolean outputData;
 
   /**
@@ -220,12 +221,13 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("header");
     } else if (s instanceof Heading) {
       final Heading h = (Heading) s;
-      System.out.println(h.getLevel() + ": " + s.getCoveredText());
       final int level = Math.min(6, Math.max(1, h.getLevel()));
       e = createElement("h" + level);
     } else if (s instanceof Link) {
       e = createElement("a");
       e.attr("href", ((Link) s).getTarget());
+    } else if (s instanceof ListItem) {
+      e = createElement("li");
     } else if (s instanceof Ordered) {
       e = createElement("ol");
     } else if (s instanceof Unordered) {

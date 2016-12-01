@@ -3,15 +3,18 @@ package uk.gov.dstl.baleen.contentextractors.helpers;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.tika.metadata.HttpHeaders;
 import org.apache.tika.metadata.Metadata;
 import org.apache.uima.jcas.JCas;
 import org.xml.sax.Attributes;
+
 import com.tenode.baleen.extraction.Tag;
 
 import uk.gov.dstl.baleen.types.structure.Anchor;
 import uk.gov.dstl.baleen.types.structure.Document;
 import uk.gov.dstl.baleen.types.structure.Figure;
 import uk.gov.dstl.baleen.types.structure.Heading;
+import uk.gov.dstl.baleen.types.structure.ListItem;
 import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.types.structure.Section;
@@ -41,7 +44,7 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
 	public SimpleTagToStructureMapper(JCas jcas, Metadata metadata) {
 		this.jcas = jcas;
-		this.documentType = getDocumentType(metadata.get(Metadata.CONTENT_TYPE));
+		documentType = getDocumentType(metadata.get(HttpHeaders.CONTENT_TYPE));
 	}
 
 	private DocumentType getDocumentType(String type) {
@@ -93,7 +96,7 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
 	@Override
 	public Optional<Structure> map(final Tag tag) {
-		Structure structure = mapInternal(tag);
+		final Structure structure = mapInternal(tag);
 		if (structure != null) {
 			structure.setDepth(tag.getDepth());
 		}
@@ -101,6 +104,7 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 	}
 
 	private Structure mapInternal(Tag tag) {
+
 		switch (tag.getType()) {
 		case "h1":
 			Heading h = new Heading(jcas, tag.getStart(), tag.getEnd());
@@ -158,15 +162,17 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 		case "img":
 			return new Figure(jcas, tag.getStart(), tag.getEnd());
 
+		case "li":
+			return new ListItem(jcas, tag.getStart(), tag.getEnd());
+
 		case "p":
-			// fall through
+			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
+
 		case "pre":
 			// fall through
 		case "blockquote":
 			// fall through
 		case "q":
-			// fall through
-		case "li":
 			// fall through
 		case "dt":
 			// fall through
@@ -178,6 +184,7 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 			// fall through
 		case "del":
 			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
+
 		case "body":
 			return processBody(tag);
 
@@ -204,8 +211,8 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 	}
 
 	private Structure processDiv(Tag tag) {
-		Attributes attributes = tag.getAttributes();
-		String divClass = attributes.getValue(URI, "class");
+		final Attributes attributes = tag.getAttributes();
+		final String divClass = attributes.getValue(URI, "class");
 		if (Objects.equals(DocumentType.SLIDESHOW, documentType) && Objects.equals("slide-content", divClass)) {
 			return new Slide(jcas, tag.getStart(), tag.getEnd());
 		} else if (Objects.equals(DocumentType.SPREADSHEET, documentType) && Objects.equals("page", divClass)) {
