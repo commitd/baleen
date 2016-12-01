@@ -16,7 +16,7 @@
 			<url>http://www.apache.org/licenses/LICENSE-2.0</url>
 		</license>
 	</licenses>
-	
+
 	<scm>
 		<url>http://github.com/dstl/baleen</url>
 	</scm>
@@ -60,7 +60,7 @@
 		<opencsv.version>2.4</opencsv.version>
 		<concurrenttrees.version>2.6.0</concurrenttrees.version>
 		<reflections.version>0.9.10</reflections.version>
-		
+
 		<!--  Required by non-core (annotators etc) -->
 		<mongodb.version>3.4.0</mongodb.version>
 		<opennlp.version>1.6.0</opennlp.version>
@@ -151,7 +151,7 @@
 					</taglets>
 				</configuration>
 			</plugin>
-			
+
 			<!-- Licenses -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -176,10 +176,10 @@
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>0.7.4.201502262128</version>
 				<executions>
-				
-					<!-- 
+
+					<!--
 						Prepares the property pointing to the jacoco runtime agent which is passed as VM argument
-						 when the surefire plugin is executed 
+						 when the surefire plugin is executed
 					 -->
 					<execution>
 						<id>default-prepare-agent</id>
@@ -207,7 +207,7 @@
 					<argLine>${argLine}</argLine>
 				</configuration>
 			</plugin>
-							
+
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -305,7 +305,7 @@
 					<targetJdk>${java.version}</targetJdk>
 				</configuration>
 			</plugin>
-			
+
 			<!-- Changelog: Lists changes -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -333,7 +333,7 @@
 				<artifactId>maven-surefire-report-plugin</artifactId>
 				<version>2.18.1</version>
 			</plugin>
-			
+
 		</plugins>
 	</reporting>
 
