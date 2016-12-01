@@ -1,5 +1,6 @@
 package uk.gov.dstl.baleen.contentextractors.helpers;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -32,6 +33,7 @@ import uk.gov.dstl.baleen.types.structure.TableCell;
 import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.Unordered;
+import uk.gov.dstl.baleen.uima.utils.UimaTypesUtils;
 
 public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
@@ -213,11 +215,21 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 		case "div":
 			return processDiv(tag);
 
-		case "u":
-		case "i":
-		case "b":
-			// TODO
-			return new Style(jcas, tag.getStart(), tag.getEnd());
+		case "u": {
+			final Style style = new Style(jcas, tag.getStart(), tag.getEnd());
+			style.setDecoration(UimaTypesUtils.toArray(jcas, Collections.singleton("underline")));
+			return style;
+		}
+		case "i": {
+			final Style style = new Style(jcas, tag.getStart(), tag.getEnd());
+			style.setDecoration(UimaTypesUtils.toArray(jcas, Collections.singleton("italics")));
+			return style;
+		}
+		case "b": {
+			final Style style = new Style(jcas, tag.getStart(), tag.getEnd());
+			style.setDecoration(UimaTypesUtils.toArray(jcas, Collections.singleton("bold")));
+			return style;
+		}
 
 		case "html":
 		case "head":
