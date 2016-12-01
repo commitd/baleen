@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
 /** A base type for all Structure types.
- * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
+ * Updated by JCasGen Thu Dec 01 15:38:37 GMT 2016
  * @generated */
 public class Structure_Type extends Base_Type {
   /** @generated */
@@ -47,6 +47,30 @@ public class Structure_Type extends Base_Type {
     ll_cas.ll_setIntValue(addr, casFeatCode_depth, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_elementClass;
+  /** @generated */
+  final int     casFeatCode_elementClass;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getElementClass(int addr) {
+        if (featOkTst && casFeat_elementClass == null)
+      jcas.throwFeatMissing("elementClass", "uk.gov.dstl.baleen.types.structure.Structure");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_elementClass);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setElementClass(int addr, String v) {
+        if (featOkTst && casFeat_elementClass == null)
+      jcas.throwFeatMissing("elementClass", "uk.gov.dstl.baleen.types.structure.Structure");
+    ll_cas.ll_setStringValue(addr, casFeatCode_elementClass, v);}
+    
+  
 
 
 
@@ -62,6 +86,10 @@ public class Structure_Type extends Base_Type {
  
     casFeat_depth = jcas.getRequiredFeatureDE(casType, "depth", "uima.cas.Integer", featOkTst);
     casFeatCode_depth  = (null == casFeat_depth) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_depth).getCode();
+
+ 
+    casFeat_elementClass = jcas.getRequiredFeatureDE(casType, "elementClass", "uima.cas.String", featOkTst);
+    casFeatCode_elementClass  = (null == casFeat_elementClass) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_elementClass).getCode();
 
   }
 }

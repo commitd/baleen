@@ -11,7 +11,7 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** A base type for all Structure types.
- * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
+ * Updated by JCasGen Thu Dec 01 15:38:37 GMT 2016
  * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Structure extends Base {
@@ -94,6 +94,28 @@ public class Structure extends Base {
     if (Structure_Type.featOkTst && ((Structure_Type)jcasType).casFeat_depth == null)
       jcasType.jcas.throwFeatMissing("depth", "uk.gov.dstl.baleen.types.structure.Structure");
     jcasType.ll_cas.ll_setIntValue(addr, ((Structure_Type)jcasType).casFeatCode_depth, v);}    
+   
+    
+  //*--------------*
+  //* Feature: elementClass
+
+  /** getter for elementClass - gets A holder for further class information, say a more specific html class or a defined word style.
+   * @generated
+   * @return value of the feature 
+   */
+  public String getElementClass() {
+    if (Structure_Type.featOkTst && ((Structure_Type)jcasType).casFeat_elementClass == null)
+      jcasType.jcas.throwFeatMissing("elementClass", "uk.gov.dstl.baleen.types.structure.Structure");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((Structure_Type)jcasType).casFeatCode_elementClass);}
+    
+  /** setter for elementClass - sets A holder for further class information, say a more specific html class or a defined word style. 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setElementClass(String v) {
+    if (Structure_Type.featOkTst && ((Structure_Type)jcasType).casFeat_elementClass == null)
+      jcasType.jcas.throwFeatMissing("elementClass", "uk.gov.dstl.baleen.types.structure.Structure");
+    jcasType.ll_cas.ll_setStringValue(addr, ((Structure_Type)jcasType).casFeatCode_elementClass, v);}    
   }
 
     
