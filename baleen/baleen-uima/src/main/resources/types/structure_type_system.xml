@@ -230,6 +230,11 @@ This XML file classified as UK OFFICIAL.</description>
       </features>
     </typeDescription>
     <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.ListItem</name>
+      <description>An item of an ordered or unordered list.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Figure</name>
       <description>A figure (or embedded media).</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
