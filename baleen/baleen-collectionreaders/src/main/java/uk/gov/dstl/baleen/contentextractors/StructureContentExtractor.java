@@ -26,7 +26,7 @@ import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
 import uk.gov.dstl.baleen.contentextractors.helpers.SimpleTagToStructureMapper;
-import uk.gov.dstl.baleen.contentextractors.processor.ContentProcessor;
+import uk.gov.dstl.baleen.contentextractors.processor.helper.ContentProcessor;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 
@@ -99,23 +99,33 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 				manipulatedJCas = structuredJCas;
 			} else {
 				JCas input = structuredJCas;
-				JCas output = JCasFactory.createJCas();
+				JCas wip = JCasFactory.createJCas();
 				for (final ContentProcessor processor : processors) {
-					output.reset();
-					processor.process(input, output);
-					final JCas tmp = input;
-					input = output;
-					output = tmp;
+					wip.reset();
+					final JCas output = processor.process(input, wip);
+
+					if (output == input) {
+						// Fine... we've been given the input back.
+						// No need to do anything
+					} else if (output == wip) {
+						// Swapped wip and input so we swap too,
+						final JCas swap = input;
+						input = wip;
+						wip = swap;
+						;
+					} else {
+						// We've been given a new JCas back...
+						// - we'll use that as our input
+						// - we'll carry on using wip as wip
+						// the old input will be gc-ed
+						input = output;
+					}
 				}
 				manipulatedJCas = input;
 			}
 
-			// JCasUtil.select(manipulatedJCas, Heading.class).stream()
-			// .forEach(h -> System.out.println(h.getLevel()));
+			// Copy into the final JCas
 			CasCopier.copyCas(manipulatedJCas.getCas(), jCas.getCas(), true);
-			// JCasUtil.select(jCas, Heading.class).stream().forEach(h ->
-			// System.out.println(h.getLevel()));
-
 			super.doProcessStream(stream, source, jCas);
 
 			final Metadata metadata = extraction.getMetadata();

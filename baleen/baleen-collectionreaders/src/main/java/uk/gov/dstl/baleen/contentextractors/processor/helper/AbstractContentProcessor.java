@@ -1,4 +1,4 @@
-package uk.gov.dstl.baleen.contentextractors.processor;
+package uk.gov.dstl.baleen.contentextractors.processor.helper;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.resource.ResourceInitializationException;
