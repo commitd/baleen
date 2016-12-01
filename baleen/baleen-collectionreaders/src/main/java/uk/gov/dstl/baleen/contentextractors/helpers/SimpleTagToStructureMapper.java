@@ -13,6 +13,8 @@ import com.tenode.baleen.extraction.Tag;
 import uk.gov.dstl.baleen.types.structure.Anchor;
 import uk.gov.dstl.baleen.types.structure.Document;
 import uk.gov.dstl.baleen.types.structure.Figure;
+import uk.gov.dstl.baleen.types.structure.Footer;
+import uk.gov.dstl.baleen.types.structure.Header;
 import uk.gov.dstl.baleen.types.structure.Heading;
 import uk.gov.dstl.baleen.types.structure.ListItem;
 import uk.gov.dstl.baleen.types.structure.Ordered;
@@ -23,6 +25,7 @@ import uk.gov.dstl.baleen.types.structure.Slide;
 import uk.gov.dstl.baleen.types.structure.SlideShow;
 import uk.gov.dstl.baleen.types.structure.SpreadSheet;
 import uk.gov.dstl.baleen.types.structure.Structure;
+import uk.gov.dstl.baleen.types.structure.Style;
 import uk.gov.dstl.baleen.types.structure.Table;
 import uk.gov.dstl.baleen.types.structure.TableBody;
 import uk.gov.dstl.baleen.types.structure.TableCell;
@@ -62,6 +65,8 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 		case "application/vnd.ms-excel.addin.macroEnabled.12":
 			// fall through
 		case "application/vnd.ms-excel.sheet.binary.macroEnabled.12":
+			// fall through
+		case "text/csv":
 			return DocumentType.SPREADSHEET;
 		case "application/msword":
 			// fall through
@@ -98,6 +103,8 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 	public Optional<Structure> map(final Tag tag) {
 		final Structure structure = mapInternal(tag);
 		if (structure != null) {
+			final String classValue = tag.getAttributes().getValue("class");
+			structure.setElementClass(classValue);
 			structure.setDepth(tag.getDepth());
 		}
 		return Optional.ofNullable(structure);
@@ -166,7 +173,22 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 			return new ListItem(jcas, tag.getStart(), tag.getEnd());
 
 		case "p":
-			return new Paragraph(jcas, tag.getStart(), tag.getEnd());
+			final String styleClazz = tag.getAttributes().getValue("class");
+			if (styleClazz == null) {
+				return new Paragraph(jcas, tag.getStart(), tag.getEnd());
+			}
+
+			// Tika Word maps everything is a paragraph...
+			switch (styleClazz.toLowerCase()) {
+			case "list_paragraph":
+				return new ListItem(jcas, tag.getStart(), tag.getEnd());
+			case "header":
+				return new Header(jcas, tag.getStart(), tag.getEnd());
+			case "footer":
+				return new Footer(jcas, tag.getStart(), tag.getEnd());
+			default:
+				return new Paragraph(jcas, tag.getStart(), tag.getEnd());
+			}
 
 		case "pre":
 			// fall through
@@ -191,7 +213,26 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 		case "div":
 			return processDiv(tag);
 
+		case "u":
+		case "i":
+		case "b":
+			// TODO
+			return new Style(jcas, tag.getStart(), tag.getEnd());
+
+		case "html":
+		case "head":
+		case "title":
+		case "meta":
+			// We deal with metadata through Tika API interface
+			return null;
+
+		case "br":
+			// Not interested in these tags from structural perspective
+			return null;
+
 		default:
+			System.err.println(tag.getType());
+
 			return null;
 		}
 
@@ -212,11 +253,16 @@ public class SimpleTagToStructureMapper implements TagToStructureMapper {
 
 	private Structure processDiv(Tag tag) {
 		final Attributes attributes = tag.getAttributes();
-		final String divClass = attributes.getValue(URI, "class");
+		final String divClass = attributes.getValue("class");
+
 		if (Objects.equals(DocumentType.SLIDESHOW, documentType) && Objects.equals("slide-content", divClass)) {
 			return new Slide(jcas, tag.getStart(), tag.getEnd());
 		} else if (Objects.equals(DocumentType.SPREADSHEET, documentType) && Objects.equals("page", divClass)) {
 			return new Sheet(jcas, tag.getStart(), tag.getEnd());
+		} else if (Objects.equals("header", divClass)) {
+			return new Header(jcas, tag.getStart(), tag.getEnd());
+		} else if (Objects.equals("footer", divClass)) {
+			return new Footer(jcas, tag.getStart(), tag.getEnd());
 		} else {
 			return new Section(jcas, tag.getStart(), tag.getEnd());
 		}
