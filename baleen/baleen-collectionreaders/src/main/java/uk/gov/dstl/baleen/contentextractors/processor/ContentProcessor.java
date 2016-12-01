@@ -9,7 +9,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import uk.gov.dstl.baleen.uima.UimaMonitor;
 import uk.gov.dstl.baleen.uima.UimaSupport;
 
-public interface IContentProcessor {
+public interface ContentProcessor {
 	/**
 	 * Initialize the ContentExtractor
 	 *
