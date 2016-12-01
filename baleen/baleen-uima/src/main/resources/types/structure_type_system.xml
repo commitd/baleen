@@ -44,7 +44,7 @@ This XML file classified as UK OFFICIAL.</description>
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Page</name>
-      <description>A page of a Docuemnt.</description>
+      <description>A page of a Document.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     <features>
         <featureDescription>
@@ -66,12 +66,12 @@ This XML file classified as UK OFFICIAL.</description>
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Section</name>
-      <description>A generic section of a Docuemnt.</description>
+      <description>A generic section of a Document.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Header</name>
-      <description>A header of a Docuemnt.</description>
+      <description>A header of a Document.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     <features>
         <featureDescription>
@@ -83,7 +83,7 @@ This XML file classified as UK OFFICIAL.</description>
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Footer</name>
-      <description>A Footer of a Docuemnt.</description>
+      <description>A Footer of a Document.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     <features>
         <featureDescription>
@@ -95,7 +95,7 @@ This XML file classified as UK OFFICIAL.</description>
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Heading</name>
-      <description>A heading in a Docuemnt.</description>
+      <description>A heading in a Document.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     <features>
         <featureDescription>
@@ -107,7 +107,7 @@ This XML file classified as UK OFFICIAL.</description>
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Table</name>
-      <description>A Table in a Docuemnt.</description>
+      <description>A Table in a Document.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     </typeDescription>
     <typeDescription>
