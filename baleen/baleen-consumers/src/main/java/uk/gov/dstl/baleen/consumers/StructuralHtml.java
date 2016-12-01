@@ -59,11 +59,11 @@ public class StructuralHtml extends AbstractHtml {
    * sheet and leave this off.
    *
    *
-   * @baleen.config false
+   * @baleen.config true
    */
 
   public static final String PARAM_APPLY_STYLES = "applyStyles";
-  @ConfigurationParameter(name = PARAM_APPLY_STYLES, defaultValue = "false")
+  @ConfigurationParameter(name = PARAM_APPLY_STYLES, defaultValue = "true")
   private Boolean applyStyles;
 
   /**
