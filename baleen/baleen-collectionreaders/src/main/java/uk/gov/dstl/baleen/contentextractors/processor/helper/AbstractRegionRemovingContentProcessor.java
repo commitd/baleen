@@ -111,6 +111,8 @@ public abstract class AbstractRegionRemovingContentProcessor extends AbstractCon
 			return temporary;
 		}
 
+		printCover(input, cover);
+
 		// Remove any annotation which are complete covered by bad span
 		// and 'clip' partially overlapping spans to they don't start/end inside
 		// the bad span
@@ -128,6 +130,12 @@ public abstract class AbstractRegionRemovingContentProcessor extends AbstractCon
 		temporary.setDocumentText(text);
 		CasCopier.copyCas(input.getCas(), temporary.getCas(), false);
 		return temporary;
+	}
+
+	private void printCover(JCas jCas, List<Span> cover) {
+		cover.forEach(c -> System.err.println(String.format("%d-%d %s", c.getBegin(), c.getEnd(),
+				jCas.getDocumentText().substring(c.getBegin(), c.getEnd()))));
+
 	}
 
 	private void adjustAnnotationByOffsets(JCas input, List<Span> cover) {
@@ -164,11 +172,13 @@ public abstract class AbstractRegionRemovingContentProcessor extends AbstractCon
 
 		int offset = 0;
 		for (final Span s : cover) {
-			sb.append(documentText).substring(offset, s.getBegin());
+			final String t = documentText.substring(offset, s.getBegin());
+			sb.append(t);
 			offset = s.getEnd();
 		}
 
-		sb.append(documentText).substring(offset);
+		final String t = documentText.substring(offset);
+		sb.append(t);
 
 		return sb.toString();
 	}
@@ -212,6 +222,7 @@ public abstract class AbstractRegionRemovingContentProcessor extends AbstractCon
 
 		Span currentCover = null;
 		for (final Span s : list) {
+
 			if (currentCover == null) {
 				currentCover = s;
 				continue;
