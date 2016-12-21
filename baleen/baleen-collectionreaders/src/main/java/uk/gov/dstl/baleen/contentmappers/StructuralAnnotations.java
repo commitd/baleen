@@ -135,6 +135,8 @@ public class StructuralAnnotations implements ContentMapper {
 
       // Purely structural
 
+      case "aside":
+      case "details":
       case "div":
         // Div means very little nothing... but we wrap it in a section
         collector.add(new Section(jCas));
