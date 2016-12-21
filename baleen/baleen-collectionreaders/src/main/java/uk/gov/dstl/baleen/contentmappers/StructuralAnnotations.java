@@ -8,12 +8,18 @@ import org.jsoup.nodes.Element;
 import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.types.structure.Anchor;
+import uk.gov.dstl.baleen.types.structure.Document;
 import uk.gov.dstl.baleen.types.structure.Figure;
 import uk.gov.dstl.baleen.types.structure.Heading;
+import uk.gov.dstl.baleen.types.structure.Link;
 import uk.gov.dstl.baleen.types.structure.ListItem;
 import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.types.structure.Section;
+import uk.gov.dstl.baleen.types.structure.Sheet;
+import uk.gov.dstl.baleen.types.structure.Slide;
+import uk.gov.dstl.baleen.types.structure.SlideShow;
+import uk.gov.dstl.baleen.types.structure.SpreadSheet;
 import uk.gov.dstl.baleen.types.structure.Style;
 import uk.gov.dstl.baleen.types.structure.Table;
 import uk.gov.dstl.baleen.types.structure.TableBody;
@@ -47,7 +53,6 @@ public class StructuralAnnotations implements ContentMapper {
       case "h4":
         createHeading(jCas, collector, 4);
         break;
-
       case "h5":
         createHeading(jCas, collector, 5);
         break;
@@ -84,21 +89,25 @@ public class StructuralAnnotations implements ContentMapper {
         break;
 
       case "tr":
-        collector.add(new TableRow(jCas));
+        final TableRow tr = new TableRow(jCas);
+        // TODO: Row index
+        // tr.setRowIndex(findRowIndexOfRow(element));
+        collector.add(tr);
         break;
 
       case "th":
         // fall through
       case "td":
-        collector.add(new TableCell(jCas));
-        // TODO: Row and Col index
+        final TableCell td = new TableCell(jCas);
+        td.setColumn(findColIndexOfCell(element));
+        td.setRow(findRowIndexOfCell(element));
+        collector.add(td);
         break;
 
       // Links and anchors
 
       case "a":
-        // TODO: has href => Link?
-        collector.add(new Anchor(jCas));
+        createAnchor(jCas, collector, element);
         break;
 
       // Images
@@ -115,17 +124,19 @@ public class StructuralAnnotations implements ContentMapper {
         break;
 
       case "i":
+      case "em":
         createStyle(jCas, collector, "italics");
         break;
 
       case "b":
+      case "strong":
         createStyle(jCas, collector, "bold");
         break;
 
       // Purely structural
 
       case "div":
-        // TODO: Means nothing.. could drop
+        // Div means very little nothing... but we wrap it in a section
         collector.add(new Section(jCas));
         break;
 
@@ -133,6 +144,12 @@ public class StructuralAnnotations implements ContentMapper {
         // Do nothing
         break;
 
+      case "main":
+        createFromMain(jCas, collector, element);
+        break;
+      case "article":
+        createFromArticle(jCas, collector, element);
+        break;
 
       // TOOD: Leftovers
 
@@ -150,6 +167,68 @@ public class StructuralAnnotations implements ContentMapper {
 
       default:
         return;
+    }
+  }
+
+  private int findRowIndexOfCell(final Element element) {
+    for (final Element e : element.parents()) {
+      if (e.tagName().equalsIgnoreCase("tr")) {
+        return findRowIndexOfRow(e);
+      }
+    }
+    return -1;
+  }
+
+  private int findRowIndexOfRow(final Element e) {
+    // TODO: The best we can do without rowspan type info
+    return e.siblingIndex();
+  }
+
+  private int findColIndexOfCell(final Element e) {
+    // TODO: The best we can do without colspan type info
+    return e.siblingIndex();
+  }
+
+
+  private void createAnchor(final JCas jCas, final AnnotationCollector collector,
+      final Element element) {
+    final String href = element.absUrl("href");
+    if (href == null) {
+      final Link l = new Link(jCas);
+      l.setTarget(href);
+      collector.add(l);
+
+    } else {
+      collector.add(new Anchor(jCas));
+    }
+  }
+
+  private void createFromArticle(final JCas jCas, final AnnotationCollector collector,
+      final Element element) {
+    final String clazz = element.attr("class");
+    switch (clazz.toLowerCase()) {
+      case "sheet":
+        collector.add(new Sheet(jCas));
+        break;
+      case "slide":
+        collector.add(new Slide(jCas));
+        break;
+    }
+  }
+
+  private void createFromMain(final JCas jCas, final AnnotationCollector collector,
+      final Element element) {
+    final String clazz = element.attr("class");
+    switch (clazz.toLowerCase()) {
+      case "document":
+        collector.add(new Document(jCas));
+        break;
+      case "spreadsheet":
+        collector.add(new SpreadSheet(jCas));
+        break;
+      case "slideshow":
+        collector.add(new SlideShow(jCas));
+        break;
     }
   }
 

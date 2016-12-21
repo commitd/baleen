@@ -50,12 +50,14 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
   private DocumentToJCasConverter documentConverter;
 
+  private TikaFormatExtractor formatExtractor;
+
   @Override
   public void doInitialize(final UimaContext context, final Map<String, Object> params)
       throws ResourceInitializationException {
     super.doInitialize(context, params);
 
-    final Object manipulatorConfig = params.get("manipulators");
+    final Object manipulatorConfig = params.get("contentManipulators");
     if (manipulatorConfig != null && manipulatorConfig instanceof String[]) {
       try {
         manipulators = createContentProcessor(ContentManipulator.class,
@@ -65,8 +67,8 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       }
     }
 
-    List<ContentMapper> mappers = null;
-    final Object mapperConfig = params.get("mappers");
+    List<ContentMapper> mappers;
+    final Object mapperConfig = params.get("contentMappers");
     if (mapperConfig != null && mapperConfig instanceof String[]) {
       try {
         mappers = createContentProcessor(ContentMapper.class, CONTENT_MAPPER_DEFAULT_PACKAGE,
@@ -75,10 +77,13 @@ public class StructureContentExtractor extends AbstractContentExtractor {
         throw new ResourceInitializationException(e);
       }
     } else {
+      // Defaults to extraction of the Structural Annotations only
       mappers = Collections.singletonList(new StructuralAnnotations());
     }
 
     documentConverter = new DocumentToJCasConverter(mappers);
+    formatExtractor = new TikaFormatExtractor();
+
   }
 
   // Note this is checked by clazz isInstance
@@ -112,8 +117,6 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       throws IOException {
 
     try {
-      final TikaFormatExtractor formatExtractor = new TikaFormatExtractor();
-
       final Extraction extraction = formatExtractor.parse(stream, source);
 
       final Document document = Jsoup.parse(extraction.getHtml());

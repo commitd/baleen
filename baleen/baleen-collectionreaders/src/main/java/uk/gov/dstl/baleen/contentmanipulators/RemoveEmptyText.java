@@ -4,7 +4,7 @@ import org.jsoup.nodes.Document;
 
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
 
-public class UntagEmptyText implements ContentManipulator {
+public class RemoveEmptyText implements ContentManipulator {
 
   @Override
   public void manipulate(final Document document) {
