@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.tika.metadata.Metadata;
 import org.apache.uima.UimaContext;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -18,7 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.tenode.baleen.extraction.tika.TikaExtraction;
+import com.tenode.baleen.extraction.Extraction;
 import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
@@ -115,9 +114,9 @@ public class StructureContentExtractor extends AbstractContentExtractor {
     try {
       final TikaFormatExtractor formatExtractor = new TikaFormatExtractor();
 
-      final TikaExtraction extraction = formatExtractor.parse(stream, source);
+      final Extraction extraction = formatExtractor.parse(stream, source);
 
-      final Document document = Jsoup.parse(extraction.getText());
+      final Document document = Jsoup.parse(extraction.getHtml());
 
       for (final ContentManipulator manipulator : manipulators) {
         manipulator.manipulate(document);
@@ -125,11 +124,9 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
       documentConverter.apply(document, jCas);
 
-      // Add the Tika Metadata
-      final Metadata metadata = extraction.getMetadata();
-      for (final String name : metadata.names()) {
-        addMetadata(jCas, name, metadata.get(name));
-      }
+      // Add the metadata
+      extraction.getMetadata().entries()
+          .forEach(e -> addMetadata(jCas, e.getKey(), e.getValue()));
 
       super.doProcessStream(stream, source, jCas);
     } catch (final Exception e) {
