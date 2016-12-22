@@ -5,6 +5,8 @@ import java.util.Collections;
 import org.apache.uima.jcas.JCas;
 import org.jsoup.nodes.Element;
 
+import com.google.common.base.Strings;
+import com.google.common.primitives.Ints;
 import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.types.structure.Anchor;
@@ -26,6 +28,7 @@ import uk.gov.dstl.baleen.types.structure.Style;
 import uk.gov.dstl.baleen.types.structure.Table;
 import uk.gov.dstl.baleen.types.structure.TableBody;
 import uk.gov.dstl.baleen.types.structure.TableCell;
+import uk.gov.dstl.baleen.types.structure.TableFooter;
 import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.Unordered;
@@ -86,14 +89,17 @@ public class StructuralAnnotations implements ContentMapper {
         collector.add(new TableHeader(jCas));
         break;
 
+      case "tfoot":
+        collector.add(new TableFooter(jCas));
+        break;
+
       case "tbody":
         collector.add(new TableBody(jCas));
         break;
 
       case "tr":
         final TableRow tr = new TableRow(jCas);
-        // TODO: Row index
-        // tr.setRowIndex(findRowIndexOfRow(element));
+        tr.setRow(findRowIndexOfRow(element));
         collector.add(tr);
         break;
 
@@ -103,6 +109,8 @@ public class StructuralAnnotations implements ContentMapper {
         final TableCell td = new TableCell(jCas);
         td.setColumn(findColIndexOfCell(element));
         td.setRow(findRowIndexOfCell(element));
+        td.setRowSpan(getIntegerAttribute(element, "rowspan", 1));
+        td.setColumnSpan(getIntegerAttribute(element, "colspan", 1));
         collector.add(td);
         break;
 
@@ -178,6 +186,18 @@ public class StructuralAnnotations implements ContentMapper {
       default:
         return;
     }
+  }
+
+  private int getIntegerAttribute(final Element element, final String key, final int defaultValue) {
+    final String value = element.attr(key);
+    if (Strings.isNullOrEmpty(value)) {
+      return defaultValue;
+    }
+    final Integer i = Ints.tryParse(value);
+    if (i == null) {
+      return defaultValue;
+    }
+    return i;
   }
 
   private int findRowIndexOfCell(final Element element) {
