@@ -254,7 +254,7 @@ public class StructuralAnnotations implements ContentMapper {
         collector.add(new Quotation(jCas));
         break;
 
-      // Potential semantic types, but left to other mappers to actually annotate
+      // Potential semantic types, but left to other mappers (SemanticHtml) to actually annotate
       case "time":
       case "meter":
       case "dfn":
