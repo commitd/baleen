@@ -9,9 +9,9 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 
-/** A Table in a Docuemnt.
- * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
- * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+/** A Table in a Document.
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
+ * XML source: /Users/chrisflatley/Projects/railroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Table extends Structure {
   /** @generated

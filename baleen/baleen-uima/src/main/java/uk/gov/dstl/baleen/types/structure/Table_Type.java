@@ -7,8 +7,8 @@ import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
-/** A Table in a Docuemnt.
- * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
+/** A Table in a Document.
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
  * @generated */
 public class Table_Type extends Structure_Type {
   /** @generated */

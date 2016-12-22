@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** A cell in a Table.
- * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
- * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
+ * XML source: /Users/chrisflatley/Projects/railroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class TableCell extends TablePart {
   /** @generated
@@ -115,6 +115,50 @@ public class TableCell extends TablePart {
     if (TableCell_Type.featOkTst && ((TableCell_Type)jcasType).casFeat_column == null)
       jcasType.jcas.throwFeatMissing("column", "uk.gov.dstl.baleen.types.structure.TableCell");
     jcasType.ll_cas.ll_setIntValue(addr, ((TableCell_Type)jcasType).casFeatCode_column, v);}    
+   
+    
+  //*--------------*
+  //* Feature: rowSpan
+
+  /** getter for rowSpan - gets The number of rows spanned by this cell. Assume any value less than 2 (or null) to be 1 (ie the cell covers 1 row).
+   * @generated
+   * @return value of the feature 
+   */
+  public int getRowSpan() {
+    if (TableCell_Type.featOkTst && ((TableCell_Type)jcasType).casFeat_rowSpan == null)
+      jcasType.jcas.throwFeatMissing("rowSpan", "uk.gov.dstl.baleen.types.structure.TableCell");
+    return jcasType.ll_cas.ll_getIntValue(addr, ((TableCell_Type)jcasType).casFeatCode_rowSpan);}
+    
+  /** setter for rowSpan - sets The number of rows spanned by this cell. Assume any value less than 2 (or null) to be 1 (ie the cell covers 1 row). 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setRowSpan(int v) {
+    if (TableCell_Type.featOkTst && ((TableCell_Type)jcasType).casFeat_rowSpan == null)
+      jcasType.jcas.throwFeatMissing("rowSpan", "uk.gov.dstl.baleen.types.structure.TableCell");
+    jcasType.ll_cas.ll_setIntValue(addr, ((TableCell_Type)jcasType).casFeatCode_rowSpan, v);}    
+   
+    
+  //*--------------*
+  //* Feature: columnSpan
+
+  /** getter for columnSpan - gets The number of columns spanned by this cell. Assume any value less than 2 (or null) to be 1 (ie the cell covers 1 column).
+   * @generated
+   * @return value of the feature 
+   */
+  public int getColumnSpan() {
+    if (TableCell_Type.featOkTst && ((TableCell_Type)jcasType).casFeat_columnSpan == null)
+      jcasType.jcas.throwFeatMissing("columnSpan", "uk.gov.dstl.baleen.types.structure.TableCell");
+    return jcasType.ll_cas.ll_getIntValue(addr, ((TableCell_Type)jcasType).casFeatCode_columnSpan);}
+    
+  /** setter for columnSpan - sets The number of columns spanned by this cell. Assume any value less than 2 (or null) to be 1 (ie the cell covers 1 column). 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setColumnSpan(int v) {
+    if (TableCell_Type.featOkTst && ((TableCell_Type)jcasType).casFeat_columnSpan == null)
+      jcasType.jcas.throwFeatMissing("columnSpan", "uk.gov.dstl.baleen.types.structure.TableCell");
+    jcasType.ll_cas.ll_setIntValue(addr, ((TableCell_Type)jcasType).casFeatCode_columnSpan, v);}    
   }
 
     

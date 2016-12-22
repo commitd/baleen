@@ -8,7 +8,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** A document.
- * Updated by JCasGen Mon Nov 28 16:26:00 GMT 2016
+ * Updated by JCasGen Thu Dec 22 22:42:17 CET 2016
  * @generated */
 public class Document_Type extends Structure_Type {
   /** @generated */

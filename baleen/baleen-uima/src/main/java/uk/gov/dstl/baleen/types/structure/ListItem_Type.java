@@ -8,7 +8,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** An item of an ordered or unordered list.
- * Updated by JCasGen Thu Dec 01 15:08:29 GMT 2016
+ * Updated by JCasGen Thu Dec 22 22:42:17 CET 2016
  * @generated */
 public class ListItem_Type extends Structure_Type {
   /** @generated */

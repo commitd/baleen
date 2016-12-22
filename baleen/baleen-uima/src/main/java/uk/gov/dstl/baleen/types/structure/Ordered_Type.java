@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** An ordered component of a document such as a list.
- * Updated by JCasGen Mon Nov 28 16:26:00 GMT 2016
+ * Updated by JCasGen Thu Dec 22 22:42:17 CET 2016
  * @generated */
 public class Ordered_Type extends Structure_Type {
   /** @generated */

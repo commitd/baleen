@@ -10,7 +10,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** An unordered component of a document such as an unordered list.
- * Updated by JCasGen Mon Nov 28 18:28:46 GMT 2016
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
  * @generated */
 public class Unordered_Type extends Structure_Type {
   /** @generated */

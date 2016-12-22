@@ -11,8 +11,8 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** A base type for all Structure types.
- * Updated by JCasGen Thu Dec 01 15:38:37 GMT 2016
- * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
+ * XML source: /Users/chrisflatley/Projects/railroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Structure extends Base {
   /** @generated

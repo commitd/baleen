@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** An item of an ordered or unordered list.
- * Updated by JCasGen Thu Dec 01 15:08:29 GMT 2016
- * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+ * Updated by JCasGen Thu Dec 22 22:42:17 CET 2016
+ * XML source: /Users/chrisflatley/Projects/railroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class ListItem extends Structure {
   /** @generated

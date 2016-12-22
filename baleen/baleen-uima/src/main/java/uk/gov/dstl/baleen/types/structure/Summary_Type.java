@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Thu Oct 13 13:31:25 BST 2016 */
+/* First created by JCasGen Thu Dec 22 22:42:18 CET 2016 */
 package uk.gov.dstl.baleen.types.structure;
 
 import org.apache.uima.jcas.JCas;
@@ -7,17 +7,17 @@ import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
-/** A sheet of a spread sheet.
+/** A section which summarises the content.
  * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
  * @generated */
-public class Sheet_Type extends Page_Type {
+public class Summary_Type extends Structure_Type {
   /** @generated */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = Sheet.typeIndexID;
+  public final static int typeIndexID = Summary.typeIndexID;
   /** @generated 
      @modifiable */
   @SuppressWarnings ("hiding")
-  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("uk.gov.dstl.baleen.types.structure.Sheet");
+  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("uk.gov.dstl.baleen.types.structure.Summary");
 
 
 
@@ -26,7 +26,7 @@ public class Sheet_Type extends Page_Type {
 	 * @param jcas JCas
 	 * @param casType Type 
 	 */
-  public Sheet_Type(JCas jcas, Type casType) {
+  public Summary_Type(JCas jcas, Type casType) {
     super(jcas, casType);
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
 

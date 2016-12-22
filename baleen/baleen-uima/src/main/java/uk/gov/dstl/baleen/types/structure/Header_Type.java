@@ -10,8 +10,8 @@ import org.apache.uima.cas.Type;
 import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
-/** A header of a Docuemnt.
- * Updated by JCasGen Mon Nov 28 16:26:00 GMT 2016
+/** A header of a Document.
+ * Updated by JCasGen Thu Dec 22 22:42:17 CET 2016
  * @generated */
 public class Header_Type extends Structure_Type {
   /** @generated */

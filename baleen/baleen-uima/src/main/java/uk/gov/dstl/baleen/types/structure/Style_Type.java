@@ -10,7 +10,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** To capture the style applied to a span of text.
- * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
  * @generated */
 public class Style_Type extends Structure_Type {
   /** @generated */

@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
 /** A base type for all Structure types.
- * Updated by JCasGen Thu Dec 01 15:38:37 GMT 2016
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
  * @generated */
 public class Structure_Type extends Base_Type {
   /** @generated */

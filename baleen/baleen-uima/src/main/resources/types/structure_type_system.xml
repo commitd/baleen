@@ -74,6 +74,21 @@ This XML file classified as UK OFFICIAL.</description>
       <description>A generic section of a Document.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     </typeDescription>
+     <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Details</name>
+      <description>A section which contains additional detail.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Aside</name>
+      <description>A section which include information tangential to the content.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Summary</name>
+      <description>A section which summarises the content.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Header</name>
       <description>A header of a Document.</description>
@@ -169,6 +184,17 @@ This XML file classified as UK OFFICIAL.</description>
           <description>The column number of the cell in the table</description>
           <rangeTypeName>uima.cas.Integer</rangeTypeName>
         </featureDescription>
+        <featureDescription>
+          <name>rowSpan</name>
+          <description>The number of rows spanned by this cell. Assume any value less than 2 (or null) to be 1 (ie the cell covers 1 row).</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+          
+        </featureDescription>
+        <featureDescription>
+          <name>columnSpan</name>
+          <description>The number of columns spanned by this cell. Assume any value less than 2 (or null) to be 1 (ie the cell covers 1 column).</description>
+          <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>
@@ -239,6 +265,31 @@ This XML file classified as UK OFFICIAL.</description>
       <description>An item of an ordered or unordered list.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
     </typeDescription>
+   <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.DefinitionList</name>
+      <description>An list of definitions (term item to descriptive meaning).</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.DefinitionItem</name>
+      <description>An item of an definition list which holds the term (eg an abbreviation).</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.DefinitionDescription</name>
+      <description>An item of an definition list which holds the description (eg expansion of an abbreviation).</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Quotation</name>
+      <description>Quotation in a document. Could be speech, snippet from another document but should be treated as different to the rest of the paragraph or section.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Preformatted</name>
+      <description>Text which is considered preformatted (computer code, etc) meaning that the whitespace has syntactic value.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Figure</name>
       <description>A figure (or embedded media).</description>
@@ -273,7 +324,7 @@ This XML file classified as UK OFFICIAL.</description>
         </featureDescription>
         <featureDescription>
           <name>decoration</name>
-          <description>Decoration applied to the text. For example, [italic, bold, underline].</description>
+          <description>Decoration applied to the text. For example, [italic, bold, underline, strikethrough, small, superscript, subscript].</description>
           <rangeTypeName>uima.cas.StringArray</rangeTypeName>
           <multipleReferencesAllowed>false</multipleReferencesAllowed>
         </featureDescription>

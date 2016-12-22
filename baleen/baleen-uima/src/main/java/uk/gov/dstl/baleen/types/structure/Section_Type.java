@@ -7,8 +7,8 @@ import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
-/** A generic section of a Docuemnt.
- * Updated by JCasGen Mon Nov 28 16:26:01 GMT 2016
+/** A generic section of a Document.
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
  * @generated */
 public class Section_Type extends Structure_Type {
   /** @generated */

@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** An unordered component of a document such as an unordered list.
- * Updated by JCasGen Mon Nov 28 18:28:46 GMT 2016
- * XML source: C:/git/tenode/hiddenrailroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
+ * Updated by JCasGen Thu Dec 22 22:42:18 CET 2016
+ * XML source: /Users/chrisflatley/Projects/railroad/baleen/baleen/baleen-uima/src/main/resources/types/structure_type_system.xml
  * @generated */
 public class Unordered extends Structure {
   /** @generated
