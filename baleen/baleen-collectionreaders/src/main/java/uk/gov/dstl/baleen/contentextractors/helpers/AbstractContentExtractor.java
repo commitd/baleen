@@ -17,8 +17,6 @@ import uk.gov.dstl.baleen.uima.BaleenContentExtractor;
  * 
  * Sets the source and timestamp of the document.
  * 
- * 
- *
  */
 public abstract class AbstractContentExtractor extends BaleenContentExtractor  {
 	@Override
