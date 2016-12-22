@@ -10,6 +10,8 @@ import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.types.structure.Anchor;
 import uk.gov.dstl.baleen.types.structure.Document;
 import uk.gov.dstl.baleen.types.structure.Figure;
+import uk.gov.dstl.baleen.types.structure.Footer;
+import uk.gov.dstl.baleen.types.structure.Header;
 import uk.gov.dstl.baleen.types.structure.Heading;
 import uk.gov.dstl.baleen.types.structure.Link;
 import uk.gov.dstl.baleen.types.structure.ListItem;
@@ -152,6 +154,12 @@ public class StructuralAnnotations implements ContentMapper {
       case "article":
         createFromArticle(jCas, collector, element);
         break;
+      case "header":
+        collector.add(new Header(jCas));
+        break;
+      case "footer":
+        collector.add(new Footer(jCas));
+        break;
 
       // TOOD: Leftovers
 
@@ -195,7 +203,7 @@ public class StructuralAnnotations implements ContentMapper {
   private void createAnchor(final JCas jCas, final AnnotationCollector collector,
       final Element element) {
     final String href = element.absUrl("href");
-    if (href == null) {
+    if (href != null) {
       final Link l = new Link(jCas);
       l.setTarget(href);
       collector.add(l);
