@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.uima.UimaContext;
 import org.apache.uima.jcas.JCas;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Multimap;
 import com.tenode.baleen.extraction.Extraction;
 import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
@@ -46,6 +48,12 @@ public class StructureContentExtractor extends AbstractContentExtractor {
   public static final String CONTENT_MANIPULATOR_DEFAULT_PACKAGE =
       "uk.gov.dstl.baleen.contentmanipulators";
 
+  private static final String METADATA_CONTENT_MANIPULATORS = "baleen:content-manipulators";
+  private static final String METADATA_CONTENT_MAPPERS = "baleen:content-mappers";
+
+  private List<String> contentManipulatorClasses;
+  private List<String> contentMapperClasses;
+
   private List<ContentManipulator> manipulators = Collections.emptyList();
 
   private DocumentToJCasConverter documentConverter;
@@ -67,6 +75,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       }
     }
 
+
     List<ContentMapper> mappers;
     final Object mapperConfig = params.get("contentMappers");
     if (mapperConfig != null && mapperConfig instanceof String[]) {
@@ -80,6 +89,12 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       // Defaults to extraction of the Structural Annotations only
       mappers = Collections.singletonList(new StructuralAnnotations());
     }
+
+
+    contentManipulatorClasses =
+        manipulators.stream().map(m -> m.getClass().getName()).collect(Collectors.toList());
+    contentMapperClasses =
+        mappers.stream().map(m -> m.getClass().getName()).collect(Collectors.toList());
 
     documentConverter = new DocumentToJCasConverter(mappers);
     formatExtractor = new TikaFormatExtractor();
@@ -118,6 +133,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
     try {
       final Extraction extraction = formatExtractor.parse(stream, source);
+      final Multimap<String, String> metadata = extraction.getMetadata();
 
       final Document document = Jsoup.parse(extraction.getHtml());
 
@@ -127,8 +143,13 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
       documentConverter.apply(document, jCas);
 
-      // Add the metadata
-      extraction.getMetadata().entries()
+
+      // Add information on content mappers and content manipulators to the metadata
+      metadata.putAll(METADATA_CONTENT_MANIPULATORS, contentManipulatorClasses);
+      metadata.putAll(METADATA_CONTENT_MAPPERS, contentMapperClasses);
+
+      // Add the metadata to the document
+      metadata.entries()
           .forEach(e -> addMetadata(jCas, e.getKey(), e.getValue()));
 
       super.doProcessStream(stream, source, jCas);
