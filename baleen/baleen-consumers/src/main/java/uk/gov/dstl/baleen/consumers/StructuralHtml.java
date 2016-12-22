@@ -12,7 +12,12 @@ import com.google.common.base.Strings;
 import uk.gov.dstl.baleen.consumers.utils.StructureHierarchy;
 import uk.gov.dstl.baleen.consumers.utils.StructureHierarchy.Node;
 import uk.gov.dstl.baleen.types.structure.Anchor;
+import uk.gov.dstl.baleen.types.structure.Aside;
 import uk.gov.dstl.baleen.types.structure.Caption;
+import uk.gov.dstl.baleen.types.structure.DefinitionDescription;
+import uk.gov.dstl.baleen.types.structure.DefinitionItem;
+import uk.gov.dstl.baleen.types.structure.DefinitionList;
+import uk.gov.dstl.baleen.types.structure.Details;
 import uk.gov.dstl.baleen.types.structure.Document;
 import uk.gov.dstl.baleen.types.structure.Figure;
 import uk.gov.dstl.baleen.types.structure.Footer;
@@ -24,6 +29,8 @@ import uk.gov.dstl.baleen.types.structure.ListItem;
 import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Page;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
+import uk.gov.dstl.baleen.types.structure.Preformatted;
+import uk.gov.dstl.baleen.types.structure.Quotation;
 import uk.gov.dstl.baleen.types.structure.Section;
 import uk.gov.dstl.baleen.types.structure.Sentence;
 import uk.gov.dstl.baleen.types.structure.Sheet;
@@ -32,6 +39,7 @@ import uk.gov.dstl.baleen.types.structure.SlideShow;
 import uk.gov.dstl.baleen.types.structure.SpreadSheet;
 import uk.gov.dstl.baleen.types.structure.Structure;
 import uk.gov.dstl.baleen.types.structure.Style;
+import uk.gov.dstl.baleen.types.structure.Summary;
 import uk.gov.dstl.baleen.types.structure.Table;
 import uk.gov.dstl.baleen.types.structure.TableBody;
 import uk.gov.dstl.baleen.types.structure.TableCell;
@@ -92,7 +100,7 @@ public class StructuralHtml extends AbstractHtml {
   @ConfigurationParameter(name = PARAM_OUTPUT_EMPTY_TAGS, defaultValue = "false")
   private Boolean outputEmptyTags;
 
-  public boolean walk(Element parentElement, Node n) {
+  public boolean walk(final Element parentElement, final Node n) {
     final Structure structure = n.getElement();
 
     // TODO: Here we always create a new element, but in reality we could use parentElement if the
@@ -136,7 +144,7 @@ public class StructuralHtml extends AbstractHtml {
     return added;
   }
 
-  private boolean appendText(Element e, String text, int start, int end) {
+  private boolean appendText(final Element e, final String text, final int start, final int end) {
     if (start < end && end <= text.length()) {
       e.appendText(text.substring(start, end));
       return true;
@@ -145,7 +153,7 @@ public class StructuralHtml extends AbstractHtml {
     }
   }
 
-  private String buildCssStyle(Style s) {
+  private String buildCssStyle(final Style s) {
     final String color = s.getColor();
     final StringArray decorations = s.getDecoration();
     final String font = s.getFont();
@@ -179,8 +187,28 @@ public class StructuralHtml extends AbstractHtml {
           case "BOLD":
             sb.append("font-weight:bold; ");
             break;
+          case "ITALIC":
           case "ITALICS":
             sb.append("font-style:italic; ");
+            break;
+          case "STRIKE":
+          case "STRIKETHROUGH":
+            sb.append("text-decoration: line-through; ");
+            break;
+          case "SUPERSCRIPT":
+            sb.append("font-size: .7em; vertical-align: super; ");
+            break;
+          case "SUBSCRIPT":
+            sb.append("font-size: .7em; vertical-align: sub; ");
+            break;
+          case "BIG":
+            sb.append("font-size: 1.2em; ");
+            break;
+          case "SMALL":
+            sb.append("font-size: .9em; ");
+            break;
+          case "highlighted":
+            sb.append("background-color:#FFFFE0; ");
             break;
           default:
             // No nothing - we don't know what it means
@@ -192,11 +220,11 @@ public class StructuralHtml extends AbstractHtml {
     return sb.toString();
   }
 
-  private Element createElement(String tag) {
+  private Element createElement(final String tag) {
     return new Element(Tag.valueOf(tag), "");
   }
 
-  private Element createTag(Structure s) {
+  private Element createTag(final Structure s) {
     Element e;
 
     if (s == null) {
@@ -232,12 +260,28 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("ol");
     } else if (s instanceof Unordered) {
       e = createElement("ul");
+    } else if (s instanceof DefinitionList) {
+      e = createElement("dl");
+    } else if (s instanceof DefinitionItem) {
+      e = createElement("dt");
+    } else if (s instanceof DefinitionDescription) {
+      e = createElement("dd");
     } else if (s instanceof Page || s instanceof Slide || s instanceof Sheet) {
       e = createElement("article");
     } else if (s instanceof Paragraph) {
       e = createElement("p");
     } else if (s instanceof Section) {
       e = createElement("section");
+    } else if (s instanceof Summary) {
+      e = createElement("summary");
+    } else if (s instanceof Details) {
+      e = createElement("details");
+    } else if (s instanceof Aside) {
+      e = createElement("aside");
+    } else if (s instanceof Preformatted) {
+      e = createElement("pre");
+    } else if (s instanceof Quotation) {
+      e = createElement("q");
     } else if (s instanceof Sentence) {
       e = createElement("span");
     } else if (s instanceof Style) {
@@ -281,7 +325,7 @@ public class StructuralHtml extends AbstractHtml {
   }
 
   @Override
-  protected void writeBody(JCas jCas, Element body) {
+  protected void writeBody(final JCas jCas, final Element body) {
 
     final Node root = StructureHierarchy.build(jCas);
 

@@ -7,9 +7,16 @@ import org.jsoup.nodes.Element;
 
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
+
 import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.types.structure.Anchor;
+import uk.gov.dstl.baleen.types.structure.Aside;
+import uk.gov.dstl.baleen.types.structure.Caption;
+import uk.gov.dstl.baleen.types.structure.DefinitionDescription;
+import uk.gov.dstl.baleen.types.structure.DefinitionItem;
+import uk.gov.dstl.baleen.types.structure.DefinitionList;
+import uk.gov.dstl.baleen.types.structure.Details;
 import uk.gov.dstl.baleen.types.structure.Document;
 import uk.gov.dstl.baleen.types.structure.Figure;
 import uk.gov.dstl.baleen.types.structure.Footer;
@@ -19,12 +26,15 @@ import uk.gov.dstl.baleen.types.structure.Link;
 import uk.gov.dstl.baleen.types.structure.ListItem;
 import uk.gov.dstl.baleen.types.structure.Ordered;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
+import uk.gov.dstl.baleen.types.structure.Preformatted;
+import uk.gov.dstl.baleen.types.structure.Quotation;
 import uk.gov.dstl.baleen.types.structure.Section;
 import uk.gov.dstl.baleen.types.structure.Sheet;
 import uk.gov.dstl.baleen.types.structure.Slide;
 import uk.gov.dstl.baleen.types.structure.SlideShow;
 import uk.gov.dstl.baleen.types.structure.SpreadSheet;
 import uk.gov.dstl.baleen.types.structure.Style;
+import uk.gov.dstl.baleen.types.structure.Summary;
 import uk.gov.dstl.baleen.types.structure.Table;
 import uk.gov.dstl.baleen.types.structure.TableBody;
 import uk.gov.dstl.baleen.types.structure.TableCell;
@@ -79,6 +89,17 @@ public class StructuralAnnotations implements ContentMapper {
         collector.add(new ListItem(jCas));
         break;
 
+      case "dl":
+        collector.add(new DefinitionList(jCas));
+        break;
+      case "dt":
+        collector.add(new DefinitionItem(jCas));
+        break;
+      case "dd":
+        // TODO: It might make sense to refer the dt wihtin the type system (setTerm())
+        collector.add(new DefinitionDescription(jCas));
+        break;
+
       // Table
 
       case "table":
@@ -122,13 +143,28 @@ public class StructuralAnnotations implements ContentMapper {
 
       // Images
 
+      case "audio":
+      case "video":
+      case "embed":
+      case "object":
       case "img":
+      case "map":
+      case "area":
+      case "canvas":
+      case "figure":
         collector.add(new Figure(jCas));
         break;
 
+      case "caption":
+      case "figcaption":
+        collector.add(new Caption(jCas));
+        break;
 
       // Styling
 
+      case "ins":
+        // fall through - HTML W3 http://www.w3schools.com/tags/tag_ins.asp says that ins would
+        // normally be underlined
       case "u":
         createStyle(jCas, collector, "underline");
         break;
@@ -143,10 +179,45 @@ public class StructuralAnnotations implements ContentMapper {
         createStyle(jCas, collector, "bold");
         break;
 
+      case "strike":
+      case "s":
+      case "del":
+        createStyle(jCas, collector, "strike");
+        break;
+
+      case "sup":
+        createStyle(jCas, collector, "superscript");
+        break;
+
+      case "sub":
+        createStyle(jCas, collector, "subscript");
+        break;
+
+      case "small":
+        createStyle(jCas, collector, "small");
+        break;
+
+      case "big":
+        // Not HTML5 so not likely to be seen
+        createStyle(jCas, collector, "big");
+        break;
+
+      case "mark":
+        createStyle(jCas, collector, "highlighted");
+        break;
+
       // Purely structural
 
       case "aside":
+        collector.add(new Aside(jCas));
+        break;
       case "details":
+        collector.add(new Details(jCas));
+        break;
+      case "summary":
+        collector.add(new Summary(jCas));
+        break;
+      case "section":
       case "div":
         // Div means very little nothing... but we wrap it in a section
         collector.add(new Section(jCas));
@@ -169,20 +240,67 @@ public class StructuralAnnotations implements ContentMapper {
         collector.add(new Footer(jCas));
         break;
 
-      // TOOD: Leftovers
-
+      case "kbd":
+      case "samp":
+      case "code":
       case "pre":
+        collector.add(new Preformatted(jCas));
+        break;
+
       case "blockquote":
-      case "dl":
+        collector.add(new Section(jCas));
+        // Fall through
       case "q":
-      case "dt":
-      case "dd":
+        collector.add(new Quotation(jCas));
+        break;
+
+      // Potential semantic types, but left to other mappers to actually annotate
+      case "time":
+      case "meter":
+      case "dfn":
       case "address":
-      case "ins":
-      case "del":
-        // TODO: Add schema types for (some of) these?
+      case "abbr":
+      case "cite":
         return;
 
+      // Misc ignored - head, details of embedded, ui specific, forms
+      case "html":
+      case "head":
+      case "title":
+      case "meta":
+      case "base":
+      case "style":
+      case "script":
+      case "noscript":
+      case "link":
+      case "hr":
+      case "dialog":
+      case "nav":
+      case "menu":
+      case "menuitem":
+      case "param":
+      case "track":
+      case "source":
+      case "iframe":
+      case "form":
+      case "input":
+      case "textarea":
+      case "button":
+      case "select":
+      case "optgroup":
+      case "option":
+      case "label":
+      case "fieldset":
+      case "legend":
+      case "datalist":
+      case "keygen":
+      case "output":
+      case "ruby":
+      case "rt":
+      case "rp":
+      case "progress":
+      case "bdo":
+      case "bdi":
       default:
         return;
     }
