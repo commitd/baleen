@@ -6,6 +6,7 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.StringArray;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
 
 import com.google.common.base.Strings;
 
@@ -93,6 +94,9 @@ public class StructuralHtml extends AbstractHtml {
    *
    * There is little reason to do this unless debugging the structural processing of Baleen, as it
    * unnecessarily complicates the documents.
+   * 
+   * NOTE: This does not apply to empty table cells (th, td) because they are needed to preserve the
+   * table structure.
    *
    * @baleen.config false
    */
@@ -100,7 +104,7 @@ public class StructuralHtml extends AbstractHtml {
   @ConfigurationParameter(name = PARAM_OUTPUT_EMPTY_TAGS, defaultValue = "false")
   private Boolean outputEmptyTags;
 
-  public boolean walk(final Element parentElement, final Node n) {
+  public void walk(final Element parentElement, final Node n) {
     final Structure structure = n.getElement();
 
     // TODO: Here we always create a new element, but in reality we could use parentElement if the
@@ -108,40 +112,26 @@ public class StructuralHtml extends AbstractHtml {
     // That might clean up the HTML
     final Element e = createTag(structure);
 
-    boolean added = false;
-
     if (structure == null || structure.getCoveredText() == null) {
       // Descend into the children directly
       for (final Node child : n.getChildren()) {
-        final boolean addedChild = walk(e, child);
-        if (addedChild) {
-          added = true;
-        }
+        walk(e, child);
       }
     } else {
 
       final String text = structure.getCoveredText();
       int offset = 0;
       for (final Node child : n.getChildren()) {
-        final boolean addedText = appendText(e, text, offset, child.getBegin() - n.getBegin());
-        final boolean addedChild = walk(e, child);
+        appendText(e, text, offset, child.getBegin() - n.getBegin());
+        walk(e, child);
         offset = child.getEnd() - n.getBegin();
 
-        if (addedChild || addedText) {
-          added = true;
-        }
       }
-      final boolean addedText = appendText(e, text, offset, n.getEnd() - n.getBegin());
-      if (addedText) {
-        added = true;
-      }
+      appendText(e, text, offset, n.getEnd() - n.getBegin());
+
     }
 
-    if (added || outputEmptyTags) {
-      parentElement.appendChild(e);
-    }
-
-    return added;
+    parentElement.appendChild(e);
   }
 
   private boolean appendText(final Element e, final String text, final int start, final int end) {
@@ -208,7 +198,7 @@ public class StructuralHtml extends AbstractHtml {
             sb.append("font-size: .9em; ");
             break;
           case "highlighted":
-            sb.append("background-color:#FFFFE0; ");
+            sb.append("background-color:#ffffe0; ");
             break;
           default:
             // No nothing - we don't know what it means
@@ -298,6 +288,11 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("tbody");
     } else if (s instanceof TableCell) {
       e = createElement("td");
+      final TableCell cell = (TableCell) s;
+      e.attr("data-row", Integer.toString(cell.getRow()));
+      e.attr("data-col", Integer.toString(cell.getColumn()));
+      e.attr("rowspan", Integer.toString(cell.getRowSpan()));
+      e.attr("colspan", Integer.toString(cell.getColumnSpan()));
     } else if (s instanceof TableHeader) {
       e = createElement("thead");
     } else if (s instanceof TableFooter) {
@@ -332,15 +327,26 @@ public class StructuralHtml extends AbstractHtml {
     walk(body, root);
 
     // We need to create the proper li tags under ol and ul
-
     body.select("ul > p").wrap("<li></li>");
     body.select("ol > p").wrap("<li></li>");
 
+    // Correct table cells from td to th in header
+    body.select("thead td").tagName("th");
+
+    // Add &nbsp; to any empty td or th's
+    body.select("td:empty,th:empty").html("&nbsp");
+
+    if (outputEmptyTags) {
+      Elements e = body.select("*:empty");
+      while (!e.isEmpty()) {
+        e.remove();
+        e = body.select("*:empty");
+      }
+    }
 
     // TODO: In accordance with HTML spec
     // - Captions for Table should be moved inside the table
     // - Captions for Figure should be moved inside the figure
-    // Best way to achieve some to fthese would be to walk the root node before creating HTML?
 
   }
 
