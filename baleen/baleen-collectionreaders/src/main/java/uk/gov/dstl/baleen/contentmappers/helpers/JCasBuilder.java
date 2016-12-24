@@ -7,6 +7,8 @@ import java.util.List;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 
+import uk.gov.dstl.baleen.types.structure.Structure;
+
 public class JCasBuilder {
   private final List<Annotation> annotations = new LinkedList<>();
   private final StringBuilder documentText = new StringBuilder();
@@ -34,6 +36,9 @@ public class JCasBuilder {
     collection.forEach(a -> {
       a.setBegin(begin);
       a.setEnd(end);
+      if (a instanceof Structure) {
+        ((Structure) a).setDepth(depth);
+      }
       annotations.add(a);
     });
   }

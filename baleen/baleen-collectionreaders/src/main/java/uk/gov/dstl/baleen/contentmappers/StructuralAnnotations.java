@@ -25,6 +25,7 @@ import uk.gov.dstl.baleen.types.structure.Heading;
 import uk.gov.dstl.baleen.types.structure.Link;
 import uk.gov.dstl.baleen.types.structure.ListItem;
 import uk.gov.dstl.baleen.types.structure.Ordered;
+import uk.gov.dstl.baleen.types.structure.Page;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.types.structure.Preformatted;
 import uk.gov.dstl.baleen.types.structure.Quotation;
@@ -341,7 +342,7 @@ public class StructuralAnnotations implements ContentMapper {
   private void createAnchor(final JCas jCas, final AnnotationCollector collector,
       final Element element) {
     final String href = element.absUrl("href");
-    if (href != null) {
+    if (!Strings.isNullOrEmpty(href)) {
       final Link l = new Link(jCas);
       l.setTarget(href);
       collector.add(l);
@@ -360,6 +361,9 @@ public class StructuralAnnotations implements ContentMapper {
         break;
       case "slide":
         collector.add(new Slide(jCas));
+        break;
+      case "page":
+        collector.add(new Page(jCas));
         break;
     }
   }

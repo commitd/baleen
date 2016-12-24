@@ -15,7 +15,7 @@ public class RemoveEmptyText implements ContentManipulator {
   }
 
   private boolean removeEmpty(final Document document) {
-    final Elements emptyNodes = document.select(":empty");
+    final Elements emptyNodes = document.select(":empty").not("body");
     if (emptyNodes.isEmpty()) {
       return true;
     }

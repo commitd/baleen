@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
 
@@ -32,9 +33,9 @@ public class NewLineToNewParagraph implements ContentManipulator {
   private List<Element> collectRuns(final Document document, final Element e) {
     final List<Element> runs = new LinkedList<>();
     Element run = null;
-    for (final Element c : e.children()) {
+    for (final Node c : e.childNodesCopy()) {
 
-      if (c.tagName().equalsIgnoreCase("br")) {
+      if (c instanceof Element && ((Element) c).tagName().equalsIgnoreCase("br")) {
         // If we hit a br then add the old run and start a new one
         if (run != null) {
           runs.add(run);

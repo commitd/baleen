@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 import com.google.common.collect.Multimap;
 import com.tenode.baleen.extraction.Extraction;
+import com.tenode.baleen.extraction.exception.ExtractionException;
 import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
@@ -132,7 +133,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       throws IOException {
 
     try {
-      final Extraction extraction = formatExtractor.parse(stream, source);
+      final Extraction extraction = extract(stream, source);
       final Multimap<String, String> metadata = extraction.getMetadata();
 
       final Document document = Jsoup.parse(extraction.getHtml());
@@ -157,6 +158,22 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       getMonitor().warn("Couldn't extract structure from document '{}'", source, e);
       setCorrupt(jCas);
     }
+  }
+
+  /**
+   * Perform actual extraction.
+   * 
+   * THis is a separate function to allow it to be overridden during testing (or by other
+   * implementations).
+   *
+   * @param stream the stream
+   * @param source the source
+   * @return the extraction
+   * @throws ExtractionException the extraction exception
+   */
+  protected Extraction extract(final InputStream stream, final String source)
+      throws ExtractionException {
+    return formatExtractor.parse(stream, source);
   }
 
   private void setCorrupt(final JCas jCas) {
