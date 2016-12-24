@@ -8,6 +8,10 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 
+/**
+ * Helper functions for dealing with HTML markup, in content manipulators.
+ *
+ */
 public final class MarkupUtils {
   private static final String BALEEN_ATTRIBUTE_PREFIX = "data-baleen-";
   private static final String ANNOTATION_TYPE_ATTRIBUTE = "types";
@@ -22,14 +26,34 @@ public final class MarkupUtils {
     // Singleton
   }
 
+  /**
+   * Inform the DataAttributeMapper to create a Baleen type for this element.
+   * 
+   * @param e the element
+   * @param type the baleen type.
+   */
   public static void additionallyAnnotateAsType(final Element e, final String type) {
     addAttribute(e, ANNOTATION_TYPE_ATTRIBUTE, type);
   }
 
+  /**
+   * Set an attribute on an element (in the data-baleen namespace)
+   * 
+   * @param e
+   * @param key
+   * @param value
+   */
   public static void setAttribute(final Element e, final String key, final String value) {
     e.attr(attributeKey(key), value);
   }
 
+  /**
+   * Add an attribute value to an existing attribute key (or set if that key does not exist).
+   * 
+   * @param e
+   * @param key
+   * @param value
+   */
   public static void addAttribute(final Element e, final String key, final String value) {
     final String fullKey = attributeKey(key);
     String current = e.attr(fullKey);
@@ -49,11 +73,25 @@ public final class MarkupUtils {
     return ATTRIBUTE_VALUE_JOINER.join(values);
   }
 
+  /**
+   * Get an attribute value
+   * 
+   * @param e
+   * @param key
+   * @return attribute values (will be multiple as a single string)
+   */
   public static String getAttribute(final Element e, final String key) {
     final String fullKey = attributeKey(key);
     return e.attr(fullKey);
   }
 
+  /**
+   * Get attribute values as a list.
+   * 
+   * @param e
+   * @param key
+   * @return
+   */
   public static List<String> getAttributes(final Element e, final String key) {
     return ATTRIBUTE_VALUE_SPLITTER.splitToList(getAttribute(e, key));
   }

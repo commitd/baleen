@@ -30,9 +30,60 @@ import uk.gov.dstl.baleen.contentmappers.StructuralAnnotations;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
+import uk.gov.dstl.baleen.types.structure.Structure;
 
 /**
- * Extracts metadata, structure and text content from the supplied input.
+ * Extracts metadata, structural annotations and text content from the supplied input.
+ * 
+ * Structural annotations are as defined under the Baleen type system with top level
+ * {@link Structure} class.
+ * 
+ * Structural extraction allows better understanding of the document by downstream annotators which
+ * can use the information to segregate the document, rather than treating it as a whole. For
+ * example consider regex for each cell in a table which is different to considering the flat text
+ * version of the entire table.
+ * 
+ * The process of structural content extraction is as follows:
+ * 
+ * <ul>
+ * <li>The document is parsed and converted to a rich HTML representation. This is a general 'per
+ * document format' conversion.
+ * <li>A set of content manipulators act on the HTML which are configured for this Balene pipeline.
+ * These can do anything (add new nodes, remove or amend text, etc). They might be used to clean up
+ * the HTML or to remove elements which aren't required by the pipeline.
+ * <li>A set of content mappers convert the the HTML nodes into annotations. They may create
+ * structural elements, or other types such as metadata or entities. The set of content mappers is
+ * configuratble per pipelines.
+ * <li>The text of the document is extracted. NOte that the content mappers can not change the tex
+ * output, if you wish to change the text output then use a content manipulator.
+ * </ul>
+ * 
+ * Note that content mapper and content manipulators can work in isolation or in coordination. By
+ * coordination we mean that a content manipulator might find the most likely title in a document,
+ * and mark it via introduction of a new HTML span element with a class title. A special content
+ * mapper could then look for this span and add the title a metadata.
+ * 
+ * To configure content mappers and manipulators, and to use the structural content extractor,
+ * define your collection reader as follows.
+ * 
+ * <pre>
+ * collectionreader:
+ *   class: FolderReader
+ *   contentExtractor: StructureContentExtractor
+ *   contentManipulators:
+ *   - RemoveEmptyText
+ *   contentMappers:
+ *   - SemanticHtml
+ *   folders:
+ *   - ./input
+ * </pre>
+ * 
+ * If you do not include contentManipulators then none will be used. If you omit the contentMappers
+ * then the default StructuralAnnotations mapper will be used.
+ * 
+ * Note that structured extraction will only work (or be beneficial) on certain document types such
+ * as DOC, DOCX, PPT/X, XLS/X, PDF and HTML.
+ * 
  */
 public class StructureContentExtractor extends AbstractContentExtractor {
 
@@ -61,6 +112,13 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
   private TikaFormatExtractor formatExtractor;
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor#doInitialize(org.apache.
+   * uima.UimaContext, java.util.Map)
+   */
   @Override
   public void doInitialize(final UimaContext context, final Map<String, Object> params)
       throws ResourceInitializationException {
@@ -102,6 +160,17 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
   }
 
+  /**
+   * Creates the content processor (ie a mapper or a manipulator).
+   *
+   * @param <T> the generic type
+   * @param clazz the clazz (of T)
+   * @param defaultPackage the default package to look in
+   * @param context the context
+   * @param classes the classes
+   * @return the list
+   * @throws InvalidParameterException the invalid parameter exception
+   */
   // Note this is checked by clazz isInstance
   @SuppressWarnings("unchecked")
   private <T> List<T> createContentProcessor(final Class<T> clazz, final String defaultPackage,
@@ -128,6 +197,13 @@ public class StructureContentExtractor extends AbstractContentExtractor {
   }
 
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor#doProcessStream(java.io.
+   * InputStream, java.lang.String, org.apache.uima.jcas.JCas)
+   */
   @Override
   public void doProcessStream(final InputStream stream, final String source, final JCas jCas)
       throws IOException {
@@ -176,6 +252,11 @@ public class StructureContentExtractor extends AbstractContentExtractor {
     return formatExtractor.parse(stream, source);
   }
 
+  /**
+   * Mark a document as corrupt.
+   *
+   * @param jCas the jCas
+   */
   private void setCorrupt(final JCas jCas) {
     if (Strings.isNullOrEmpty(jCas.getDocumentText())) {
       jCas.setDocumentText(CORRUPT_FILE_TEXT);

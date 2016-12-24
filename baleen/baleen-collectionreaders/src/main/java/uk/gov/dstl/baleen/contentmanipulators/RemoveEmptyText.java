@@ -5,6 +5,13 @@ import org.jsoup.select.Elements;
 
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
 
+/**
+ * Recursives remove empty HTML tags to clean the document.
+ * 
+ * This will not remove the body tag, but everything either will be remove it is empty (or only
+ * holds empty elements).
+ *
+ */
 public class RemoveEmptyText implements ContentManipulator {
 
   @Override

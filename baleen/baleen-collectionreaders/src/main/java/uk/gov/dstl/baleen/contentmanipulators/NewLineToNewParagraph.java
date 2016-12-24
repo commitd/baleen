@@ -12,6 +12,16 @@ import org.jsoup.nodes.Node;
 
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
 
+/**
+ * Converts BR tags into new paragraphs.
+ * 
+ * If BR tags exist in a paragraph or other tag we probably want Baleen to process these are as
+ * separate block of text. This manipulator uses BR tags to introduce new paragraphs.
+ * 
+ * If the BR tag occurs within a paragraph, then the paragraph is split into multiple sub
+ * paragraphs. If the br occurs elsewhere (eg in a td or li) then the a set of paragraphs are
+ * introduced into the element.
+ */
 public class NewLineToNewParagraph implements ContentManipulator {
 
   @Override
@@ -30,6 +40,13 @@ public class NewLineToNewParagraph implements ContentManipulator {
     });
   }
 
+  /**
+   * Collect tags which are on the same line (unbroken by BRs)
+   *
+   * @param document the document
+   * @param e the e
+   * @return the list
+   */
   private List<Element> collectRuns(final Document document, final Element e) {
     final List<Element> runs = new LinkedList<>();
     Element run = null;
@@ -58,6 +75,12 @@ public class NewLineToNewParagraph implements ContentManipulator {
     return runs;
   }
 
+  /**
+   * Adds each new line (a run) to the documnet as a paragraph.
+   *
+   * @param e the element at which to add the runs.
+   * @param runs the runs
+   */
   private void addRunsToDom(final Element e, final List<Element> runs) {
     // Add these new spans into the DOM
     if (e.tagName().equalsIgnoreCase("p")) {

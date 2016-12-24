@@ -11,6 +11,12 @@ import uk.gov.dstl.baleen.types.common.Quantity;
 import uk.gov.dstl.baleen.types.semantic.Location;
 import uk.gov.dstl.baleen.types.semantic.Temporal;
 
+/**
+ * Use tags in HTML5 which have semantic meaning to create Baleen entity types.
+ *
+ * The tags are time (to Temporal), meter (to Quantity), dfn (to Buzzword), address (to Location),
+ * abbr(to Buzzword) and cite (to DocumentReference)
+ */
 public class SemanticHtml implements ContentMapper {
 
   @Override

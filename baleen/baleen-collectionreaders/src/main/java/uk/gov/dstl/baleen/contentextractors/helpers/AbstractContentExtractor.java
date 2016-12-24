@@ -16,12 +16,18 @@ import uk.gov.dstl.baleen.uima.BaleenContentExtractor;
 /**
  * Provides a basis for content extractors, implementing common functionality.
  * 
- * Sets the source and timestamp of the document.
+ * Sets the source and timestamp of the document, and the extraction class as metadata.
  * 
  */
 public abstract class AbstractContentExtractor extends BaleenContentExtractor {
   private static final String METADATA_KEY_CONTENT_EXTRACTOR = "baleen:content-extractor";
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see uk.gov.dstl.baleen.uima.BaleenContentExtractor#doProcessStream(java.io.InputStream,
+   * java.lang.String, org.apache.uima.jcas.JCas)
+   */
   @Override
   public void doProcessStream(final InputStream stream, final String source, final JCas jCas)
       throws IOException {
@@ -33,12 +39,23 @@ public abstract class AbstractContentExtractor extends BaleenContentExtractor {
     addMetadata(jCas, METADATA_KEY_CONTENT_EXTRACTOR, this.getClass().getName());
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see uk.gov.dstl.baleen.uima.BaleenContentExtractor#doInitialize(org.apache.uima.UimaContext,
+   * java.util.Map)
+   */
   @Override
   public void doInitialize(final UimaContext context, final Map<String, Object> params)
       throws ResourceInitializationException {
     ConfigurationParameterInitializer.initialize(this, params);
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see uk.gov.dstl.baleen.uima.BaleenContentExtractor#doDestroy()
+   */
   @Override
   public void doDestroy() {
     // Do nothing

@@ -8,6 +8,18 @@ import org.jsoup.nodes.Document;
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
 import uk.gov.dstl.baleen.contentmanipulators.helpers.MarkupUtils;
 
+/**
+ * Creates HTML nodes which capture the paragraph classification markings.
+ * 
+ * If this manipulator sees (CLASSIFICATION) The rest of the paragraph. Then it removes the
+ * CLASSIFICATION prefix and records the classification in the paragraph tag under data- tags. This
+ * cleans up the text and allows a classification annotation to be added later.
+ * 
+ * This is a basic example, and may not work in all cases. It could be more robust.
+ * 
+ * NOTE this will only output classification tags if used in conjunction with the
+ * DataAttributeMapper.
+ */
 public class ParagraphMarkedClassification implements ContentManipulator {
 
   private static final String CLASSFICATION_GROUP = "classfication";

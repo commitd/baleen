@@ -15,6 +15,13 @@ import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.contentmappers.helpers.JCasBuilder;
 
+/**
+ * Converts the HTML Document to a JCas document.
+ * 
+ * This involves extraction of text from the HTML and then creation of annotations.
+ * 
+ * The creation fo annotations is controlled by the {@link ContentMapper}s.
+ */
 public class DocumentToJCasConverter {
 
   private final List<ContentMapper> mappers;
@@ -23,6 +30,12 @@ public class DocumentToJCasConverter {
     this.mappers = mappers;
   }
 
+  /**
+   * Convert the document into the jCas.
+   *
+   * @param document the document
+   * @param jCas the j cas
+   */
   public void apply(final Document document, final JCas jCas) {
 
     final JCasBuilder builder = new JCasBuilder(jCas);
@@ -32,6 +45,13 @@ public class DocumentToJCasConverter {
     builder.build();
   }
 
+  /**
+   * Walk the HTML document node by node, creating annotations and text.
+   *
+   * @param builder the builder
+   * @param root the root
+   * @param depth the depth
+   */
   private void walk(final JCasBuilder builder, final Node root, final int depth) {
     if (root == null) {
       return;
@@ -65,6 +85,12 @@ public class DocumentToJCasConverter {
     }
   }
 
+  /**
+   * Map a node to text.
+   *
+   * @param node the node
+   * @return the string
+   */
   private String mapToText(final Node node) {
     if (node instanceof TextNode) {
       final TextNode t = (TextNode) node;
@@ -74,6 +100,13 @@ public class DocumentToJCasConverter {
     }
   }
 
+  /**
+   * Map a HTML element to annotations.
+   *
+   * @param jCas the j cas
+   * @param element the element
+   * @return the list
+   */
   private List<Annotation> mapElementToAnnotations(final JCas jCas,
       final Element element) {
     final AnnotationCollector collector = new AnnotationCollector();

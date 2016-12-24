@@ -45,6 +45,18 @@ import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.Unordered;
 import uk.gov.dstl.baleen.uima.utils.UimaTypesUtils;
 
+/**
+ * The default content mapper which convert generic HTML5 elements to Baleen Structural annotations.
+ * 
+ * Since the Baleen structural types are modelled around HTML5 elements this mapper is mostly a
+ * simple passthrough, dealing with some special casess (eg HTML a with and withouth a href has
+ * different meanings).
+ * 
+ * Due to the number of HTML tags refer to the source code to see the exact mapping.
+ * 
+ * NOTE: Not all formats will produce rich enough HTML to use all the mappings defined here.
+ *
+ */
 public class StructuralAnnotations implements ContentMapper {
 
   @Override
