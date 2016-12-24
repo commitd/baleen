@@ -36,7 +36,8 @@ public class ParagraphMarkedClassification implements ContentManipulator {
 
         final String classification = matcher.group(CLASSFICATION_GROUP);
 
-        MarkupUtils.additionallyAnnotateAsType(p, "Classification");
+        MarkupUtils.additionallyAnnotateAsType(p,
+            "uk.gov.dstl.baleen.types.metadata.ProtectiveMarking");
         // TODO: We override this for simplicitiy but we could select the best classification etc
         // (or output eveyrthing later and let a cleander decide)
         MarkupUtils.setAttribute(p, "classification", classification.trim());

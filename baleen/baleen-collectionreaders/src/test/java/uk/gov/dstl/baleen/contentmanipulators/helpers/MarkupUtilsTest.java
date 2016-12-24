@@ -1,6 +1,7 @@
 package uk.gov.dstl.baleen.contentmanipulators.helpers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
@@ -14,6 +15,8 @@ public class MarkupUtilsTest {
     MarkupUtils.additionallyAnnotateAsType(e, "testtype");
 
     assertEquals(MarkupUtils.getAttribute(e, "types"), "testtype");
+
+    assertTrue(MarkupUtils.getTypes(e).contains("testtype"));
 
   }
 

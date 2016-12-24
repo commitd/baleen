@@ -1,6 +1,9 @@
 package uk.gov.dstl.baleen.contentmanipulators.helpers;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jsoup.nodes.Element;
 
@@ -94,5 +97,14 @@ public final class MarkupUtils {
    */
   public static List<String> getAttributes(final Element e, final String key) {
     return ATTRIBUTE_VALUE_SPLITTER.splitToList(getAttribute(e, key));
+  }
+
+  public static Set<String> getTypes(final Element element) {
+    final List<String> list = getAttributes(element, ANNOTATION_TYPE_ATTRIBUTE);
+    if (list.isEmpty()) {
+      return Collections.emptySet();
+    } else {
+      return new HashSet<>(list);
+    }
   }
 }
