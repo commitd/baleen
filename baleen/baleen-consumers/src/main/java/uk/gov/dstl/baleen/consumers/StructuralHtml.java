@@ -10,6 +10,7 @@ import org.jsoup.select.Elements;
 
 import com.google.common.base.Strings;
 
+import uk.gov.dstl.baleen.consumers.helpers.AbstractHtml;
 import uk.gov.dstl.baleen.consumers.utils.StructureHierarchy;
 import uk.gov.dstl.baleen.consumers.utils.StructureHierarchy.Node;
 import uk.gov.dstl.baleen.types.structure.Anchor;
@@ -52,6 +53,60 @@ import uk.gov.dstl.baleen.types.structure.Unordered;
 
 /**
  * Creates a HTML5 version of the structured annotations of a document.
+ * 
+ * The tag structure replicates to the extent possible the input from the Format Extractor library,
+ * used by StructureContentExtractor. That is for example 'aside' to 'footnote' to 'aside'. That
+ * said the purpose is not to reproduce a faithful original, but instead to produce something which
+ * visibly and structurally looks like high quality HTML representating a document.
+ * 
+ * Thus annotators adds class information in the form of 'baleen-structure-[type]' to allow the
+ * originating Baleen type to be identified. Optionally the the outputData parameter you can dat
+ * 
+ * Naturally the HTML is best viewed with CSS, an an example CSS style sheet:
+ * 
+ * <pre>
+ * html {
+ *   background-color: #eee;
+ * }
+ * 
+ * body {
+ *  max-width: 1200px;
+ *  margin: 5px auto;
+ *   padding: 25px;
+ * }
+ * 
+ * article {
+ *   padding: 25px;
+ *   background-color: #fff;
+ *   border: 1px solid black;
+ *   overflow: auto;
+ *   margin-bottom: 25px;
+ * }
+ * 
+ * section, div {
+ *   margin: 5px;
+ *   padding: 25px;
+ *   border: 1px dashed #eee;
+ *   background-color: #fff;
+ * }
+ * 
+ * table {
+ *     border-collapse: collapse;
+ * }
+ * 
+ * table, th, td {
+ *     border: 1px solid #666;
+ * }
+ * 
+ * th {
+ *   font-weight: bold;
+ * }
+ * 
+ * h1,h2,h3,h4,h5,h6 {
+ *   margin-left: -20px;
+ * }
+ * 
+ * </pre>
  *
  * This will NOT output entity, relation or other semantic annotations.
  *
@@ -104,7 +159,13 @@ public class StructuralHtml extends AbstractHtml {
   @ConfigurationParameter(name = PARAM_OUTPUT_EMPTY_TAGS, defaultValue = "false")
   private Boolean outputEmptyTags;
 
-  public void walk(final Element parentElement, final Node n) {
+  /**
+   * Walk through the nodes in order to create the complete HTML structure.
+   *
+   * @param parentElement the parent element
+   * @param n the n
+   */
+  private void walk(final Element parentElement, final Node n) {
     final Structure structure = n.getElement();
 
     // TODO: Here we always create a new element, but in reality we could use parentElement if the
@@ -134,6 +195,15 @@ public class StructuralHtml extends AbstractHtml {
     parentElement.appendChild(e);
   }
 
+  /**
+   * Add text to element
+   *
+   * @param e the element
+   * @param text the text buffer containing the substring
+   * @param start the start offset within the text
+   * @param end the end offset within the text
+   * @return true, if successful
+   */
   private boolean appendText(final Element e, final String text, final int start, final int end) {
     if (start < end && end <= text.length()) {
       e.appendText(text.substring(start, end));
@@ -143,6 +213,12 @@ public class StructuralHtml extends AbstractHtml {
     }
   }
 
+  /**
+   * Create a CSS style string for the style annotatin
+   *
+   * @param s the style
+   * @return the string
+   */
   private String buildCssStyle(final Style s) {
     final String color = s.getColor();
     final StringArray decorations = s.getDecoration();
@@ -210,10 +286,22 @@ public class StructuralHtml extends AbstractHtml {
     return sb.toString();
   }
 
+  /**
+   * Creates the element of the given tag name.
+   *
+   * @param tag the tag
+   * @return the element
+   */
   private Element createElement(final String tag) {
     return new Element(Tag.valueOf(tag), "");
   }
 
+  /**
+   * Creates the tag from the structure annotation.
+   *
+   * @param s the structure annotation
+   * @return the element
+   */
   private Element createTag(final Structure s) {
     Element e;
 
@@ -223,7 +311,7 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("a");
       e.attr("id", s.getExternalId());
     } else if (s instanceof Caption) {
-      e = createElement("caption");
+      e = createElement("figcaption");
     } else if (s instanceof Document || s instanceof SpreadSheet || s instanceof SlideShow
         || s instanceof TextDocument) {
       e = createElement("main");
@@ -243,7 +331,10 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("h" + level);
     } else if (s instanceof Link) {
       e = createElement("a");
-      e.attr("href", ((Link) s).getTarget());
+      final String target = ((Link) s).getTarget();
+      if (!Strings.isNullOrEmpty(target)) {
+        e.attr("href", target);
+      }
     } else if (s instanceof ListItem) {
       e = createElement("li");
     } else if (s instanceof Ordered) {
@@ -289,10 +380,10 @@ public class StructuralHtml extends AbstractHtml {
     } else if (s instanceof TableCell) {
       e = createElement("td");
       final TableCell cell = (TableCell) s;
-      e.attr("data-row", Integer.toString(cell.getRow()));
-      e.attr("data-col", Integer.toString(cell.getColumn()));
-      e.attr("rowspan", Integer.toString(cell.getRowSpan()));
-      e.attr("colspan", Integer.toString(cell.getColumnSpan()));
+      addRowOrCol(e, "data-row", cell.getRow());
+      addRowOrCol(e, "data-col", cell.getColumn());
+      addRowOrColSpan(e, "rowspan", cell.getRowSpan());
+      addRowOrColSpan(e, "colspan", cell.getColumnSpan());
     } else if (s instanceof TableHeader) {
       e = createElement("thead");
     } else if (s instanceof TableFooter) {
@@ -319,6 +410,18 @@ public class StructuralHtml extends AbstractHtml {
     return e;
   }
 
+  private void addRowOrColSpan(final Element e, final String key, final int span) {
+    if (span > 0) {
+      e.attr(key, Integer.toString(span));
+    }
+  }
+
+  private void addRowOrCol(final Element e, final String key, final int v) {
+    if (v > 0) {
+      e.attr(key, Integer.toString(v));
+    }
+  }
+
   @Override
   protected void writeBody(final JCas jCas, final Element body) {
 
@@ -336,11 +439,11 @@ public class StructuralHtml extends AbstractHtml {
     // Add &nbsp; to any empty td or th's
     body.select("td:empty,th:empty").html("&nbsp");
 
-    if (outputEmptyTags) {
-      Elements e = body.select("*:empty");
+    if (!outputEmptyTags) {
+      Elements e = body.select("*:empty").not("body");
       while (!e.isEmpty()) {
         e.remove();
-        e = body.select("*:empty");
+        e = body.select("*:empty").not("body");
       }
     }
 

@@ -1,5 +1,5 @@
 // Dstl (c) Crown Copyright 2015
-package uk.gov.dstl.baleen.consumers;
+package uk.gov.dstl.baleen.consumers.helpers;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,6 +18,7 @@ import org.jsoup.nodes.Element;
 
 import com.google.common.base.Strings;
 
+import uk.gov.dstl.baleen.consumers.Html5;
 import uk.gov.dstl.baleen.consumers.utils.ConsumerUtils;
 import uk.gov.dstl.baleen.exceptions.BaleenException;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
@@ -30,6 +31,7 @@ import uk.gov.dstl.baleen.uima.utils.UimaTypesUtils;
  *
  * Relationships are not currently supported.
  *
+ * This is largely based off the original {@link Html5} consumer.
  *
  * @baleen.javadoc
  */
@@ -80,8 +82,13 @@ public abstract class AbstractHtml extends BaleenConsumer {
   @ConfigurationParameter(name = PARAM_CSS, defaultValue = "")
   private String css;
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see uk.gov.dstl.baleen.uima.BaleenAnnotator#doInitialize(org.apache.uima.UimaContext)
+   */
   @Override
-  public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+  public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
     if (Strings.isNullOrEmpty(outputFolderString)) {
       outputFolderString = System.getProperty("user.dir");
     }
@@ -100,7 +107,15 @@ public abstract class AbstractHtml extends BaleenConsumer {
     }
   }
 
-  private Element appendMeta(Element el, String name, String content) {
+  /**
+   * Append meta tag to an element (typically a head).
+   *
+   * @param el the el
+   * @param name the meta name
+   * @param content the meta content
+   * @return the meta element
+   */
+  private Element appendMeta(final Element el, final String name, final String content) {
     if (Strings.isNullOrEmpty(name) || Strings.isNullOrEmpty(content)) {
       return null;
     }
@@ -113,7 +128,13 @@ public abstract class AbstractHtml extends BaleenConsumer {
   }
 
 
-  private File getFileName(JCas jCas) {
+  /**
+   * Gets the file name for the jCas (from either contenthash or the original source).
+   *
+   * @param jCas the j cas
+   * @return the file name
+   */
+  private File getFileName(final JCas jCas) {
     File f = null;
     final DocumentAnnotation da = getDocumentAnnotation(jCas);
     final String source = da.getSourceUri();
@@ -151,8 +172,13 @@ public abstract class AbstractHtml extends BaleenConsumer {
   }
 
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see uk.gov.dstl.baleen.uima.BaleenAnnotator#doProcess(org.apache.uima.jcas.JCas)
+   */
   @Override
-  protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
+  protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
     final File f = getFileName(jCas);
     final DocumentAnnotation da = getDocumentAnnotation(jCas);
 
@@ -202,5 +228,11 @@ public abstract class AbstractHtml extends BaleenConsumer {
     }
   }
 
+  /**
+   * Called to actually write into the body element, from the jCas.
+   *
+   * @param jCas the jcas
+   * @param body the body
+   */
   protected abstract void writeBody(JCas jCas, Element body);
 }
