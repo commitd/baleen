@@ -33,7 +33,7 @@ public class TextBlock {
   }
 
   public boolean isWholeDocument() {
-    return text != null;
+    return text == null;
   }
 
   public Text getText() {

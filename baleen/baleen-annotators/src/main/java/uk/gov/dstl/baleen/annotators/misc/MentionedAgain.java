@@ -8,12 +8,12 @@ import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.util.JCasUtil;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.types.semantic.Entity;
 import uk.gov.dstl.baleen.types.semantic.ReferenceTarget;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
 import uk.gov.dstl.baleen.uima.ComparableEntitySpan;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 import uk.gov.dstl.baleen.uima.utils.ComparableEntitySpanUtils;
 
 /**
@@ -26,13 +26,15 @@ import uk.gov.dstl.baleen.uima.utils.ComparableEntitySpanUtils;
  *
  * @baleen.javadoc
  */
-public class MentionedAgain extends BaleenAnnotator {
+public class MentionedAgain extends BaleenTextAwareAnnotator {
 
 	@Override
-	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		final String text = jCas.getDocumentText();
+    protected void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
 
-		final Collection<Entity> list = JCasUtil.select(jCas, Entity.class);
+    // WE look through the JCas for the entities, but we only look for matches in this block
+    final String text = block.getCoveredText();
+
+    final Collection<Entity> list = JCasUtil.select(block.getJCas(), Entity.class);
 
 		final Set<ComparableEntitySpan> spans = new HashSet<>(list.size());
 
@@ -42,17 +44,18 @@ public class MentionedAgain extends BaleenAnnotator {
 					final Matcher matcher = pattern.matcher(text);
 					while (matcher.find()) {
 						if (!ComparableEntitySpanUtils.existingEntity(list, matcher.start(), matcher.end(), e.getClass())) {
-							spans.add(new ComparableEntitySpan(e, matcher.start(), matcher.end()));
+                          spans.add(new ComparableEntitySpan(e, block.toDocumentOffset(matcher.start()),
+                             block.toDocumentOffset(matcher.end())));
 						}
 					}
 				});
 
 		spans.stream().forEach(s -> {
-			final Entity newEntity = ComparableEntitySpanUtils.copyEntity(jCas, s.getBegin(), s.getEnd(), s.getEntity());
+            final Entity newEntity = ComparableEntitySpanUtils.copyEntity(block.getJCas(), s.getBegin(), s.getEnd(), s.getEntity());
 
 			if (s.getEntity().getReferent() == null) {
 				// Make them the same
-				final ReferenceTarget rt = new ReferenceTarget(jCas);
+                final ReferenceTarget rt = new ReferenceTarget(block.getJCas());
 				addToJCasIndex(rt);
 
 				s.getEntity().setReferent(rt);

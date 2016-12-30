@@ -15,6 +15,9 @@ import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
 
+  private static final Object TEXT_BLOCK_SEPARATOR = "\n\n";;
+
+
   /**
    * A list of structural types which will be mapped to TextBlocks.
    * 
@@ -57,6 +60,27 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
     // Doesn't matter what we have here we create a new Text
     return Collections.singletonList(new TextBlock(jCas));
 
+  }
+
+  protected String getTextInTextBlocks(final JCas jCas) {
+    final List<TextBlock> blocks = getTextBlocks(jCas);
+
+    if (blocks.isEmpty()) {
+      // If it's empty save ourselves work
+      return "";
+    } else if (blocks.size() == 1 && blocks.get(0).isWholeDocument()) {
+      // If the text block is the document, then save creating new large strings
+      return jCas.getDocumentText();
+    } else {
+      final StringBuilder sb = new StringBuilder();
+
+      for (final TextBlock b : blocks) {
+        sb.append(b.getCoveredText());
+        sb.append(TEXT_BLOCK_SEPARATOR);
+      }
+
+      return sb.toString();
+    }
   }
 
 }

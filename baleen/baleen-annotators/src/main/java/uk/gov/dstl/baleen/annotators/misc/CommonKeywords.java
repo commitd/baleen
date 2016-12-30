@@ -64,14 +64,14 @@ public class CommonKeywords extends AbstractKeywordsAnnotator {
 	private String stopwordPattern;
 	
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		super.doInitialize(aContext);
 		
 		if(!Strings.isNullOrEmpty(stemming)){
 			try{
-				ALGORITHM algo = ALGORITHM.valueOf(stemming);
+				final ALGORITHM algo = ALGORITHM.valueOf(stemming);
 				stemmer = new SnowballStemmer(algo);
-			}catch(IllegalArgumentException iae){
+			}catch(final IllegalArgumentException iae){
 				getMonitor().warn("Value of {} does not match pre-defined list, no stemming will be used.", PARAM_STEMMING, iae);
 				stemmer = new NoOpStemmer();
 			}
@@ -83,24 +83,25 @@ public class CommonKeywords extends AbstractKeywordsAnnotator {
 	}
 	
 	@Override
-	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		List<String> phrases = Arrays.asList(jCas.getDocumentText().toLowerCase().split(stopwordPattern));
+	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
+    List<String> phrases =
+        Arrays.asList(getTextInTextBlocks(jCas).toLowerCase().split(stopwordPattern));
 		
 		phrases = phrases.stream().filter(s -> s.length() > 0).collect(Collectors.toList());
 		
-		Map<String, Double> stemCount = new HashMap<>();
-		Map<String, Integer> wordCount = new HashMap<>();
-		Multimap<String, String> stemToWord = HashMultimap.create();
+		final Map<String, Double> stemCount = new HashMap<>();
+		final Map<String, Integer> wordCount = new HashMap<>();
+		final Multimap<String, String> stemToWord = HashMultimap.create();
 		
-		for(String phrase : phrases){			
-			String[] terms = phrase.split("\\s+");
+		for(final String phrase : phrases){			
+			final String[] terms = phrase.split("\\s+");
 			
 			for(int i = 0; i < terms.length; i++){
-				StringJoiner sjStem = new StringJoiner(" ");
-				StringJoiner sjOrig = new StringJoiner(" ");
+				final StringJoiner sjStem = new StringJoiner(" ");
+				final StringJoiner sjOrig = new StringJoiner(" ");
 				for(int j = 0; j < maxLength && i + j < terms.length; j++){
-					String origTerm = terms[i + j].replaceAll("^[-,\"\\(\\)':;]+", "").replaceAll("[-,\"\\(\\)':;]+$", "");
-					String term = stemmer.stem(origTerm.trim().replaceAll("[^a-z]", "")).toString();
+					final String origTerm = terms[i + j].replaceAll("^[-,\"\\(\\)':;]+", "").replaceAll("[-,\"\\(\\)':;]+$", "");
+					final String term = stemmer.stem(origTerm.trim().replaceAll("[^a-z]", "")).toString();
 					
 					if(term.length() == 0)
 						break;
@@ -108,14 +109,14 @@ public class CommonKeywords extends AbstractKeywordsAnnotator {
 					sjStem.add(term);
 					sjOrig.add(origTerm);
 					
-					Double weight = 1.0 + j/Math.max(1.0, maxLength - 1.0);	//Boost the score of longer words
+					final Double weight = 1.0 + j/Math.max(1.0, maxLength - 1.0);	//Boost the score of longer words
 					
-					String key = sjStem.toString();
-					Double dVal = stemCount.getOrDefault(key, 0.0);
+					final String key = sjStem.toString();
+					final Double dVal = stemCount.getOrDefault(key, 0.0);
 					stemCount.put(key, dVal + weight);
 					
-					String origKey = sjOrig.toString();
-					Integer iVal = wordCount.getOrDefault(origKey, 0);
+					final String origKey = sjOrig.toString();
+					final Integer iVal = wordCount.getOrDefault(origKey, 0);
 					wordCount.put(origKey, iVal + 1);
 					
 					stemToWord.put(key, origKey);
@@ -125,16 +126,16 @@ public class CommonKeywords extends AbstractKeywordsAnnotator {
 		
 		stemCount.remove("");
 		
-		Multimap<Double, String> countToStem = HashMultimap.create();
-		Set<Double> countValues = new TreeSet<>(Collections.reverseOrder());
+		final Multimap<Double, String> countToStem = HashMultimap.create();
+		final Set<Double> countValues = new TreeSet<>(Collections.reverseOrder());
 		
-		for(Entry<String, Double> e : stemCount.entrySet()){
+		for(final Entry<String, Double> e : stemCount.entrySet()){
 			countToStem.put(e.getValue(), e.getKey());	//(Count, Key)
 			countValues.add(e.getValue());
 		}
 		
-		List<String> stemmedKeywords = new ArrayList<>();
-		for(Double d : countValues){
+		final List<String> stemmedKeywords = new ArrayList<>();
+		for(final Double d : countValues){
 			stemmedKeywords.addAll(countToStem.get(d));
 			
 			if(stemmedKeywords.size() >= maxKeywords)
@@ -144,13 +145,13 @@ public class CommonKeywords extends AbstractKeywordsAnnotator {
 		unstemAndAddKeywords(jCas, stemmedKeywords, stemToWord, wordCount);
 	}
 
-	private void unstemAndAddKeywords(JCas jCas, List<String> stemmedKeywords, Multimap<String, String> stemToWord, Map<String, Integer> wordCount){
-		List<String> selectedKeywords = new ArrayList<>();
-		List<String> additionalKeywords = new ArrayList<>();
+	private void unstemAndAddKeywords(final JCas jCas, final List<String> stemmedKeywords, final Multimap<String, String> stemToWord, final Map<String, Integer> wordCount){
+		final List<String> selectedKeywords = new ArrayList<>();
+		final List<String> additionalKeywords = new ArrayList<>();
 		
-		for(String stemmed : stemmedKeywords){
-			Collection<String> keywords = stemToWord.get(stemmed);
-			String bestKeyword = selectBestUnstemmedWord(keywords, wordCount);
+		for(final String stemmed : stemmedKeywords){
+			final Collection<String> keywords = stemToWord.get(stemmed);
+			final String bestKeyword = selectBestUnstemmedWord(keywords, wordCount);
 			
 			additionalKeywords.addAll(keywords);
 			
@@ -161,12 +162,12 @@ public class CommonKeywords extends AbstractKeywordsAnnotator {
 		addKeywordsToJCas(jCas, selectedKeywords, additionalKeywords);
 	}
 	
-	private String selectBestUnstemmedWord(Collection<String> keywords, Map<String, Integer> wordCount){
+	private String selectBestUnstemmedWord(final Collection<String> keywords, final Map<String, Integer> wordCount){
 		String bestKeyword = "";
 		Integer bestCount = 0;
 		
-		for(String keyword : keywords){
-			Integer count = wordCount.get(keyword);
+		for(final String keyword : keywords){
+			final Integer count = wordCount.get(keyword);
 			if(count > bestCount){
 				bestCount = count;
 				bestKeyword = keyword;
