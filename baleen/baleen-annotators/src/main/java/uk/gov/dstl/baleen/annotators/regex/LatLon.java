@@ -12,12 +12,12 @@ import java.util.regex.Pattern;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import uk.gov.dstl.baleen.core.utils.ConfigUtils;
 import uk.gov.dstl.baleen.types.geo.Coordinate;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate Latitude-Longitude coordinates in decimal (DD) and degrees-minutes-seconds (DMS) format using regular expressions.
@@ -60,7 +60,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * @baleen.javadoc
  */
-public class LatLon extends BaleenAnnotator {
+public class LatLon extends BaleenTextAwareAnnotator {
 
 	private final Pattern llDMSPattern = Pattern
 			.compile("\\b(\\d{1,3})°(\\d{1,2})'(\\d{1,2}(\\.\\d+)?)\"([NSEW])[,/\\h]*(\\d{1,3})°(\\d{1,2})'(\\d{1,2}(\\.\\d+)?)\"([NSEW])\\b");
@@ -152,7 +152,7 @@ public class LatLon extends BaleenAnnotator {
 	/**
 	 * List of currency symbols to check for when excluding monetary values
 	 */
-	private List<String> currencySymbols = Arrays.asList("£", "$", "€");
+	private final List<String> currencySymbols = Arrays.asList("£", "$", "€");
 
 	/**
 	 * Set of already found coordinates (per document) to avoid different patterns picking out the same coordinate
@@ -164,7 +164,7 @@ public class LatLon extends BaleenAnnotator {
 	 * the correct pattern for the user specified minDP (minimum decimal places)
 	 */
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 
 		minDP = ConfigUtils.stringToInteger(minDPString, 2);
 		
@@ -191,14 +191,14 @@ public class LatLon extends BaleenAnnotator {
 	 * coordinates to the CAS
 	 */
 	@Override
-	public void doProcess(JCas aJCas) throws AnalysisEngineProcessException {
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
 		found = new HashSet<>();
-		String text = normalizeQuotesAndDots(aJCas.getDocumentText());
+		final String text = normalizeQuotesAndDots(block.getCoveredText());
 		
-		processDD(aJCas, text);
-		processDDCard(aJCas, text);
-		processDMS(aJCas);
-		processDMSText(aJCas);
+		processDD(block, text);
+		processDDCard(block, text);
+		processDMS(block, text);
+		processDMSText(block, text);
 	}
 
 	/**
@@ -212,11 +212,11 @@ public class LatLon extends BaleenAnnotator {
 	 *              annotation.
 	 * @param text  the text string to search for coordinates.
 	 */
-	private void processDD(JCas aJCas, String text) {
+	private void processDD(final TextBlock block, final String text) {
 
-		Pattern[] patterns = new Pattern[] { llDDPattern, llDDSymPattern };
-		for (Pattern p : patterns) {
-			Matcher matcher = p.matcher(text);
+		final Pattern[] patterns = new Pattern[] { llDDPattern, llDDSymPattern };
+		for (final Pattern p : patterns) {
+			final Matcher matcher = p.matcher(text);
 
 			while (matcher.find()) {
 				if (currencySymbols.contains(text.substring(matcher.start(1) - 1,
@@ -238,9 +238,9 @@ public class LatLon extends BaleenAnnotator {
 						lat = Double.parseDouble(matcher.group(4));
 					}
 
-					addCoordinate(aJCas, matcher, lon, lat, "dd");
+					addCoordinate(block, matcher, lon, lat, "dd");
 
-				} catch (NumberFormatException e) {
+				} catch (final NumberFormatException e) {
 					getMonitor().warn(COULD_NOT_PARSE, e);
 				}
 			}
@@ -260,9 +260,9 @@ public class LatLon extends BaleenAnnotator {
 	 *              annotation.
 	 * @param text  the text string to search for coordinates.
 	 */
-	private void processDDCard(JCas aJCas, String text) {
+	private void processDDCard(final TextBlock block, final String text) {
 
-		Matcher matcher = llDDCardPattern.matcher(text);
+		final Matcher matcher = llDDCardPattern.matcher(text);
 		while (matcher.find()) {
 			// If no valid cardinal point letter then skip it
 			if(!isValidPair(matcher.group(4), matcher.group(9))){
@@ -279,7 +279,7 @@ public class LatLon extends BaleenAnnotator {
 				if ("E".equals(matcher.group(4))
 						|| "W".equals(matcher.group(4))) {
 					// Actually longitude first so swap values
-					Double tmp = lat;
+					final Double tmp = lat;
 					lat = lon;
 					lon = tmp;
 				}
@@ -292,21 +292,20 @@ public class LatLon extends BaleenAnnotator {
 					lat = -lat;
 				}
 
-				addCoordinate(aJCas, matcher, lon, lat, "dd");
+				addCoordinate(block, matcher, lon, lat, "dd");
 
-			} catch (NumberFormatException e) {
+			} catch (final NumberFormatException e) {
 				getMonitor().warn(COULD_NOT_PARSE, e);
 			}
 		}
 	}
 
-	private void processDMS(JCas aJCas) throws AnalysisEngineProcessException {
-		String text = normalizeQuotesAndDots(aJCas.getDocumentText());
+	private void processDMS(final TextBlock block, final String text) throws AnalysisEngineProcessException {
 
-		Pattern[] patterns = new Pattern[] { llDMSPattern, llDMSSpacePattern, llDMSNumericPattern, llDMSPunctuationPattern };
+		final Pattern[] patterns = new Pattern[] { llDMSPattern, llDMSSpacePattern, llDMSNumericPattern, llDMSPunctuationPattern };
 
-		for (Pattern p : patterns) {
-			Matcher matcher = p.matcher(text);
+		for (final Pattern p : patterns) {
+			final Matcher matcher = p.matcher(text);
 
 			while (matcher.find()) {
 				if(!isValidPair(matcher.group(5), matcher.group(10))){
@@ -314,17 +313,16 @@ public class LatLon extends BaleenAnnotator {
 				}
 				
 				try {
-					double[] lonLat = determineLonLatDMS(matcher);
-					addCoordinate(aJCas, matcher, lonLat[0], lonLat[1], "dms");
-				} catch (NumberFormatException e) {
+					final double[] lonLat = determineLonLatDMS(matcher);
+					addCoordinate(block, matcher, lonLat[0], lonLat[1], "dms");
+				} catch (final NumberFormatException e) {
 					getMonitor().warn(COULD_NOT_PARSE, e);
 				}
 			}
 		}
 	}
 	
-	private void processDMSText(JCas aJCas) throws AnalysisEngineProcessException {
-		String text = normalizeQuotesAndDots(aJCas.getDocumentText());
+	private void processDMSText(final TextBlock block, final String text) throws AnalysisEngineProcessException {
 
 		Matcher m = llDMSTextPattern.matcher(text);
 		while(m.find()){
@@ -342,7 +340,7 @@ public class LatLon extends BaleenAnnotator {
 			if("W".equalsIgnoreCase(m.group(17)))
 				lon = -lon;
 			
-			addCoordinate(aJCas, m, lon, lat, "dms");
+			addCoordinate(block, m, lon, lat, "dms");
 		}
 		
 		m = llDMTextPattern.matcher(text);
@@ -359,11 +357,11 @@ public class LatLon extends BaleenAnnotator {
 			if("S".equalsIgnoreCase(m.group(11)))
 				lon = -lon;
 			
-			addCoordinate(aJCas, m, lon, lat, "dms");
+			addCoordinate(block, m, lon, lat, "dms");
 		}
 	}
 
-	private double[] determineLonLatDMS(Matcher matcher){
+	private double[] determineLonLatDMS(final Matcher matcher){
 		Double lat = 0.0;
 		Double lon = 0.0;
 		
@@ -377,7 +375,7 @@ public class LatLon extends BaleenAnnotator {
 		
 		if ("E".equals(matcher.group(5))
 				|| "W".equals(matcher.group(5))) {
-			Double tmp = lat;
+			final Double tmp = lat;
 			lat = lon;
 			lon = tmp;
 		}
@@ -396,11 +394,11 @@ public class LatLon extends BaleenAnnotator {
 	/**
 	 * Determines whether we have both a North/South and an East/West directional indicator present 
 	 */
-	private boolean isValidPair(String... parameters){
+	private boolean isValidPair(final String... parameters){
 		boolean nFound = false;
 		boolean eFound = false;
 		
-		for(String s : parameters){
+		for(final String s : parameters){
 			if("N".equalsIgnoreCase(s) || "S".equalsIgnoreCase(s)){
 				nFound = true;
 			}else if("E".equalsIgnoreCase(s) || "W".equalsIgnoreCase(s)){
@@ -411,8 +409,8 @@ public class LatLon extends BaleenAnnotator {
 		return nFound && eFound;
 	}
 	
-	private boolean flipLat(String... parameters){
-		for(String s : parameters){
+	private boolean flipLat(final String... parameters){
+		for(final String s : parameters){
 			if("S".equalsIgnoreCase(s)){
 				return true;
 			}
@@ -421,8 +419,8 @@ public class LatLon extends BaleenAnnotator {
 		return false;
 	}
 	
-	private boolean flipLon(String... parameters){
-		for(String s : parameters){
+	private boolean flipLon(final String... parameters){
+		for(final String s : parameters){
 			if("W".equalsIgnoreCase(s)){
 				return true;
 			}
@@ -442,7 +440,7 @@ public class LatLon extends BaleenAnnotator {
 	 * @param s number of seconds, or null if no seconds supplied
 	 * @return the decimal degree value for the degrees minutes seconds
 	 */
-	private double dmsToDeg(Integer d, Integer m, Double s) {
+	private double dmsToDeg(final Integer d, final Integer m, final Double s) {
 		double seconds = m * 60.0;
 		if(s != null){
 			seconds += s;
@@ -450,7 +448,7 @@ public class LatLon extends BaleenAnnotator {
 		return d + (seconds / 3600);
 	}
 	
-	private Double parseOrNull(String s){
+	private Double parseOrNull(final String s){
 		if(s != null){
 			return Double.parseDouble(s);
 		}else{
@@ -458,24 +456,23 @@ public class LatLon extends BaleenAnnotator {
 		}
 	}
 
-	private void addCoordinate(JCas aJCas, Matcher matcher, Double lon, Double lat, String coordinateType) {
+	private void addCoordinate(final TextBlock block, final Matcher matcher, final Double lon, final Double lat, final String coordinateType) {
 		if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
-			String textLoc = matcher.start() + "," + matcher.end();
+			final String textLoc = matcher.start() + "," + matcher.end();
 
 			if(found.add(textLoc)){			
-				Coordinate loc = new Coordinate(aJCas);
+				final Coordinate loc = new Coordinate(block.getJCas());
 
 				loc.setConfidence(1.0f);
 
-				loc.setBegin(matcher.start());
-				loc.setEnd(matcher.end());
+				block.setBeginAndEnd(loc, matcher.start(), matcher.end());
 				if (storeDecimalValue) {
 					addNormalisedValue(lat, lon, loc);
 				} else {
 					loc.setValue(matcher.group(0));
 				}
 
-				String coords = "[" + lon + "," + lat + "]";
+				final String coords = "[" + lon + "," + lat + "]";
 	
 				loc.setGeoJson("{\"type\":\"Point\",\"coordinates\":"
 						+ coords + "}");
@@ -500,14 +497,14 @@ public class LatLon extends BaleenAnnotator {
 	 * @param lon the longitude as a decimal degree (negative is W)
 	 * @param loc  the coordinate location to hold the normalised string
 	 */
-	private void addNormalisedValue(double lat, double lon, Coordinate loc) {
-		String pattern = "###.#######";
+	private void addNormalisedValue(final double lat, final double lon, final Coordinate loc) {
+		final String pattern = "###.#######";
 		double normLat = lat;
 		double normLon = lon;
 		String latString = "";
 		String lonString = "";
 
-		DecimalFormat df = new DecimalFormat(pattern);
+		final DecimalFormat df = new DecimalFormat(pattern);
 		if (storeCardinalPoint) {
 			String cardLat = "N";
 			String cardLon = "E";
@@ -526,8 +523,8 @@ public class LatLon extends BaleenAnnotator {
 			latString = df.format(normLat);
 			lonString = df.format(normLon);			
 		}
-		String firstCoord = storeLongitudeFirst ? lonString : latString;
-		String secondCoord = storeLongitudeFirst ? latString : lonString;
+		final String firstCoord = storeLongitudeFirst ? lonString : latString;
+		final String secondCoord = storeLongitudeFirst ? latString : lonString;
 		loc.setValue(firstCoord + " " + secondCoord);
 		loc.setIsNormalised(true);
 	}
@@ -536,7 +533,7 @@ public class LatLon extends BaleenAnnotator {
 	 * Replace smart quotes, curly quotes, back ticks and mid-dots with standard quotes and dots
 	 * to simplify the required regular expressions.
 	 */
-	public static String normalizeQuotesAndDots(String s){
+	public static String normalizeQuotesAndDots(final String s){
 		return s.replaceAll("[\\u201C\\u201D\\u2033\\u02BA\\u301E\\u3003]", "\"").replaceAll("[\\u2018\\u2019\\u2032\\u00B4\\u02B9`]", "'").replaceAll("[\\u00B7]", ".");
 	}
 }

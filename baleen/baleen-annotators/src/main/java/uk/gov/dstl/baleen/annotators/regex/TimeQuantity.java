@@ -5,11 +5,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.QuantityUtils;
 import uk.gov.dstl.baleen.types.common.Quantity;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate times within a document using regular expressions
@@ -22,7 +22,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * 
  */
-public class TimeQuantity extends BaleenAnnotator {
+public class TimeQuantity extends BaleenTextAwareAnnotator {
 	public static final int YEAR_TO_SECOND = 31536000;
 	public static final int WEEK_TO_SECOND = 604800;
 	public static final int DAY_TO_SECOND = 86400;
@@ -53,41 +53,42 @@ public class TimeQuantity extends BaleenAnnotator {
 			Pattern.CASE_INSENSITIVE);
 
 	@Override
-	public void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		String text = jCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 
-		process(jCas, text, yearPattern, "year", YEAR_TO_SECOND);
-		process(jCas, text, monthPattern, "month", 0);
-		process(jCas, text, weekPattern, "week", WEEK_TO_SECOND);
-		process(jCas, text, dayPattern, "day", DAY_TO_SECOND);
-		processHours(jCas, text);
-		process(jCas, text, minutePattern, "minute", MINUTE_TO_SECOND);
-		process(jCas, text, secondPattern, "s", 1);
+		process(block, text, yearPattern, "year", YEAR_TO_SECOND);
+		process(block, text, monthPattern, "month", 0);
+		process(block, text, weekPattern, "week", WEEK_TO_SECOND);
+		process(block, text, dayPattern, "day", DAY_TO_SECOND);
+		processHours(block, text);
+		process(block, text, minutePattern, "minute", MINUTE_TO_SECOND);
+		process(block, text, secondPattern, "s", 1);
 
 	}
 
-	private void process(JCas jCas, String text, Pattern pattern, String unit, double scale) {
-		Matcher matcher = pattern.matcher(text);
+	private void process(final TextBlock block, final String text, final Pattern pattern, final String unit, final double scale) {
+		final Matcher matcher = pattern.matcher(text);
 		while(matcher.find()){
-			addQuantity(jCas, matcher, unit, scale);
+			addQuantity(block, matcher, unit, scale);
 		}
 	}
 	
-	private void processHours(JCas jCas, String text) {
-		Matcher matcher = hourPattern.matcher(text);
+	private void processHours(final TextBlock block, final String text) {
+		final Matcher matcher = hourPattern.matcher(text);
 		while(matcher.find()){
-			String q = matcher.group(1);
+			final String q = matcher.group(1);
 			if(q.length() == 4 && Integer.parseInt(q.substring(0, 2)) <= 23 && Integer.parseInt(q.substring(2)) <= 59){
 				continue;
 			}
-			addQuantity(jCas, matcher, "hour", HOUR_TO_SECOND);
+			addQuantity(block, matcher, "hour", HOUR_TO_SECOND);
 		}
 	}
 	
-	private void addQuantity(JCas aJCas, Matcher matcher, String unit,
-			double scale) {
-		Quantity quantity = QuantityUtils.createQuantity(aJCas, matcher, unit, scale, "s", "time");
+	private void addQuantity(final TextBlock block, final Matcher matcher, final String unit,
+			final double scale) {
+		final Quantity quantity = QuantityUtils.createQuantity(block.getJCas(), matcher, unit, scale, "s", "time");
 		if(quantity != null) {
+		    block.setBeginAndEnd(quantity, quantity.getBegin(), quantity.getEnd());
 			addToJCasIndex(quantity);
 		}
 	}

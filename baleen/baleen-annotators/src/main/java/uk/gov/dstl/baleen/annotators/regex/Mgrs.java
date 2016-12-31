@@ -6,10 +6,10 @@ import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.types.geo.Coordinate;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate MGRS coordinates within a document using regular expressions
@@ -29,7 +29,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * @baleen.javadoc
  */
-public class Mgrs extends BaleenAnnotator {
+public class Mgrs extends BaleenTextAwareAnnotator {
 	private final Pattern mgrsPattern = Pattern.compile("\\b[0-6]?[0-9]\\h*([C-HJ-NP-X])\\h*[A-HJ-NP-Z][A-HJ-NP-V]\\h*(([0-9]{5}\\h*[0-9]{5})|([0-9]{4}\\h*[0-9]{4})|([0-9]{3}\\h*[0-9]{3})|([0-9]{2}\\h*[0-9]{2}))\\b");
 	private final Pattern datesPattern = Pattern.compile("([0-2]?[0-9]|3[01])\\h*(JAN|FEB|MAR|JUN|JUL|SEP|DEC)\\h*([0-9]{2}|[0-9]{4})");
 
@@ -43,15 +43,15 @@ public class Mgrs extends BaleenAnnotator {
 	private boolean ignoreDates;
 
 	@Override
-	public void doProcess(JCas aJCas) throws AnalysisEngineProcessException {
-		String text = aJCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 
-		Matcher matcher = mgrsPattern.matcher(text);
+		final Matcher matcher = mgrsPattern.matcher(text);
 
 		while (matcher.find()) {
 
 			if (ignoreDates) {
-				Matcher dateMatcher = datesPattern.matcher(matcher.group(0));
+				final Matcher dateMatcher = datesPattern.matcher(matcher.group(0));
 				if (dateMatcher.matches()) {
 					getMonitor().info("Discarding possible MGRS coordinate '{}' as it resembles a date",
 							matcher.group(0));
@@ -59,12 +59,11 @@ public class Mgrs extends BaleenAnnotator {
 				}
 			}
 
-			Coordinate loc = new Coordinate(aJCas);
+			final Coordinate loc = new Coordinate(block.getJCas());
 
 			loc.setConfidence(1.0f);
 
-			loc.setBegin(matcher.start());
-			loc.setEnd(matcher.end());
+			block.setBeginAndEnd(loc, matcher.start(), matcher.end());
 			loc.setValue(matcher.group(0));
 
 			loc.setSubType("mgrs");
@@ -82,7 +81,7 @@ public class Mgrs extends BaleenAnnotator {
 	 * @param matcher
 	 * @param loc
 	 */
-	protected void enhanceCoordinate(Matcher matcher, Coordinate loc) {
+	protected void enhanceCoordinate(final Matcher matcher, final Coordinate loc) {
 		// Do nothing
 	}
 

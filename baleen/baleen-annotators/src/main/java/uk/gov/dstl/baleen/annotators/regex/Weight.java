@@ -5,11 +5,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.QuantityUtils;
 import uk.gov.dstl.baleen.types.common.Quantity;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate weights within a document using regular expressions
@@ -19,7 +19,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * 
  */
-public class Weight extends BaleenAnnotator {
+public class Weight extends BaleenTextAwareAnnotator {
 	public static final double LONG_TON_TO_KG = 1016.0469088;
 	public static final double STONE_TO_KG = 6.35029318;
 	public static final double POUNDS_TO_KG = 0.45359237;
@@ -35,31 +35,32 @@ public class Weight extends BaleenAnnotator {
 	private final Pattern ozPattern = Pattern.compile("\\b([0-9]+([0-9\\.,]+[0-9])?)[ ]?(thousand|million|billion|trillion)?[ ]?(oz|ounce)(s)?\\b", Pattern.CASE_INSENSITIVE);
 	
 	@Override
-	public void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		String text = jCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 		
-		process(jCas, text, tonnePattern, "tonne", 1000);
-		process(jCas, text, kgPattern, "kg", 1.0);
-		process(jCas, text, gPattern, "g", 1.0/1000.0);
-		process(jCas, text, mgPattern, "mg", 1.0/1000000.0);
-		process(jCas, text, tonPattern, "long ton", LONG_TON_TO_KG);
-		process(jCas, text, stonePattern, "st", STONE_TO_KG);
-		process(jCas, text, lbPattern, "lb", POUNDS_TO_KG);
-		process(jCas, text, ozPattern, "oz", OUNCES_TO_KG);
+		process(block, text, tonnePattern, "tonne", 1000);
+		process(block, text, kgPattern, "kg", 1.0);
+		process(block, text, gPattern, "g", 1.0/1000.0);
+		process(block, text, mgPattern, "mg", 1.0/1000000.0);
+		process(block, text, tonPattern, "long ton", LONG_TON_TO_KG);
+		process(block, text, stonePattern, "st", STONE_TO_KG);
+		process(block, text, lbPattern, "lb", POUNDS_TO_KG);
+		process(block, text, ozPattern, "oz", OUNCES_TO_KG);
 
 	}
 	
-	private void process(JCas jCas, String text, Pattern pattern, String unit, double scale) {
-		Matcher matcher = pattern.matcher(text);
+	private void process(final TextBlock block, final String text, final Pattern pattern, final String unit, final double scale) {
+		final Matcher matcher = pattern.matcher(text);
 		while(matcher.find()){
-			addQuantity(jCas, matcher, unit, scale);
+			addQuantity(block, matcher, unit, scale);
 		}
 	}
 	
-	private void addQuantity(JCas aJCas, Matcher matcher, String unit,
-			double scale) {
-		Quantity quantity = QuantityUtils.createQuantity(aJCas, matcher, unit, scale, "kg", "weight");
+	private void addQuantity(final TextBlock block, final Matcher matcher, final String unit,
+			final double scale) {
+		final Quantity quantity = QuantityUtils.createQuantity(block.getJCas(), matcher, unit, scale, "kg", "weight");
 		if(quantity != null) {
+		    block.setBeginAndEnd(quantity, quantity.getBegin(), quantity.getEnd());
 			addToJCasIndex(quantity);
 		}
 	}

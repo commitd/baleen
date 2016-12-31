@@ -5,11 +5,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.QuantityUtils;
 import uk.gov.dstl.baleen.types.common.Quantity;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate areas within a document using regular expressions
@@ -19,7 +19,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * 
  */
-public class Area extends BaleenAnnotator {
+public class Area extends BaleenTextAwareAnnotator {
 	public static final double MM2_TO_M2 = 0.000001;
 	public static final double CM2_TO_M2 = 0.0001;
 	public static final double KM2_TO_M2 = 1000000.0;
@@ -44,34 +44,37 @@ public class Area extends BaleenAnnotator {
 	private final Pattern acre2Pattern = Pattern.compile("\\b([0-9]+([0-9\\.,]+[0-9])?)[ ]?(thousand|million|billion|trillion)?[ ]?(acre)(s)?\\b", Pattern.CASE_INSENSITIVE);
 	
 	@Override
-	public void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		String text = jCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 		
-		process(jCas, text, m2Pattern, "m^2", 1);
-		process(jCas, text, cm2Pattern, "cm^2", CM2_TO_M2);
-		process(jCas, text, mm2Pattern, "mm^2", MM2_TO_M2);
-		process(jCas, text, km2Pattern, "km^2", KM2_TO_M2);
-		process(jCas, text, mi2Pattern, "mi^2", MI2_TO_M2);
-		process(jCas, text, yd2Pattern, "yd^2", YD2_TO_M2);
-		process(jCas, text, ft2Pattern, "ft^2", FT2_TO_M2);
-		process(jCas, text, in2Pattern, "in^2", IN2_TO_M2);
-		process(jCas, text, acre2Pattern, "acre", ACRE_TO_M2);	
-		process(jCas, text, ha2Pattern, "ha", HECTARE_TO_M2);
+		process(block, text, m2Pattern, "m^2", 1);
+		process(block, text, cm2Pattern, "cm^2", CM2_TO_M2);
+		process(block, text, mm2Pattern, "mm^2", MM2_TO_M2);
+		process(block, text, km2Pattern, "km^2", KM2_TO_M2);
+		process(block, text, mi2Pattern, "mi^2", MI2_TO_M2);
+		process(block, text, yd2Pattern, "yd^2", YD2_TO_M2);
+		process(block, text, ft2Pattern, "ft^2", FT2_TO_M2);
+		process(block, text, in2Pattern, "in^2", IN2_TO_M2);
+		process(block, text, acre2Pattern, "acre", ACRE_TO_M2);	
+		process(block, text, ha2Pattern, "ha", HECTARE_TO_M2);
 		
 	}
 
-	private void process(JCas jCas, String text, Pattern pattern, String unit, double scale) {
-		Matcher matcher = pattern.matcher(text);
+	private void process(final TextBlock block, final String text, final Pattern pattern, final String unit, final double scale) {
+		final Matcher matcher = pattern.matcher(text);
 		while(matcher.find()){
-			addQuantity(jCas, matcher, unit, scale);
+			addQuantity(block, matcher, unit, scale);
 		}
 		
 	}
 
-	private void addQuantity(JCas aJCas, Matcher matcher, String unit,
-			double scale) {
-		Quantity quantity = QuantityUtils.createQuantity(aJCas, matcher, unit, scale, "m^2", "area");
+	private void addQuantity(final TextBlock block, final Matcher matcher, final String unit,
+			final double scale) {
+		final Quantity quantity = QuantityUtils.createQuantity(block.getJCas(), matcher, unit, scale, "m^2", "area");
 		if(quantity != null) {
+		    // The begin / end offset are incorrect (relative to the textblock)
+		    // , so we make them relative to the document
+		    block.setBeginAndEnd(quantity, quantity.getBegin(), quantity.getEnd());
 			addToJCasIndex(quantity);
 		}
 	}

@@ -9,7 +9,6 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.JCasFactory;
-import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import com.google.common.base.Strings;
@@ -17,7 +16,8 @@ import com.google.common.base.Strings;
 import uk.gov.dstl.baleen.core.utils.ConfigUtils;
 import uk.gov.dstl.baleen.exceptions.BaleenException;
 import uk.gov.dstl.baleen.types.semantic.Entity;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 import uk.gov.dstl.baleen.uima.utils.TypeSystemSingleton;
 import uk.gov.dstl.baleen.uima.utils.TypeUtils;
 
@@ -30,9 +30,9 @@ import uk.gov.dstl.baleen.uima.utils.TypeUtils;
  * 
  * @baleen.javadoc
  */
-public class Custom extends BaleenAnnotator {
+public class Custom extends BaleenTextAwareAnnotator {
 	private Pattern p = null;
-	private Class<?> et = null;
+	private Class<? extends Entity> et = null;
 	
 	/**
 	 * Is the regular expression case sensitive?
@@ -41,7 +41,7 @@ public class Custom extends BaleenAnnotator {
 	 */
 	public static final String PARAM_CASE_SENSITIVE = "caseSensitive";
 	@ConfigurationParameter(name = PARAM_CASE_SENSITIVE, defaultValue="false")
-	private boolean caseSensitive = false;
+	private final boolean caseSensitive = false;
 	
 	/**
 	 * Which group in the regular expression should be used as the entity value?
@@ -71,7 +71,7 @@ public class Custom extends BaleenAnnotator {
 	 */
 	public static final String PARAM_TYPE = "type";
 	@ConfigurationParameter(name = PARAM_TYPE, defaultValue="uk.gov.dstl.baleen.types.semantic.Entity")
-	private String type = "uk.gov.dstl.baleen.types.semantic.Entity";
+	private final String type = "uk.gov.dstl.baleen.types.semantic.Entity";
 	
 	/**
 	 * The entity subType to use for matched entities
@@ -80,7 +80,7 @@ public class Custom extends BaleenAnnotator {
 	 */
 	public static final String PARAM_SUB_TYPE = "subType";
 	@ConfigurationParameter(name = PARAM_SUB_TYPE, defaultValue="")
-	private String subType = "";
+	private final String subType = "";
 	
 	/**
 	 * The confidence to assign to matched entities
@@ -95,7 +95,7 @@ public class Custom extends BaleenAnnotator {
 	private Float confidence;
 	
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		patternGroup = ConfigUtils.stringToInteger(patternGroupString, 0);
 		confidence = ConfigUtils.stringToFloat(confidenceString, 1.0f);
 		
@@ -113,22 +113,19 @@ public class Custom extends BaleenAnnotator {
 	}
 	
 	@Override
-	public void doProcess(JCas aJCas) throws AnalysisEngineProcessException {
-		String text = aJCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 
-		Matcher m = p.matcher(text);
+		final Matcher m = p.matcher(text);
 		while(m.find()){
 			Entity ret;
 			try {
-				ret = (Entity) et.getConstructor(JCas.class).newInstance(aJCas);
-			} catch (Exception e) {
+				ret = block.newAnnotation(et, m.start(), m.end());
+			} catch (final Exception e) {
 				throw new AnalysisEngineProcessException(e);
 			}
 			
 			ret.setValue(m.group(patternGroup));
-			
-			ret.setBegin(m.start());
-			ret.setEnd(m.end());
 			
 			ret.setConfidence(confidence);
 			if (!Strings.isNullOrEmpty(subType)) {

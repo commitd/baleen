@@ -5,11 +5,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.QuantityUtils;
 import uk.gov.dstl.baleen.types.common.Quantity;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate volumes within a document using regular expressions
@@ -19,7 +19,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * 
  */
-public class Volume extends BaleenAnnotator {
+public class Volume extends BaleenTextAwareAnnotator {
 	public static final double PINT_TO_M3 = 0.000568;
 	public static final double GALLON_TO_M3 = 0.00454609;
 	
@@ -31,29 +31,30 @@ public class Volume extends BaleenAnnotator {
 	private final Pattern gallonPattern = Pattern.compile("\\b([0-9]+([0-9\\.,]+[0-9])?)[ ]?(thousand|million|billion|trillion)?[ ]?(gal|gallon)(s)?\\b", Pattern.CASE_INSENSITIVE);
 	
 	@Override
-	public void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		String text = jCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 		
-		process(jCas, text, m3Pattern, "m^3", 1.0);
-		process(jCas, text, cm3Pattern, "cm^3", 1/1000000.0);
-		process(jCas, text, lPattern, "l", 1/1000.0);
-		process(jCas, text, mlPattern, "ml",  1/1000000.0);
-		process(jCas, text, pintPattern, "pt", PINT_TO_M3);
-		process(jCas, text, gallonPattern, "gal", GALLON_TO_M3);
+		process(block, text, m3Pattern, "m^3", 1.0);
+		process(block, text, cm3Pattern, "cm^3", 1/1000000.0);
+		process(block, text, lPattern, "l", 1/1000.0);
+		process(block, text, mlPattern, "ml",  1/1000000.0);
+		process(block, text, pintPattern, "pt", PINT_TO_M3);
+		process(block, text, gallonPattern, "gal", GALLON_TO_M3);
 
 	}
 	
-	private void process(JCas jCas, String text, Pattern pattern, String unit, double scale) {
-		Matcher matcher = pattern.matcher(text);
+	private void process(final TextBlock block, final String text, final Pattern pattern, final String unit, final double scale) {
+		final Matcher matcher = pattern.matcher(text);
 		while(matcher.find()){
-			addQuantity(jCas, matcher, unit, scale);
+			addQuantity(block, matcher, unit, scale);
 		}
 	}
 	
-	private void addQuantity(JCas aJCas, Matcher matcher, String unit,
-			double scale) {
-		Quantity quantity = QuantityUtils.createQuantity(aJCas, matcher, unit, scale, "m^3", "volume");
+	private void addQuantity(final TextBlock block, final Matcher matcher, final String unit,
+			final double scale) {
+		final Quantity quantity = QuantityUtils.createQuantity(block.getJCas(), matcher, unit, scale, "m^3", "volume");
 		if(quantity != null) {
+		  block.setBeginAndEnd(quantity, quantity.getBegin(), quantity.getEnd());
 			addToJCasIndex(quantity);
 		}
 	}
