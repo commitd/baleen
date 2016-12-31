@@ -8,7 +8,11 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 import uk.gov.dstl.baleen.types.language.Text;
 
+/**
+ * The Class TextBlock.
+ */
 public class TextBlock {
+
   private final JCas jCas;
 
   private final Text text;
@@ -17,6 +21,12 @@ public class TextBlock {
 
   private final int blockEnd;
 
+  /**
+   * Instantiates a new text block which represents a text annotation
+   *
+   * @param jCas the jCas
+   * @param text the text
+   */
   public TextBlock(final JCas jCas, final Text text) {
     this.jCas = jCas;
     this.text = text;
@@ -24,6 +34,11 @@ public class TextBlock {
     this.blockEnd = text.getEnd();
   }
 
+  /**
+   * Instantiates a new text block which represents the entire JCas
+   *
+   * @param jCas the jCas
+   */
   public TextBlock(final JCas jCas) {
     this.jCas = jCas;
     this.blockBegin = 0;
@@ -32,26 +47,59 @@ public class TextBlock {
 
   }
 
+  /**
+   * Checks if is whole document (ie the JCas vs a Text annotation).
+   * 
+   * Not is a text annotation covers the entire document this will still be true.
+   *
+   * @return true, if is whole document
+   */
   public boolean isWholeDocument() {
-    return text == null;
+    return text == null
+        || (text.getBegin() == 0 && text.getEnd() == jCas.getDocumentText().length());
   }
 
+  /**
+   * Gets the text annotation.
+   *
+   * @return the text (null if this is a JCas)
+   */
   public Text getText() {
     return text;
   }
 
+  /**
+   * Gets the jCas.
+   *
+   * @return the jCas
+   */
   public JCas getJCas() {
     return jCas;
   }
 
+  /**
+   * Gets the begin offset.
+   *
+   * @return the begin (0 if whole document)
+   */
   public int getBegin() {
     return blockBegin;
   }
 
+  /**
+   * Gets the end.
+   *
+   * @return the end (jCas.getDocumentText().length() if whole document)
+   */
   public int getEnd() {
     return blockEnd;
   }
 
+  /**
+   * Gets the covered text.
+   *
+   * @return the covered text (will be the same as getDocumentText if this is JCas)
+   */
   public String getCoveredText() {
     if (isWholeDocument()) {
       return jCas.getDocumentText();
@@ -60,12 +108,24 @@ public class TextBlock {
     }
   }
 
+  /**
+   * Gets the JCas document text.
+   *
+   * @return the document text
+   */
   public String getDocumentText() {
     return jCas.getDocumentText();
   }
 
   // JCasUtil helpers
 
+  /**
+   * Helper function providing same functionality as JCasUtil.select
+   *
+   * @param <T> the generic type
+   * @param type the type
+   * @return the collection
+   */
   public <T extends Annotation> Collection<T> select(final Class<T> type) {
     if (isWholeDocument()) {
       return JCasUtil.select(jCas, type);
@@ -77,6 +137,18 @@ public class TextBlock {
 
   // Creating annotation helpers
 
+  /**
+   * Create a new annotation, correcting the being&end to be the document offset rather than within
+   * this text block.
+   * 
+   * Note this uses reflection, so may not be as performant as simply new Type().
+   *
+   * @param <T> the generic type
+   * @param type the type
+   * @param begin the begin offset within this text block
+   * @param end the end offset within this text block
+   * @return the annotation
+   */
   public <T extends Annotation> T newAnnotation(final Class<T> type, final int begin,
       final int end) {
 
@@ -88,6 +160,15 @@ public class TextBlock {
     }
   }
 
+  /**
+   * Sets the begin and end of the annotation against the document (rather than this block)
+   *
+   * @param <T> the generic type
+   * @param annotation the annotation
+   * @param begin the begin offset within this text block
+   * @param end the end offset within this text block
+   * @return the annotaiton (with begin and end set to the document offsets)
+   */
   public <T extends Annotation> T setBeginAndEnd(final T annotation, final int begin,
       final int end) {
     annotation.setBegin(toDocumentOffset(begin));
@@ -95,6 +176,12 @@ public class TextBlock {
     return annotation;
   }
 
+  /**
+   * Convert an offset within this text span to a document offset.
+   *
+   * @param blockOffset the block offset
+   * @return the document offset
+   */
   public int toDocumentOffset(final int blockOffset) {
     return blockOffset + getBegin();
   }

@@ -15,6 +15,34 @@ import com.google.common.base.Joiner;
 import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.uima.data.TextBlock;
 
+/**
+ * An helper class to deal with Text annotations within documents.
+ * 
+ * For annotations which wish to work on each text annotation (text area) in order to process
+ * independently the important content of the document, this annotator and the TextBlock class
+ * provide a simplified approaches.
+ * 
+ * Implementations may choose to override the standard doProcess method, and then use the helper
+ * methods (getTextInTextBlocks, getTextBlocks) or they may simply use the doProcessTextBlock in
+ * order to iterate through each block in turn.
+ * 
+ * If not text areas are present the the annotator defaults to the entire document (effectively
+ * providing backwards compatibility). Even if text annotations are present the pipeline
+ * configuration can still decide to use the whole document through the wholeDocument parameter.
+ * 
+ * Note the value of getTextBlocks in not just a list of Text annotations, but an abstraction
+ * called @link {@link TextBlock} which provides helper fucntions for managing the difference
+ * between whole document and partial text annotations, and the implication of this for annotation
+ * offsets.
+ * 
+ * For clarity on annotation offset: UIMA requires annotations ebgin and end offset to be relative
+ * to the document text. If you are working with text areas then the covered text is a subset of the
+ * entire document. Thus you need to convert any offsets within the subset of text to document text
+ * offset before creating annotations. TextBlock helps with this.
+ * 
+ * @baleen.javadoc
+ *
+ */
 public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
 
   public static final String TEXT_BLOCK_SEPARATOR = "\n\n";
@@ -30,6 +58,11 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
   @ConfigurationParameter(name = PARAM_WHOLE_DOCUMENT, defaultValue = "false")
   private boolean wholeDocumentAsText;
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see uk.gov.dstl.baleen.uima.BaleenAnnotator#doProcess(org.apache.uima.jcas.JCas)
+   */
   @Override
   protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
     final List<TextBlock> blocks = getTextBlocks(jCas);
@@ -39,10 +72,28 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
     }
   }
 
+  /**
+   * Process a text block.
+   * 
+   * This is only called if doProcess is not overriden by a child class.
+   * 
+   * The default implementaiton will do nothing (so children do not need to call super).
+   *
+   * @param block the block to process
+   * @throws AnalysisEngineProcessException the analysis engine process exception
+   */
   protected void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
     // Do nothing
   }
 
+  /**
+   * Get the text areas within the document.
+   * 
+   * Provide a list of text blocks, representating the text annotations within the document.
+   * 
+   * @param jCas
+   * @return list of text boxes (non-null, maybe a singleton though)
+   */
   protected List<TextBlock> getTextBlocks(final JCas jCas) {
     if (!wholeDocumentAsText) {
       final Collection<Text> collection = JCasUtil.select(jCas, Text.class);
@@ -65,6 +116,22 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
 
   }
 
+  /**
+   * Gets the text in all text blocks.
+   * 
+   * This will be separated by the constant TEXT_BLOCK_SEPARATOR (but that same pattern may occur
+   * naturally in the document).
+   * 
+   * Note that offsets within this make no sense for creation of annotations. If you wish to create
+   * annotations you should use either TextBlock (which have relative offset) or the Document text
+   * which has an absolute offset.
+   * 
+   * This is really for annotations which need to read the text, but not create annotations based on
+   * it. For example keyword extraction.
+   *
+   * @param jCas the jcas
+   * @return the combined text in text blocks
+   */
   protected String getTextInTextBlocks(final JCas jCas) {
     final List<TextBlock> blocks = getTextBlocks(jCas);
 
@@ -79,10 +146,24 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
     }
   }
 
+  /**
+   * Allow child class to specifically override the wholeDocument parameter.
+   * 
+   * Suggest to call in doInitialise (after call to super.doIniitalise). This allows a child to
+   * enforce the type of processing if only one type is sensible (typically forcing whole document
+   * mode).
+   *
+   * @param wholeDocument the new whole document as text
+   */
   protected void setWholeDocumentAsText(final boolean wholeDocument) {
     this.wholeDocumentAsText = wholeDocument;
   }
 
+  /**
+   * Checks if is whole document mode enabled
+   *
+   * @return true, if enabled
+   */
   protected boolean isWholeDocumentAsText() {
     return wholeDocumentAsText;
   }
