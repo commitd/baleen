@@ -10,12 +10,15 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 
+import com.google.common.base.Joiner;
+
 import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
 
-  private static final Object TEXT_BLOCK_SEPARATOR = "\n\n";;
+  public static final String TEXT_BLOCK_SEPARATOR = "\n\n";
+  private static final Joiner TEXT_BLOCK_JOINER = Joiner.on(TEXT_BLOCK_SEPARATOR);
 
 
   /**
@@ -72,15 +75,15 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
       // If the text block is the document, then save creating new large strings
       return jCas.getDocumentText();
     } else {
-      final StringBuilder sb = new StringBuilder();
-
-      for (final TextBlock b : blocks) {
-        sb.append(b.getCoveredText());
-        sb.append(TEXT_BLOCK_SEPARATOR);
-      }
-
-      return sb.toString();
+      return TEXT_BLOCK_JOINER.join(blocks.stream().map(TextBlock::getCoveredText).iterator());
     }
   }
 
+  protected void setWholeDocumentAsText(final boolean wholeDocument) {
+    this.wholeDocumentAsText = wholeDocument;
+  }
+
+  protected boolean isWholeDocumentAsText() {
+    return wholeDocumentAsText;
+  }
 }
