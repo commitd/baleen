@@ -16,6 +16,7 @@ import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.types.structure.Footer;
 import uk.gov.dstl.baleen.types.structure.Header;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
+import uk.gov.dstl.baleen.types.structure.Quotation;
 
 public class TextBlocksTest extends AbstractAnnotatorTest {
 
@@ -80,6 +81,32 @@ public class TextBlocksTest extends AbstractAnnotatorTest {
     assertEquals("This is a header.", list.get(0).getCoveredText());
     assertEquals("This is a paragraph.", list.get(1).getCoveredText());
 
+  }
+  
+  @Test
+  public void testKeepBiggest() throws AnalysisEngineProcessException, ResourceInitializationException {
+    addStructure();
+    
+    final Quotation q = new Quotation(jCas, 29, 38);
+    q.addToIndexes();
+
+    processJCas(TextBlocks.PARAM_KEEP_SMALLEST, false);
+    final List<Text> list = new ArrayList<>( JCasUtil.select(jCas, Text.class) );
+
+    assertEquals(1, list.size());
+    assertEquals("This is a paragraph.", list.get(0).getCoveredText());
+  }
+  @Test
+  public void testKeepSmallest() throws AnalysisEngineProcessException, ResourceInitializationException {
+    addStructure();
+    final Quotation q = new Quotation(jCas, 28, 38);
+    q.addToIndexes();
+
+    processJCas(TextBlocks.PARAM_KEEP_SMALLEST, true);
+    final List<Text> list = new ArrayList<>( JCasUtil.select(jCas, Text.class) );
+
+    assertEquals(1, list.size());
+    assertEquals("paragraph.", list.get(0).getCoveredText());
   }
 
 }

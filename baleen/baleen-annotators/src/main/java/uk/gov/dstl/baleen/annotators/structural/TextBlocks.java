@@ -33,7 +33,19 @@ import uk.gov.dstl.baleen.types.structure.TableCell;
 import uk.gov.dstl.baleen.uima.BaleenAnnotator;
 
 /**
- * The Class TextBlocks.
+ * Converts selected Structure annotations to Text annotations.
+ * 
+ * Rather than annotators need to deal with every time of structure type in order to get the right
+ * text form a document. This annoators maps seleceted (configuratble) structural types to Text annotations.
+ *  
+ * The list of structure types to map is Paragraph, Aside, Deatils, ListItem, TableCell, Summary, Quotation,
+ *  Heading, Caption, DefinitionItem, DefinitionList, Preformatted.
+ * 
+ * This list can be configured by providing class names (or full qualified classes) to the types field.
+ * 
+ * This annotator ensures that no Text annotation overlap. If they did overlap then other annotator would
+ * process the same text (within two different text field) resulting in duplicate annotations. You can 
+ * control the overlap removal by setting the keepSmallest parameter.
  * 
  * @baleen.javadoc
  * 
@@ -65,6 +77,18 @@ public class TextBlocks extends BaleenAnnotator {
   public static final String PARAM_TYPE_NAMES = "types";
   @ConfigurationParameter(name = PARAM_TYPE_NAMES, mandatory=false)
   private String[] typeNames;
+
+  /**
+   * In order to remove overlapping Text annotations we can either remove the annotation covering (biggest)
+   * or the annotations covered (smallest).
+   * 
+   * We default to picking the smallest units of text. 
+   * 
+   * @baleen.config true
+   */
+  public static final String PARAM_KEEP_SMALLEST = "keepSmallest";
+  @ConfigurationParameter(name = PARAM_KEEP_SMALLEST, defaultValue="true")
+  private boolean keepSmallest;
 
   private Set<Class<?>> structuralClasses;
 
@@ -115,11 +139,14 @@ public class TextBlocks extends BaleenAnnotator {
           .forEach(this::addToJCasIndex);
 
 
-      // Now remove any that cover others, so we keep only the most detailed
-      // TODO: This could be a parameter (keep the largest, keep the smallest)
-      final Map<Text, Collection<Text>> covering =
-          JCasUtil.indexCovering(jCas, Text.class, Text.class);
-      covering.values().stream().flatMap(Collection::stream)
+      // Now remove any that cover others, so we keep only biggest/most detailed as per request
+      final Map<Text, Collection<Text>> cover;
+      if(keepSmallest) {
+        cover = JCasUtil.indexCovering(jCas, Text.class, Text.class);
+      } else {
+        cover = JCasUtil.indexCovered(jCas, Text.class, Text.class);
+      }
+      cover.values().stream().flatMap(Collection::stream)
           .forEach(this::removeFromJCasIndex);
     }
   }
