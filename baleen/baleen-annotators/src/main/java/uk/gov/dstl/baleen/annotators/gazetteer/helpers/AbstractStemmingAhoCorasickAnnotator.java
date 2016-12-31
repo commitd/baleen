@@ -14,7 +14,6 @@ import org.ahocorasick.trie.Trie.TrieBuilder;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import opennlp.tools.stemmer.Stemmer;
@@ -23,6 +22,7 @@ import opennlp.tools.stemmer.snowball.SnowballStemmer.ALGORITHM;
 import uk.gov.dstl.baleen.exceptions.BaleenException;
 import uk.gov.dstl.baleen.resources.gazetteer.IGazetteer;
 import uk.gov.dstl.baleen.types.BaleenAnnotation;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Abstract class that acts similarly to AbstractRadixTreeGazetteerAnnotator, but performs stemming
@@ -56,7 +56,7 @@ public abstract class AbstractStemmingAhoCorasickAnnotator extends AbstractAhoCo
 	public abstract IGazetteer configureGazetteer() throws BaleenException;
 
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		ALGORITHM algo = ALGORITHM.valueOf(algorithm);
 		if (algo == null) {
 			algo = ALGORITHM.ENGLISH;
@@ -74,8 +74,8 @@ public abstract class AbstractStemmingAhoCorasickAnnotator extends AbstractAhoCo
 			builder = builder.caseInsensitive();
 		}
 
-		for (String s : gazetteer.getValues()) {
-			TransformedString stemmed = stem(s.trim());
+		for (final String s : gazetteer.getValues()) {
+			final TransformedString stemmed = stem(s.trim());
 
 			builder = builder.addKeyword(stemmed.getTransformedString());
 			stemmedToKey.put(stemmed.getTransformedString(), stemmed.getOriginalString());
@@ -85,51 +85,51 @@ public abstract class AbstractStemmingAhoCorasickAnnotator extends AbstractAhoCo
 	}
 
 	@Override
-	public void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		Map<String, List<BaleenAnnotation>> entities = new HashMap<>();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final Map<String, List<BaleenAnnotation>> entities = new HashMap<>();
 
-		TransformedString stemmed = stem(jCas.getDocumentText());
-		Collection<Emit> emits = trie.parseText(stemmed.getTransformedString());
+		final TransformedString stemmed = stem(block.getCoveredText());
+		final Collection<Emit> emits = trie.parseText(stemmed.getTransformedString());
 
-		for (Emit emit : emits) {
+		for (final Emit emit : emits) {
 			try {
-				Integer start = stemmed.getMapping().get(emit.getStart());
-				Integer end = stemmed.getMapping().get(emit.getEnd() + 1);
+				final Integer start = stemmed.getMapping().get(emit.getStart());
+				final Integer end = stemmed.getMapping().get(emit.getEnd() + 1);
 
 				validateSubstring(start, end, stemmed.getOriginalString());
 
-				String match = stemmed.getOriginalString().substring(start, end);
-				String key = stemmedToKey.get(emit.getKeyword());
+				final String match = stemmed.getOriginalString().substring(start, end);
+				final String key = stemmedToKey.get(emit.getKeyword());
 
-				createEntityAndAliases(jCas, start, end, match, key, entities);
-			} catch (BaleenException be) {
+				createEntityAndAliases(block, start, end, match, key, entities);
+			} catch (final BaleenException be) {
 				getMonitor().error("Unable to create entity of type {} for value '{}'", entityType.getName(),
 						emit.getKeyword(), be);
 				continue;
 			}
 		}
 
-		createReferenceTargets(jCas, entities.values());
+		createReferenceTargets(block, entities.values());
 	}
 
 	/**
 	 * Convert a word, or words, into their stemmed form and return it along with a mapping between
 	 * the original and transformed strings
 	 */
-	protected TransformedString stem(String words) {
-		StringBuilder builder = new StringBuilder();
-		Map<Integer, Integer> indexMap = new HashMap<>();
+	protected TransformedString stem(final String words) {
+		final StringBuilder builder = new StringBuilder();
+		final Map<Integer, Integer> indexMap = new HashMap<>();
 
 		Integer index = 0;
 		String content = words.toLowerCase();
 		while (!content.isEmpty()) {
 			indexMap.put(builder.length(), index);
 			if (Character.isAlphabetic(content.charAt(0))) {
-				Matcher m = WORD_PATTERN.matcher(content);
+				final Matcher m = WORD_PATTERN.matcher(content);
 
 				m.find();
-				String match = m.group();
-				CharSequence stemmedMatch = stemmer.stem(match);
+				final String match = m.group();
+				final CharSequence stemmedMatch = stemmer.stem(match);
 
 				builder.append(stemmedMatch);
 
@@ -149,7 +149,7 @@ public abstract class AbstractStemmingAhoCorasickAnnotator extends AbstractAhoCo
 		return new TransformedString(words, builder.toString(), indexMap);
 	}
 
-	private void validateSubstring(Integer start, Integer end, String string) throws BaleenException {
+	private void validateSubstring(final Integer start, final Integer end, final String string) throws BaleenException {
 		if (start == null) {
 			throw new BaleenException("Variable start cannot be null");
 		}
