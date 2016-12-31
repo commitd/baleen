@@ -63,7 +63,7 @@ public class TextBlocks extends BaleenAnnotator {
    * @baleen.config Paragraph,TableCell,ListItem,Aside, ...
    */
   public static final String PARAM_TYPE_NAMES = "types";
-  @ConfigurationParameter(name = PARAM_TYPE_NAMES)
+  @ConfigurationParameter(name = PARAM_TYPE_NAMES, mandatory=false)
   private String[] typeNames;
 
   private Set<Class<?>> structuralClasses;
@@ -72,7 +72,7 @@ public class TextBlocks extends BaleenAnnotator {
   public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
     super.doInitialize(aContext);
 
-    if (typeNames == null || typeNames.length > 0) {
+    if (typeNames == null || typeNames.length == 0) {
       structuralClasses = Sets.newHashSet(DEFAULT_STRUCTURAL_CLASSES);
     } else {
       structuralClasses = new HashSet<>();
@@ -110,7 +110,7 @@ public class TextBlocks extends BaleenAnnotator {
     } else {
       // Otherwise add the types we want...
 
-      structures.stream().filter(structuralClasses::contains)
+      structures.stream().filter(s -> structuralClasses.contains(s.getClass()))
           .map(s -> new Text(jCas, s.getBegin(), s.getEnd()))
           .forEach(this::addToJCasIndex);
 
