@@ -62,14 +62,14 @@ public class RakeKeywords extends AbstractKeywordsAnnotator {
 	private Stemmer stemmer;
 	
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		super.doInitialize(aContext);
 		
 		if(!Strings.isNullOrEmpty(stemming)){
 			try{
-				ALGORITHM algo = ALGORITHM.valueOf(stemming);
+				final ALGORITHM algo = ALGORITHM.valueOf(stemming);
 				stemmer = new SnowballStemmer(algo);
-			}catch(IllegalArgumentException iae){
+			}catch(final IllegalArgumentException iae){
 				getMonitor().warn("Value of {} does not match pre-defined list, no stemming will be used.", PARAM_STEMMING, iae);
 				stemmer = new NoOpStemmer();
 			}
@@ -81,45 +81,45 @@ public class RakeKeywords extends AbstractKeywordsAnnotator {
 	}
 	
 	@Override
-	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		List<StemmedString> candidates = new ArrayList<>();
+	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
+		final List<StemmedString> candidates = new ArrayList<>();
 		
 		//The definition of sentence as required by RAKE is different to that used by Baleen,
 		//so we can't use the existing Sentence annotation.
-		for(String sentence : splitSentences(jCas.getDocumentText())){
+		for(final String sentence : splitSentences(getTextInTextBlocks(jCas))){
 			candidates.addAll(generateCandidates(sentence));
 		}
 		
-		Map<StemmedString, Double> scores = calculateScores(candidates);
-		Map<StemmedString, Double> keywords = generateKeywordScores(candidates, scores);
+		final Map<StemmedString, Double> scores = calculateScores(candidates);
+		final Map<StemmedString, Double> keywords = generateKeywordScores(candidates, scores);
 		
-		Multimap<Double, StemmedString> keywordsByValue = TreeMultimap.create();
+		final Multimap<Double, StemmedString> keywordsByValue = TreeMultimap.create();
 		keywords.forEach((k, v) -> keywordsByValue.put(v, k));
 		
-		Integer numKeywords = Integer.min(maxKeywords, keywords.size()/3);
+		final Integer numKeywords = Integer.min(maxKeywords, keywords.size()/3);
 		
-		List<Double> scoreValues = new ArrayList<>(keywordsByValue.keySet());
+		final List<Double> scoreValues = new ArrayList<>(keywordsByValue.keySet());
 		Integer index = scoreValues.size() - 1;
 		
-		List<StemmedString> finalKeywords = new ArrayList<>();
+		final List<StemmedString> finalKeywords = new ArrayList<>();
 		while(finalKeywords.size() < numKeywords && index >= 0){
 			finalKeywords.addAll(keywordsByValue.get(scoreValues.get(index)));
 			index--;
 		}
 		
-		List<String> keywordsString = finalKeywords.stream().map(s -> s.getOriginalString()).collect(Collectors.toList());
+		final List<String> keywordsString = finalKeywords.stream().map(s -> s.getOriginalString()).collect(Collectors.toList());
 		
 		addKeywordsToJCas(jCas, keywordsString);
 	}
 	
-	private List<StemmedString> generateCandidates(String sentence){
-		String[] candidates = stopwordPattern.split(sentence);
+	private List<StemmedString> generateCandidates(final String sentence){
+		final String[] candidates = stopwordPattern.split(sentence);
 	
-		List<StemmedString> normalizedCandidates = new ArrayList<>();
+		final List<StemmedString> normalizedCandidates = new ArrayList<>();
 		
-		for(String c : candidates){
+		for(final String c : candidates){
 			if(c.trim().length() > 0){
-				String normalized = c.trim().toLowerCase();
+				final String normalized = c.trim().toLowerCase();
 				
 				normalizedCandidates.add(new StemmedString(normalized, stemmer.stem(normalized)));
 			}
@@ -128,39 +128,39 @@ public class RakeKeywords extends AbstractKeywordsAnnotator {
 		return normalizedCandidates;
 	}
 	
-	private Map<StemmedString, Double> calculateScores(List<StemmedString> candidates){
-		Map<StemmedString, Integer> degree = new HashMap<>();
-		Map<StemmedString, Double> score = new HashMap<>();
+	private Map<StemmedString, Double> calculateScores(final List<StemmedString> candidates){
+		final Map<StemmedString, Integer> degree = new HashMap<>();
+		final Map<StemmedString, Double> score = new HashMap<>();
 		
-		Multiset<StemmedString> words = HashMultiset.create();
+		final Multiset<StemmedString> words = HashMultiset.create();
 		
-		for(StemmedString candidate : candidates){
-			List<StemmedString> splitWords = splitCandidate(candidate);
-			Integer listDegree = splitWords.size();
+		for(final StemmedString candidate : candidates){
+			final List<StemmedString> splitWords = splitCandidate(candidate);
+			final Integer listDegree = splitWords.size();
 			
 			words.addAll(splitWords);
 			
-			for(StemmedString word : splitWords){
-				int currDegree = degree.getOrDefault(word, 0);
+			for(final StemmedString word : splitWords){
+				final int currDegree = degree.getOrDefault(word, 0);
 				degree.put(word, currDegree + listDegree);
 			}
 		}
 		
-		for(StemmedString word : words){
+		for(final StemmedString word : words){
 			score.put(word, degree.get(word) / (words.count(word) * 1.0));
 		}
 		
 		return score;
 	}
 	
-	private Map<StemmedString, Double> generateKeywordScores(List<StemmedString> candidates, Map<StemmedString, Double> scores){
-		Map<StemmedString, Double> keywords = new HashMap<>();
+	private Map<StemmedString, Double> generateKeywordScores(final List<StemmedString> candidates, final Map<StemmedString, Double> scores){
+		final Map<StemmedString, Double> keywords = new HashMap<>();
 		
-		for(StemmedString candidate : candidates){
-			List<StemmedString> splitWords = splitCandidate(candidate);
+		for(final StemmedString candidate : candidates){
+			final List<StemmedString> splitWords = splitCandidate(candidate);
 			Double candidateScore = 0.0;
 			
-			for(StemmedString word : splitWords){
+			for(final StemmedString word : splitWords){
 				candidateScore += scores.getOrDefault(word, 0.0);
 			}
 			
@@ -170,11 +170,11 @@ public class RakeKeywords extends AbstractKeywordsAnnotator {
 		return keywords;
 	}
 	
-	private List<String> splitSentences(String text){
-		String[] sentences = text.split("[-.!?,;:\\n\\t\\\"\\'\\(\\)\u2019\u2013\\\\\\/]");
+	private List<String> splitSentences(final String text){
+		final String[] sentences = text.split("[-.!?,;:\\n\\t\\\"\\'\\(\\)\u2019\u2013\\\\\\/]");
 		
-		List<String> returnedSentences = new ArrayList<>();
-		for(String sentence : sentences){
+		final List<String> returnedSentences = new ArrayList<>();
+		for(final String sentence : sentences){
 			if(sentence.trim().length() > 0){
 				returnedSentences.add(sentence.trim().toLowerCase());
 			}
@@ -183,11 +183,11 @@ public class RakeKeywords extends AbstractKeywordsAnnotator {
 		return returnedSentences;
 	}
 	
-	private List<StemmedString> splitCandidate(StemmedString candidate){
-		String[] splitOrig = candidate.getOriginalString().split("\\s+");
-		String[] splitStemmed = candidate.getStemmedString().split("\\s+");
+	private List<StemmedString> splitCandidate(final StemmedString candidate){
+		final String[] splitOrig = candidate.getOriginalString().split("\\s+");
+		final String[] splitStemmed = candidate.getStemmedString().split("\\s+");
 		
-		List<StemmedString> split = new ArrayList<>();
+		final List<StemmedString> split = new ArrayList<>();
 		
 		for(int i = 0; i < splitOrig.length; i++){
 			split.add(new StemmedString(splitOrig[i], splitStemmed[i]));
@@ -202,13 +202,13 @@ public class RakeKeywords extends AbstractKeywordsAnnotator {
  * A class to hold two versions of a string in parallel - an original version and a stemmed version
  */
 class StemmedString implements Comparable<StemmedString>{
-	private String strOrig;
-	private String strStemmed;
+	private final String strOrig;
+	private final String strStemmed;
 	
 	/**
 	 * Create a StemmedString from two strings
 	 */
-	public StemmedString(String orig, String stemmed){
+	public StemmedString(final String orig, final String stemmed){
 		strOrig = orig;
 		strStemmed = stemmed;
 	}
@@ -216,14 +216,14 @@ class StemmedString implements Comparable<StemmedString>{
 	/**
 	 * Create a StemmedString from one CharSequence (original) and one String (stemmed)
 	 */
-	public StemmedString(CharSequence orig, String stemmed){
+	public StemmedString(final CharSequence orig, final String stemmed){
 		strOrig = orig.toString();
 		strStemmed = stemmed;
 	}
 	/**
 	 * Create a StemmedString from one CharSequence (stemmed) and one String (original)
 	 */
-	public StemmedString(String orig, CharSequence stemmed){
+	public StemmedString(final String orig, final CharSequence stemmed){
 		strOrig = orig;
 		strStemmed = stemmed.toString();
 	}
@@ -231,7 +231,7 @@ class StemmedString implements Comparable<StemmedString>{
 	/**
 	 * Create a StemmedString from two CharSequences
 	 */
-	public StemmedString(CharSequence orig, CharSequence stemmed){
+	public StemmedString(final CharSequence orig, final CharSequence stemmed){
 		strOrig = orig.toString();
 		strStemmed = stemmed.toString();
 	}
@@ -256,12 +256,12 @@ class StemmedString implements Comparable<StemmedString>{
 	}
 
 	@Override
-	public int compareTo(StemmedString s) {
+	public int compareTo(final StemmedString s) {
 		return strStemmed.compareTo(s.strStemmed);
 	}
 	
 	@Override
-	public boolean equals(Object o){
+	public boolean equals(final Object o){
 		if(o instanceof StemmedString || o instanceof String){
 			return strStemmed.equals(o.toString());
 		}
