@@ -7,6 +7,7 @@ import uk.gov.dstl.baleen.annotators.regex.internals.UrlRegex;
 import uk.gov.dstl.baleen.annotators.testing.AbstractAnnotatorTest;
 import uk.gov.dstl.baleen.annotators.testing.TestEntity;
 import uk.gov.dstl.baleen.types.common.Url;
+import uk.gov.dstl.baleen.types.language.Text;
 
 /**
  * 
@@ -30,5 +31,23 @@ public class UrlRegexTest extends AbstractAnnotatorTest {
 				new TestEntity<>(3, "www.example.com/path/to/page.html"));
 		
 	}
+	
+	   @Test
+	    public void testWithText() throws Exception{
+	        
+	        jCas.setDocumentText("Dstl's website is http://www.dstl.gov.uk/. An example FTP directory is ftp://foo.example.com/this/is/a/path.txt. Here's a secure URL https://www.example.com/index.php?test=true . Some naughty person hasn't specified a schema here... www.example.com/path/to/page.html.");
+	        
+	        final Text t1 = new Text(jCas, 0, 43);
+	        t1.addToIndexes();
+	        final Text t2 = new Text(jCas, 180, jCas.getDocumentText().length());
+            t2.addToIndexes();
+            
+	        processJCas();
+
+	        assertAnnotations(2, Url.class, 
+	                new TestEntity<>(0, "http://www.dstl.gov.uk/"),
+	                new TestEntity<>(1, "www.example.com/path/to/page.html"));
+	        
+	    }
 
 }

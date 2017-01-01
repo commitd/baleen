@@ -133,7 +133,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void yesterday(final TextBlock block){
 		final Pattern p = Pattern.compile("\\b(day before )?yesterday\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(1) != null){
@@ -146,7 +146,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void today(final TextBlock block){
 		final Pattern p = Pattern.compile("\\btoday\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			createRelativeDay(block, m.start(), m.end(), 0);
@@ -155,7 +155,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void tomorrow(final TextBlock block){
 		final Pattern p = Pattern.compile("\\b(day after )?tomorrow\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(1) != null){
@@ -168,7 +168,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void thisX(final TextBlock block){
 		final Pattern p = Pattern.compile("\\bthis (week|month|year)\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if("week".equalsIgnoreCase(m.group(1))){
@@ -183,7 +183,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void nextLastDay(final TextBlock block){
 		final Pattern p = Pattern.compile("\\b(next|last) "+DAYS+"\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			Integer offset = null;
@@ -212,7 +212,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void nextLastWeek(final TextBlock block){
 		final Pattern p = Pattern.compile("\\b((in the|within the|"+DAYS+") )?(next|last) week\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(3) != null){
@@ -239,7 +239,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void nextLastMonth(final TextBlock block){
 		final Pattern p = Pattern.compile("\\b((in the|within the) )?(next|last) month\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(2) != null){
@@ -260,7 +260,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void nextLastYear(final TextBlock block){
 		final Pattern p = Pattern.compile("\\b((in the|within the|"+MONTHS+") )?(next|last) year\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(3) != null){
@@ -287,7 +287,7 @@ public class RelativeDate extends BaleenTextAwareAnnotator {
 	
 	private void inTheNextLastX(final TextBlock block){
 		final Pattern p = Pattern.compile("\\b(in|within) the (next|last) (\\d+) (day|week|month|year)s\\b", Pattern.CASE_INSENSITIVE);
-		final Matcher m = p.matcher(block.getDocumentText());
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			Integer offset = Integer.parseInt(m.group(3));

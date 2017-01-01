@@ -144,7 +144,7 @@ public class OpenNLP extends BaleenTextAwareAnnotator {
     final List<Sentence> sentences = new ArrayList<>();
 
     try {
-      final String text = block.getDocumentText();
+      final String text = block.getCoveredText();
       final Span[] sentenceSpans = sentenceDetector.sentPosDetect(text);
 
       for (final Span sentSpan : sentenceSpans) {
@@ -191,9 +191,9 @@ public class OpenNLP extends BaleenTextAwareAnnotator {
         final Span wordSpan = tokens[a];
 
         final WordToken wordToken = new WordToken(block.getJCas());
-
-        block.setBeginAndEnd(wordToken, sentIn.getBegin() + wordSpan.getStart(),
-            sentIn.getBegin() + wordSpan.getEnd());
+        // No need to use the block offset, as we are offseting relative to sentence
+        wordToken.setBegin(sentIn.getBegin() + wordSpan.getStart());
+        wordToken.setEnd(sentIn.getBegin() + wordSpan.getEnd());
         wordToken.setSentenceOrder(a);
         wordToken.setPartOfSpeech(posTags[a]);
 
@@ -228,9 +228,8 @@ public class OpenNLP extends BaleenTextAwareAnnotator {
     for (final Span element : result) {
       PhraseChunk chunk = new PhraseChunk(block.getJCas());
 
-      final int begin = tokenList.get(element.getStart()).getBegin();
-      final int end = tokenList.get(element.getEnd() - 1).getEnd();
-      block.setBeginAndEnd(chunk, begin, end);
+      chunk.setBegin( tokenList.get(element.getStart()).getBegin() );
+      chunk.setEnd( tokenList.get(element.getEnd() - 1).getEnd() );
       chunk.setChunkType(element.getType());
 
       chunk = addPhraseWordsAndHead(chunk, block);

@@ -170,11 +170,12 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenTextAwareAnnota
 	private Map<String, List<BaleenAnnotation>> processExactWhitespace(final TextBlock block) {
 		final Map<String, List<BaleenAnnotation>> entities = new HashMap<>();
 
-		final Collection<Emit> emits = trie.parseText(block.getCoveredText());
+		final String text = block.getCoveredText();
+    final Collection<Emit> emits = trie.parseText(text);
 
 		for (final Emit emit : emits) {
 			try {
-				final String match = block.getDocumentText().substring(emit.getStart(), emit.getEnd() + 1);
+				final String match = text.substring(emit.getStart(), emit.getEnd() + 1);
 				createEntityAndAliases(block, emit.getStart(), emit.getEnd() + 1, match, match, entities);
 			} catch (final BaleenException be) {
 				getMonitor().error("Unable to create entity of type {} for value '{}'", entityType.getName(),
