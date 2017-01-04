@@ -41,7 +41,7 @@ public class Custom extends BaleenTextAwareAnnotator {
 	 */
 	public static final String PARAM_CASE_SENSITIVE = "caseSensitive";
 	@ConfigurationParameter(name = PARAM_CASE_SENSITIVE, defaultValue="false")
-	private final boolean caseSensitive = false;
+	private boolean caseSensitive = false;
 	
 	/**
 	 * Which group in the regular expression should be used as the entity value?
@@ -71,7 +71,7 @@ public class Custom extends BaleenTextAwareAnnotator {
 	 */
 	public static final String PARAM_TYPE = "type";
 	@ConfigurationParameter(name = PARAM_TYPE, defaultValue="uk.gov.dstl.baleen.types.semantic.Entity")
-	private final String type = "uk.gov.dstl.baleen.types.semantic.Entity";
+	private String type = "uk.gov.dstl.baleen.types.semantic.Entity";
 	
 	/**
 	 * The entity subType to use for matched entities
@@ -80,7 +80,7 @@ public class Custom extends BaleenTextAwareAnnotator {
 	 */
 	public static final String PARAM_SUB_TYPE = "subType";
 	@ConfigurationParameter(name = PARAM_SUB_TYPE, defaultValue="")
-	private final String subType = "";
+	private String subType = "";
 	
 	/**
 	 * The confidence to assign to matched entities
