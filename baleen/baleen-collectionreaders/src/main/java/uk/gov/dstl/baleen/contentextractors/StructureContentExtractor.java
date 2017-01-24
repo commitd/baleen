@@ -53,7 +53,7 @@ import uk.gov.dstl.baleen.types.structure.Structure;
  * the HTML or to remove elements which aren't required by the pipeline.
  * <li>A set of content mappers convert the the HTML nodes into annotations. They may create
  * structural elements, or other types such as metadata or entities. The set of content mappers is
- * configuratble per pipelines.
+ * configurable per pipelines.
  * <li>The text of the document is extracted. NOte that the content mappers can not change the tex
  * output, if you wish to change the text output then use a content manipulator.
  * </ul>
