@@ -60,6 +60,11 @@ This XML file classified as UK OFFICIAL.</description>
       </features>
     </typeDescription>
     <typeDescription>
+      <name>uk.gov.dstl.baleen.types.structure.Break</name>
+      <description>A (page/section) break in a document.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.structure.Structure</supertypeName>
+    </typeDescription>
+    <typeDescription>
       <name>uk.gov.dstl.baleen.types.structure.Sheet</name>
       <description>A sheet of a spread sheet.</description>
       <supertypeName>uk.gov.dstl.baleen.types.structure.Page</supertypeName>
