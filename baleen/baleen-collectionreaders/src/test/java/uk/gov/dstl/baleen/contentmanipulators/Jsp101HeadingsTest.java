@@ -29,6 +29,7 @@ public class Jsp101HeadingsTest {
     assertEquals("THIS IS A SUBJECT HEADING", h1s.first().text());
   }
 
+
   @Test
   public void testMainHeading() {
     final Document document = Jsoup.parseBodyFragment(
@@ -41,5 +42,14 @@ public class Jsp101HeadingsTest {
     assertEquals("This is a group heading", h2s.first().text());
   }
 
+  @Test
+  public void testNoneHeading() {
+    final Document document = Jsoup.parseBodyFragment(
+        "<p><b>This is a group heading:</b></p><p>This is not a group heading</p><p>This is not a group heading.</p>");
 
+    manipulator.manipulate(document);
+
+    final Elements h2s = document.select("h2");
+    assertEquals(0, h2s.size());
+  }
 }

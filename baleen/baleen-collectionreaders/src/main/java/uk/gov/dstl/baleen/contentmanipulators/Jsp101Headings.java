@@ -79,14 +79,16 @@ public class Jsp101Headings implements ContentManipulator {
       final String headingTag) {
 
     document.select("p").forEach(p -> {
-      final String text = p.text();
+      final String text = p.text().trim();
 
       if (!isBold(p, text)) {
         return;
       }
 
-      // No full stop in title (from strict that having it at end)
-      if (text.contains(".")) {
+      // No full stop (or similar) at the end of a title
+
+      if (text.endsWith(".") || text.endsWith(":") || text.endsWith("!") || text.endsWith("?")
+          || text.endsWith(",") || text.endsWith(";")) {
         return;
       }
 
