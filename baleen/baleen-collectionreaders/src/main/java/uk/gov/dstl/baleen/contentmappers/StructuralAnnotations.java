@@ -12,6 +12,7 @@ import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.types.structure.Anchor;
 import uk.gov.dstl.baleen.types.structure.Aside;
+import uk.gov.dstl.baleen.types.structure.Break;
 import uk.gov.dstl.baleen.types.structure.Caption;
 import uk.gov.dstl.baleen.types.structure.DefinitionDescription;
 import uk.gov.dstl.baleen.types.structure.DefinitionItem;
@@ -276,6 +277,12 @@ public class StructuralAnnotations implements ContentMapper {
       case "cite":
         return;
 
+      case "hr":
+        if (element.hasClass("pagebreak") || element.hasClass("sectionbreak")) {
+          collector.add(new Break(jCas));
+        }
+        break;
+
       // Misc ignored - head, details of embedded, ui specific, forms
       case "html":
       case "head":
@@ -286,7 +293,6 @@ public class StructuralAnnotations implements ContentMapper {
       case "script":
       case "noscript":
       case "link":
-      case "hr":
       case "dialog":
       case "nav":
       case "menu":

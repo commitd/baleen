@@ -15,6 +15,7 @@ import uk.gov.dstl.baleen.consumers.utils.StructureHierarchy;
 import uk.gov.dstl.baleen.consumers.utils.StructureHierarchy.Node;
 import uk.gov.dstl.baleen.types.structure.Anchor;
 import uk.gov.dstl.baleen.types.structure.Aside;
+import uk.gov.dstl.baleen.types.structure.Break;
 import uk.gov.dstl.baleen.types.structure.Caption;
 import uk.gov.dstl.baleen.types.structure.DefinitionDescription;
 import uk.gov.dstl.baleen.types.structure.DefinitionItem;
@@ -390,6 +391,8 @@ public class StructuralHtml extends AbstractHtml {
       e = createElement("tfoot");
     } else if (s instanceof TableRow) {
       e = createElement("tr");
+    } else if (s instanceof Break) {
+      e = createElement("hr");
     } else {
       e = createElement("div");
     }
@@ -440,10 +443,10 @@ public class StructuralHtml extends AbstractHtml {
     body.select("td:empty,th:empty").html("&nbsp");
 
     if (!outputEmptyTags) {
-      Elements e = body.select("*:empty").not("body");
+      Elements e = emptyElements(body);
       while (!e.isEmpty()) {
         e.remove();
-        e = body.select("*:empty").not("body");
+        e = emptyElements(body);
       }
     }
 
@@ -451,6 +454,10 @@ public class StructuralHtml extends AbstractHtml {
     // - Captions for Table should be moved inside the table
     // - Captions for Figure should be moved inside the figure
 
+  }
+
+  private Elements emptyElements(final Element body) {
+    return body.select("*:empty").not("body").not("hr").not("img").not("a");
   }
 
 }
