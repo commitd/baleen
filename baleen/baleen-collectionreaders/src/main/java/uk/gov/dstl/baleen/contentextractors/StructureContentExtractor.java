@@ -23,6 +23,7 @@ import com.tenode.baleen.extraction.Extraction;
 import com.tenode.baleen.extraction.exception.ExtractionException;
 import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
+import uk.gov.dstl.baleen.common.structure.TextBlocks;
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
 import uk.gov.dstl.baleen.contentextractors.helpers.DocumentToJCasConverter;
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
@@ -70,6 +71,7 @@ import uk.gov.dstl.baleen.types.structure.Structure;
  * collectionreader:
  *   class: FolderReader
  *   contentExtractor: StructureContentExtractor
+ *   extractTextBlocks: true
  *   contentManipulators:
  *   - RemoveEmptyText
  *   contentMappers:
@@ -81,11 +83,24 @@ import uk.gov.dstl.baleen.types.structure.Structure;
  * If you do not include contentManipulators then none will be used. If you omit the contentMappers
  * then the default StructuralAnnotations mapper will be used.
  * 
+ * The default value of extractTextBlocks is true. This means that the TextBlocks annotation will be
+ * run immediately. If you do not which to run this annotator then set the value to false. Running
+ * by default since otherwise the structural annotations extracted here are ignored by the rest of
+ * the pipeline. Pipeline developers may wish to disable this so they can configure the TextBlock
+ * annotator specifically.
+ * 
  * Note that structured extraction will only work (or be beneficial) on certain document types such
  * as DOC, DOCX, PPT/X, XLS/X, PDF and HTML.
  * 
  */
 public class StructureContentExtractor extends AbstractContentExtractor {
+
+  public static final String FIELD_CONTENT_MAPPERS = "contentMappers";
+
+  public static final String FIELD_CONTENT_MANIPULATORS = "contentManipulators";
+
+  public static final String FIELD_EXTRACT_TEXT_BLOCKS = "extractTextBlocks";
+
 
   /** The Constant LOGGER. */
   private static final Logger LOGGER = LoggerFactory.getLogger(StructureContentExtractor.class);
@@ -112,6 +127,8 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
   private TikaFormatExtractor formatExtractor;
 
+  private TextBlocks textBlocks = null;
+
   /*
    * (non-Javadoc)
    * 
@@ -124,7 +141,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       throws ResourceInitializationException {
     super.doInitialize(context, params);
 
-    final Object manipulatorConfig = params.get("contentManipulators");
+    final Object manipulatorConfig = params.get(FIELD_CONTENT_MANIPULATORS);
     if (manipulatorConfig != null && manipulatorConfig instanceof String[]) {
       try {
         manipulators = createContentProcessor(ContentManipulator.class,
@@ -136,7 +153,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
 
     List<ContentMapper> mappers;
-    final Object mapperConfig = params.get("contentMappers");
+    final Object mapperConfig = params.get(FIELD_CONTENT_MAPPERS);
     if (mapperConfig != null && mapperConfig instanceof String[]) {
       try {
         mappers = createContentProcessor(ContentMapper.class, CONTENT_MAPPER_DEFAULT_PACKAGE,
@@ -158,6 +175,26 @@ public class StructureContentExtractor extends AbstractContentExtractor {
     documentConverter = new DocumentToJCasConverter(mappers);
     formatExtractor = new TikaFormatExtractor();
 
+    // Run the text block annotator after the configuration
+
+    final Object extractTextBlockConfig = params.get(FIELD_EXTRACT_TEXT_BLOCKS);
+    boolean runTextBlocks = true;
+    if (extractTextBlockConfig != null) {
+      if (extractTextBlockConfig instanceof String) {
+        if (((String) extractTextBlockConfig).equalsIgnoreCase("false")
+            || ((String) extractTextBlockConfig).equalsIgnoreCase("no")) {
+          runTextBlocks = false;
+        }
+      } else if (extractTextBlockConfig instanceof Boolean) {
+        runTextBlocks = (Boolean) extractTextBlockConfig;
+
+      }
+    }
+
+    if (runTextBlocks) {
+      textBlocks = new TextBlocks();
+      textBlocks.initialize(context);
+    }
   }
 
   /**
@@ -230,6 +267,12 @@ public class StructureContentExtractor extends AbstractContentExtractor {
           .forEach(e -> addMetadata(jCas, e.getKey(), e.getValue()));
 
       super.doProcessStream(stream, source, jCas);
+
+      // Run the text block extraction (if configured)
+      if (textBlocks != null) {
+        textBlocks.process(jCas);
+      }
+
     } catch (final Exception e) {
       getMonitor().warn("Couldn't extract structure from document '{}'", source, e);
       setCorrupt(jCas);
@@ -261,6 +304,16 @@ public class StructureContentExtractor extends AbstractContentExtractor {
     if (Strings.isNullOrEmpty(jCas.getDocumentText())) {
       jCas.setDocumentText(CORRUPT_FILE_TEXT);
     }
+  }
+
+  @Override
+  public void doDestroy() {
+    if (textBlocks != null) {
+      textBlocks.destroy();
+      textBlocks = null;
+    }
+
+    super.doDestroy();
   }
 
 }

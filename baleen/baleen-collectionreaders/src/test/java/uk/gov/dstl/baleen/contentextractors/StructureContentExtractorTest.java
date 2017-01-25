@@ -1,6 +1,7 @@
 package uk.gov.dstl.baleen.contentextractors;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +27,7 @@ import com.tenode.baleen.extraction.Extraction;
 import com.tenode.baleen.extraction.exception.ExtractionException;
 import com.tenode.baleen.extraction.impl.DefaultExtraction;
 
+import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.uima.BaleenContentExtractor;
@@ -127,6 +129,40 @@ public class StructureContentExtractorTest {
     contentExtractor.initialize(context, params);
 
     // TODO Could test its not actually used here...
+
+  }
+
+  @Test
+  public void testTextBlocksEnabled() throws Exception {
+    final UimaContext context = UimaContextFactory.createUimaContext();
+    final JCas jCas = JCasFactory.createJCas();
+
+    final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
+    contentExtractor.initialize(context, Collections.emptyMap());
+
+    contentExtractor.processStream(null, "source", jCas);
+
+    assertEquals("Title\nExample", jCas.getDocumentText());
+    final Collection<Text> select = JCasUtil.select(jCas, Text.class);
+    assertTrue(select.size() > 0);
+
+  }
+
+  @Test
+  public void testDisableTextBlocks() throws Exception {
+    final UimaContext context = UimaContextFactory.createUimaContext();
+    final JCas jCas = JCasFactory.createJCas();
+
+    final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
+    final Map<String, Object> map = new HashMap<>();
+    map.put(StructureContentExtractor.FIELD_EXTRACT_TEXT_BLOCKS, "false");
+    contentExtractor.initialize(context, map);
+
+    contentExtractor.processStream(null, "source", jCas);
+
+    assertEquals("Title\nExample", jCas.getDocumentText());
+    final Collection<Text> select = JCasUtil.select(jCas, Text.class);
+    assertTrue(select.isEmpty());
 
   }
 }
