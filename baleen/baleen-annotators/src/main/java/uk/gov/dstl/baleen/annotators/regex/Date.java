@@ -469,7 +469,6 @@ public class Date extends BaleenTextAwareAnnotator{
 		final Temporal date = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		
 		date.setConfidence(1.0);
-		
 		date.setPrecision(EXACT);
 		date.setScope(SINGLE);
 		date.setTemporalType(DATE_TYPE);
