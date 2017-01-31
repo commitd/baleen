@@ -40,7 +40,10 @@ public class DocumentToJCasConverter {
 
     final JCasBuilder builder = new JCasBuilder(jCas);
 
-    walk(builder, document.body(), 1);
+    // First walk the head, but don't save the text
+    walk(builder, document.head(), 1, false);
+    // Then walk the body and do save the text
+    walk(builder, document.body(), 1, true);
 
     builder.build();
   }
@@ -52,17 +55,19 @@ public class DocumentToJCasConverter {
    * @param root the root
    * @param depth the depth
    */
-  private void walk(final JCasBuilder builder, final Node root, final int depth) {
+  private void walk(final JCasBuilder builder, final Node root, final int depth,
+      final boolean captureText) {
     if (root == null) {
       return;
     }
 
     final int begin = builder.getCurrentOffset();
-
-    // Generate the text and the annotations
-    final String text = mapToText(root);
-    if (!Strings.isNullOrEmpty(text)) {
-      builder.addText(text);
+    if (captureText) {
+      // Generate the text and the annotations
+      final String text = mapToText(root);
+      if (!Strings.isNullOrEmpty(text)) {
+        builder.addText(text);
+      }
     }
 
     List<Annotation> annotations = null;
@@ -75,7 +80,7 @@ public class DocumentToJCasConverter {
 
     // Walk the children
     for (final Node node : root.childNodes()) {
-      walk(builder, node, depth + 1);
+      walk(builder, node, depth + 1, captureText);
     }
 
     // Add annotations to the JCas

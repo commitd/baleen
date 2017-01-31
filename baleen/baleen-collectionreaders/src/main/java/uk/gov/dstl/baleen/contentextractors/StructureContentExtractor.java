@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Lists;
 import com.tenode.baleen.extraction.Extraction;
 import com.tenode.baleen.extraction.exception.ExtractionException;
 import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
@@ -27,6 +27,7 @@ import uk.gov.dstl.baleen.common.structure.TextBlocks;
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
 import uk.gov.dstl.baleen.contentextractors.helpers.DocumentToJCasConverter;
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
+import uk.gov.dstl.baleen.contentmappers.MetaTags;
 import uk.gov.dstl.baleen.contentmappers.StructuralAnnotations;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
@@ -76,12 +77,13 @@ import uk.gov.dstl.baleen.types.structure.Structure;
  *   - RemoveEmptyText
  *   contentMappers:
  *   - SemanticHtml
+ *   - MetaTags
  *   folders:
  *   - ./input
  * </pre>
  * 
  * If you do not include contentManipulators then none will be used. If you omit the contentMappers
- * then the default StructuralAnnotations mapper will be used.
+ * then the default StructuralAnnotations and MetaTags mapper will be used.
  * 
  * The default value of extractTextBlocks is true. This means that the TextBlocks annotation will be
  * run immediately. If you do not which to run this annotator then set the value to false. Running
@@ -163,7 +165,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       }
     } else {
       // Defaults to extraction of the Structural Annotations only
-      mappers = Collections.singletonList(new StructuralAnnotations());
+      mappers = Lists.newArrayList(new StructuralAnnotations(), new MetaTags());
     }
 
 
@@ -247,24 +249,23 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
     try {
       final Extraction extraction = extract(stream, source);
-      final Multimap<String, String> metadata = extraction.getMetadata();
 
       final Document document = Jsoup.parse(extraction.getHtml());
+
+
+      // Add information on content mappers and content manipulators to the metadata
+      contentManipulatorClasses.forEach(
+          c -> document.head().appendElement("meta").attr("name", METADATA_CONTENT_MANIPULATORS)
+              .attr("content", c));
+      contentMapperClasses
+          .forEach(c -> document.head().appendElement("meta").attr("name", METADATA_CONTENT_MAPPERS)
+              .attr("content", c));
 
       for (final ContentManipulator manipulator : manipulators) {
         manipulator.manipulate(document);
       }
 
       documentConverter.apply(document, jCas);
-
-
-      // Add information on content mappers and content manipulators to the metadata
-      metadata.putAll(METADATA_CONTENT_MANIPULATORS, contentManipulatorClasses);
-      metadata.putAll(METADATA_CONTENT_MAPPERS, contentMapperClasses);
-
-      // Add the metadata to the document
-      metadata.entries()
-          .forEach(e -> addMetadata(jCas, e.getKey(), e.getValue()));
 
       super.doProcessStream(stream, source, jCas);
 

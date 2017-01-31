@@ -42,7 +42,7 @@ public class StructureContentExtractorTest {
       final Multimap<String, String> metadata = LinkedHashMultimap.create();
       metadata.put("test", "true");
       return new DefaultExtraction(
-          "<html><head></head><body><h1>Title</h1>\n<p>Example</p></body></html>",
+          "<html><head><meta name=\"test\" content=\"true\" /></head><body><h1>Title</h1>\n<p>Example</p></body></html>",
           metadata);
     }
   }
@@ -66,7 +66,7 @@ public class StructureContentExtractorTest {
 
     final List<Metadata> contentMeta = JCasUtil.select(jCas, Metadata.class).stream()
         .filter(m -> m.getKey().startsWith("baleen:content-")).collect(Collectors.toList());
-    assertEquals(2, contentMeta.size());
+    assertEquals(3, contentMeta.size());
   }
 
   @Test
@@ -95,14 +95,14 @@ public class StructureContentExtractorTest {
 
     final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
     final Map<String, Object> params = new HashMap<>();
-    params.put("contentMappers", new String[] {"SemanticHtml"});
+    params.put("contentMappers", new String[] {"MetaTags"});
     contentExtractor.initialize(context, params);
 
     contentExtractor.processStream(null, "source", jCas);
 
     final long count = JCasUtil.select(jCas, Metadata.class).stream()
         .filter(m -> m.getKey().equals("baleen:content-mappers")
-            && m.getValue().contains("SemanticHtml"))
+            && m.getValue().contains("MetaTags"))
         .count();
     assertEquals(1, count);
   }

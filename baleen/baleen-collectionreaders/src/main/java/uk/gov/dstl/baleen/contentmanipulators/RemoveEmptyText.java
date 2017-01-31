@@ -1,6 +1,7 @@
 package uk.gov.dstl.baleen.contentmanipulators;
 
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import uk.gov.dstl.baleen.contentmanipulators.helpers.ContentManipulator;
@@ -16,12 +17,14 @@ public class RemoveEmptyText implements ContentManipulator {
 
   @Override
   public void manipulate(final Document document) {
-    while (!removeEmpty(document)) {
+    final Element body = document.body();
+
+    while (!removeEmpty(body)) {
       // Repeat as needed.... work done in the while
     }
   }
 
-  private boolean removeEmpty(final Document document) {
+  private boolean removeEmpty(final Element document) {
     final Elements emptyNodes = document.select(":empty").not("body");
     if (emptyNodes.isEmpty()) {
       return true;
