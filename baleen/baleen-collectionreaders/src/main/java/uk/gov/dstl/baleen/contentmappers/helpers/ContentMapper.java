@@ -1,6 +1,8 @@
 package uk.gov.dstl.baleen.contentmappers.helpers;
 
+import org.apache.uima.UimaContext;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.jsoup.nodes.Element;
 
 /**
@@ -22,4 +24,23 @@ public interface ContentMapper {
 
   void map(JCas jCas, Element element, AnnotationCollector collector);
 
+  /**
+   * Provided UIMA context for initialisation as per Uima initialise.
+   * 
+   * Largely not required by implementation.
+   * 
+   * @param context
+   * @throws ResourceInitializationException
+   */
+  default void initialize(final UimaContext context) throws ResourceInitializationException {
+    // Do nothing
+  }
+
+  /**
+   * Called when the pipeline is destroyed
+   * 
+   */
+  default void destroy() {
+    // Do nothing
+  }
 }

@@ -131,6 +131,8 @@ public class StructureContentExtractor extends AbstractContentExtractor {
 
   private TextBlocks textBlocks = null;
 
+  private List<ContentMapper> mappers = Collections.emptyList();
+
   /*
    * (non-Javadoc)
    * 
@@ -148,18 +150,35 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       try {
         manipulators = createContentProcessor(ContentManipulator.class,
             CONTENT_MANIPULATOR_DEFAULT_PACKAGE, context, (String[]) manipulatorConfig);
+
+        // Initialise the manipulators
+        manipulators.forEach(m -> {
+          try {
+            m.initialize(context);
+          } catch (final Exception e) {
+            getMonitor().warn("Unable to initialse content manipulator: {}", e);
+          }
+        });
       } catch (final InvalidParameterException e) {
         throw new ResourceInitializationException(e);
       }
     }
 
 
-    List<ContentMapper> mappers;
     final Object mapperConfig = params.get(FIELD_CONTENT_MAPPERS);
     if (mapperConfig != null && mapperConfig instanceof String[]) {
       try {
         mappers = createContentProcessor(ContentMapper.class, CONTENT_MAPPER_DEFAULT_PACKAGE,
             context, (String[]) mapperConfig);
+
+        // Initialise the mappers
+        mappers.forEach(m -> {
+          try {
+            m.initialize(context);
+          } catch (final Exception e) {
+            getMonitor().warn("Unable to initialse content mapper: {}", e);
+          }
+        });
       } catch (final InvalidParameterException e) {
         throw new ResourceInitializationException(e);
       }
@@ -313,6 +332,10 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       textBlocks.destroy();
       textBlocks = null;
     }
+
+    // Destroy all the content mapper and manipulators
+    manipulators.forEach(ContentManipulator::destroy);
+    mappers.forEach(ContentMapper::destroy);
 
     super.doDestroy();
   }
