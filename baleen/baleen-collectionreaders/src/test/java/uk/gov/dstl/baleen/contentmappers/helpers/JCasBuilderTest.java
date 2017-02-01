@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
@@ -17,12 +16,13 @@ import org.junit.Test;
 import uk.gov.dstl.baleen.types.Base;
 import uk.gov.dstl.baleen.types.semantic.Entity;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class JCasBuilderTest {
 
   @Test
   public void testBuild() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final JCasBuilder builder = new JCasBuilder(jCas);
 

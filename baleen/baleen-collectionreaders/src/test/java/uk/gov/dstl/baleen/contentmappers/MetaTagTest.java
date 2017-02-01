@@ -3,7 +3,6 @@ package uk.gov.dstl.baleen.contentmappers;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
@@ -11,13 +10,14 @@ import org.junit.Test;
 
 import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class MetaTagTest {
 
 
   @Test
   public void testNameContent() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final MetaTags mt = new MetaTags();
 
     final Element element = new Element(Tag.valueOf("meta"), "");
@@ -34,7 +34,7 @@ public class MetaTagTest {
 
   @Test
   public void testCharset() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final MetaTags mt = new MetaTags();
 
     final Element element = new Element(Tag.valueOf("meta"), "");

@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
@@ -14,6 +13,7 @@ import org.junit.Test;
 import uk.gov.dstl.baleen.contentmanipulators.helpers.MarkupUtils;
 import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.types.metadata.ProtectiveMarking;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class DataAttributeMapperTest {
 
@@ -23,7 +23,7 @@ public class DataAttributeMapperTest {
 
   @Before
   public void before() throws UIMAException {
-    jCas = JCasFactory.createJCas();
+    jCas = JCasSingleton.getJCasInstance();
     mapper = new DataAttributeMapper();
     collector = new AnnotationCollector();
   }

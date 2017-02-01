@@ -8,7 +8,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +16,7 @@ import uk.gov.dstl.baleen.types.common.Buzzword;
 import uk.gov.dstl.baleen.types.common.Person;
 import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.types.semantic.Entity;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class TextBlockTest {
 
@@ -27,7 +27,7 @@ public class TextBlockTest {
 
   @Before
   public void before() throws UIMAException {
-    jCas = JCasFactory.createJCas();
+    jCas = JCasSingleton.getJCasInstance();
     jCas.setDocumentText(DOC_TEXT);
 
     text = new Text(jCas, 12, 12 + TEXT_TEXT.length());

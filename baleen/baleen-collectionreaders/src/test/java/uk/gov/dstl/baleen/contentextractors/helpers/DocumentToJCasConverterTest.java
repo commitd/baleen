@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.jsoup.Jsoup;
@@ -17,6 +16,7 @@ import org.junit.Test;
 import uk.gov.dstl.baleen.contentmappers.helpers.AnnotationCollector;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class DocumentToJCasConverterTest {
 
@@ -24,7 +24,7 @@ public class DocumentToJCasConverterTest {
 
   @Test
   public void test() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final DocumentToJCasConverter converter = new DocumentToJCasConverter(Collections.emptyList());
 
     final Document doc = Jsoup.parseBodyFragment("<p>Hello</p><pre>Something\nFormatted</pre>");
@@ -36,7 +36,7 @@ public class DocumentToJCasConverterTest {
 
   @Test
   public void testWithSimpleMapper() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final DocumentToJCasConverter converter =
         new DocumentToJCasConverter(Collections.singletonList(new MapOnlyP()));
 

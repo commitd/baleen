@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.fit.factory.UimaContextFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
@@ -31,6 +30,7 @@ import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.uima.BaleenContentExtractor;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class StructureContentExtractorTest {
 
@@ -50,7 +50,7 @@ public class StructureContentExtractorTest {
   @Test
   public void test() throws UIMAException, IOException {
     final UimaContext context = UimaContextFactory.createUimaContext();
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
     contentExtractor.initialize(context, Collections.emptyMap());
@@ -72,7 +72,7 @@ public class StructureContentExtractorTest {
   @Test
   public void testInitializingManipulator() throws UIMAException, IOException {
     final UimaContext context = UimaContextFactory.createUimaContext();
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
     final Map<String, Object> params = new HashMap<>();
@@ -91,7 +91,7 @@ public class StructureContentExtractorTest {
   @Test
   public void testInitializingMapper() throws UIMAException, IOException {
     final UimaContext context = UimaContextFactory.createUimaContext();
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
     final Map<String, Object> params = new HashMap<>();
@@ -135,7 +135,7 @@ public class StructureContentExtractorTest {
   @Test
   public void testTextBlocksEnabled() throws Exception {
     final UimaContext context = UimaContextFactory.createUimaContext();
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
     contentExtractor.initialize(context, Collections.emptyMap());
@@ -151,7 +151,7 @@ public class StructureContentExtractorTest {
   @Test
   public void testDisableTextBlocks() throws Exception {
     final UimaContext context = UimaContextFactory.createUimaContext();
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final BaleenContentExtractor contentExtractor = new TestStructureContentExtractor();
     final Map<String, Object> map = new HashMap<>();

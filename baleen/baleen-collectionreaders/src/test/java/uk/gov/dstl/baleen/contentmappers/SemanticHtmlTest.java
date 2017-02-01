@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
@@ -19,13 +18,14 @@ import uk.gov.dstl.baleen.types.common.DocumentReference;
 import uk.gov.dstl.baleen.types.common.Quantity;
 import uk.gov.dstl.baleen.types.semantic.Location;
 import uk.gov.dstl.baleen.types.semantic.Temporal;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class SemanticHtmlTest {
 
 
   @Test
   public void testMain() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final SemanticHtml sa = new SemanticHtml();
 
     final Map<String, Class<?>> expectedMain = new HashMap<>();

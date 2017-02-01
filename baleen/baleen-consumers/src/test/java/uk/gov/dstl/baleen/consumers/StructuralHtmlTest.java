@@ -12,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.DocumentAnnotation;
 import org.jsoup.Jsoup;
@@ -57,6 +56,7 @@ import uk.gov.dstl.baleen.types.structure.TableCell;
 import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.TextDocument;
 import uk.gov.dstl.baleen.types.structure.Unordered;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 import uk.gov.dstl.baleen.uima.utils.UimaTypesUtils;
 
 public class StructuralHtmlTest {
@@ -250,7 +250,7 @@ public class StructuralHtmlTest {
   @Before
   public void beforeTest() throws UIMAException {
     outputFolder = Files.createTempDir();
-    jCas = JCasFactory.createJCas();
+    jCas = JCasSingleton.getJCasInstance();
   }
 
   @After

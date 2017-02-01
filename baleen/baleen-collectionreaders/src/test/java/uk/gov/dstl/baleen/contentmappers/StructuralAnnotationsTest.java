@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.uima.UIMAException;
-import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.jsoup.nodes.Element;
@@ -53,6 +52,7 @@ import uk.gov.dstl.baleen.types.structure.TableFooter;
 import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.Unordered;
+import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 
 public class StructuralAnnotationsTest {
 
@@ -198,7 +198,7 @@ public class StructuralAnnotationsTest {
 
   @Test
   public void testMap() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final StructuralAnnotations sa = new StructuralAnnotations();
 
@@ -230,7 +230,7 @@ public class StructuralAnnotationsTest {
 
   @Test
   public void testAnchor() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final StructuralAnnotations sa = new StructuralAnnotations();
 
     final Element anchor = new Element(Tag.valueOf("a"), "");
@@ -243,7 +243,7 @@ public class StructuralAnnotationsTest {
 
   @Test
   public void testLink() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final StructuralAnnotations sa = new StructuralAnnotations();
 
     final Element anchor = new Element(Tag.valueOf("a"), "");
@@ -257,7 +257,7 @@ public class StructuralAnnotationsTest {
 
   @Test
   public void testMain() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final StructuralAnnotations sa = new StructuralAnnotations();
 
     final Map<String, Class<?>> expectedMain = new HashMap<>();
@@ -283,7 +283,7 @@ public class StructuralAnnotationsTest {
 
   @Test
   public void testArticle() throws UIMAException {
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
     final StructuralAnnotations sa = new StructuralAnnotations();
 
     final Map<String, Class<?>> expectedArticle = new HashMap<>();
