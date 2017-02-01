@@ -62,7 +62,7 @@ public class TikaContentExtractorTest {
   @Test
   public void testTikaText() throws Exception {
     final UimaContext context = UimaContextFactory.createUimaContext();
-    final JCas jCas = JCasFactory.createJCas();
+    final JCas jCas = JCasSingleton.getJCasInstance();
 
     final BaleenContentExtractor contentExtractor = new TikaContentExtractor();
 
