@@ -22,5 +22,17 @@ This XML file classified as UK OFFICIAL.</description>
         </featureDescription>
       </features>
     </typeDescription>
+    <typeDescription>
+      <name>uk.gov.dstl.baleen.types.templates.TemplateField</name>
+      <description>An field identified from a template</description>
+      <supertypeName>uk.gov.dstl.baleen.types.Base</supertypeName>
+    <features>
+        <featureDescription>
+          <name>name</name>
+          <description>The name of the identified template field.</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
   </types>
 </typeSystemDescription>
