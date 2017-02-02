@@ -36,10 +36,10 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * Converts selected Structure annotations to Text annotations.
  * 
  * Rather than annotators need to deal with every time of structure type in order to get the right
- * text form a document. This annoators maps seleceted (configuratble) structural types to Text
+ * text form a document. This annotator maps selected (configurable) structural types to Text
  * annotations.
  * 
- * The list of structure types to map is Paragraph, Aside, Deatils, ListItem, TableCell, Summary,
+ * The list of structure types to map is Paragraph, Aside, Details, ListItem, TableCell, Summary,
  * Quotation, Heading, Caption, DefinitionItem, DefinitionList, Preformatted.
  * 
  * This list can be configured by providing class names (or full qualified classes) to the types
