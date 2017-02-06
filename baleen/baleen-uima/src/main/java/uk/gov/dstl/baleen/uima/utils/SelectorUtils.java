@@ -36,6 +36,27 @@ public class SelectorUtils {
     return selectorParts;
   }
 
+  /**
+   * Given a selector string and a JCas instance, returns Structure elements from the JCas that
+   * match the selector.
+   * 
+   * <p>
+   * If the varargs packages parameter is provided, the element names in the selector are looked up
+   * in the specified packages in order until a match is found. If it is not provided, the selector
+   * elements are assumed to be fully qualified class names - <strong>note: this behaviour may
+   * change</strong>)
+   * </p>
+   * 
+   * @param jCas
+   *          the jCas to search
+   * @param selectorString
+   *          the selector string
+   * @param packages
+   *          optional varargs/array of packages to resolve element names against
+   * @return a List of structure elements from the JCas that match the given selector string
+   * @throws InvalidParameterException
+   *           if one of the selector element names cannot be resolved to a type.
+   */
   public static List<? extends Structure> select(JCas jCas, String selectorString,
       String... packages) throws InvalidParameterException {
     List<SelectorPart> selectorParts = parseSelector(selectorString, packages);
