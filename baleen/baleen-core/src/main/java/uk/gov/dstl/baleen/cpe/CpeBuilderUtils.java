@@ -78,7 +78,7 @@ public final class CpeBuilderUtils {
 		try {
 			return (Class<S>) Class.forName(className);
 		} catch (Exception e) {
-			throw new InvalidParameterException("Could not find or instantiate analysis engine " + className, e);
+			throw new InvalidParameterException("Could not find or instantiate class " + className, e);
 		}
 	}
 

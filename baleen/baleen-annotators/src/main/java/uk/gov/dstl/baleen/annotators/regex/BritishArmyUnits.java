@@ -10,11 +10,11 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.types.common.Organisation;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
 import uk.gov.dstl.baleen.uima.ComparableTextSpan;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 
 /**
@@ -24,7 +24,7 @@ import uk.gov.dstl.baleen.uima.ComparableTextSpan;
  * 
  * 
  */
-public class BritishArmyUnits extends BaleenAnnotator {
+public class BritishArmyUnits extends BaleenTextAwareAnnotator {
 	private final Pattern section = Pattern.compile("\\b\\d+ Sect\\b");
 	private final Pattern platoon = Pattern.compile("\\b\\d+ Pl\\b");
 	private final Pattern company = Pattern.compile("\\b[A-Z] Coy\\b");
@@ -34,17 +34,17 @@ public class BritishArmyUnits extends BaleenAnnotator {
 	private static final int HIERARCHY_COMPANY = 3;
 	
 	@Override
-	public void doProcess(JCas aJCas) throws AnalysisEngineProcessException {
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
 		
-		String documentText = aJCas.getDocumentText();
+		final String documentText = block.getCoveredText();
 	
 		// 1. Find all sections, platoons, companies, etc.
 
-		List<ComparableTextSpan> sectionSpans = ComparableTextSpan.buildSpans(documentText, section);
-		List<ComparableTextSpan> platoonSpans = ComparableTextSpan.buildSpans(documentText, platoon);
-		List<ComparableTextSpan> companySpans = ComparableTextSpan.buildSpans(documentText, company);
+		final List<ComparableTextSpan> sectionSpans = ComparableTextSpan.buildSpans(documentText, section);
+		final List<ComparableTextSpan> platoonSpans = ComparableTextSpan.buildSpans(documentText, platoon);
+		final List<ComparableTextSpan> companySpans = ComparableTextSpan.buildSpans(documentText, company);
 		
-		Map<Integer, List<ComparableTextSpan>> hierarchySpans = new HashMap<>();
+		final Map<Integer, List<ComparableTextSpan>> hierarchySpans = new HashMap<>();
 	
 		hierarchySpans.put(HIERARCHY_SECTION, sectionSpans);
 		hierarchySpans.put(HIERARCHY_PLATOON, platoonSpans);
@@ -52,35 +52,33 @@ public class BritishArmyUnits extends BaleenAnnotator {
 	
 		
 		// 2. Merge when spans are separated by a space or a comma, and the second span is higher in the hierarchy
-		SortedSet<Integer> hierarchyLevels = new TreeSet<>(hierarchySpans.keySet());
+		final SortedSet<Integer> hierarchyLevels = new TreeSet<>(hierarchySpans.keySet());
 		for(Integer level = hierarchyLevels.first(); level < hierarchyLevels.last(); level++){
-			compareHierarchy(aJCas, hierarchySpans, level);
+			compareHierarchy(documentText, hierarchySpans, level);
 		}
 		
 		// 3. Add spans to JCas as organisations
-		for(ComparableTextSpan span : hierarchySpans.get(hierarchyLevels.last())){
-			Organisation org = new Organisation(aJCas);
+		for(final ComparableTextSpan span : hierarchySpans.get(hierarchyLevels.last())){
+			final Organisation org = new Organisation(block.getJCas());
 			
 			org.setConfidence(1.0);
-			
-			org.setBegin(span.getStart());
-			org.setEnd(span.getEnd());
+			block.setBeginAndEnd(org, span.getStart(), span.getEnd());
 			org.setValue(span.getValue());
 
 			addToJCasIndex(org);
 		}
 	}
 	
-	private void compareHierarchy(JCas aJCas, Map<Integer, List<ComparableTextSpan>> hierarchySpans, int level) {
+	private void compareHierarchy(final String documentText, final Map<Integer, List<ComparableTextSpan>> hierarchySpans, final int level) {
 		
 		List<ComparableTextSpan> newSpans = hierarchySpans.get(level + 1);
 		if(newSpans == null)
 			newSpans = new ArrayList<>();
 		
-		for(ComparableTextSpan s1 : hierarchySpans.get(level)){
+		for(final ComparableTextSpan s1 : hierarchySpans.get(level)){
 			ComparableTextSpan s = s1;
-			for(ComparableTextSpan s2 : hierarchySpans.get(level + 1)){
-				ComparableTextSpan t = mergeSpansIfPossible(s1, s2, aJCas);
+			for(final ComparableTextSpan s2 : hierarchySpans.get(level + 1)){
+				final ComparableTextSpan t = mergeSpansIfPossible(s1, s2, documentText);
 				if(t != null){
 					s = t;
 					newSpans.remove(s2);
@@ -94,9 +92,9 @@ public class BritishArmyUnits extends BaleenAnnotator {
 		hierarchySpans.put(level + 1, newSpans);
 	}
 	
-	private ComparableTextSpan mergeSpansIfPossible(ComparableTextSpan s1, ComparableTextSpan s2, JCas jCas){
+	private ComparableTextSpan mergeSpansIfPossible(final ComparableTextSpan s1, final ComparableTextSpan s2, final String documentText) {
 		if(s1.getStart() < s2.getEnd()) {
-			String text = jCas.getDocumentText().substring(s1.getStart(), s2.getEnd());
+			final String text = documentText.substring(s1.getStart(), s2.getEnd());
 			if(text.equals(s1.getValue() + " " + s2.getValue()) || text.equals(s1.getValue() + "," + s2.getValue()) || text.equals(s1.getValue() + ", " + s2.getValue())){
 				return new ComparableTextSpan(s1.getStart(), s2.getEnd(), text);
 			}

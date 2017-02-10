@@ -67,7 +67,7 @@ public abstract class AbstractCpeBuilder {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCpeBuilder.class);
 
 	/** The Constant CLASS. */
-	protected static final String CLASS = "class";
+	public static final String CLASS = "class";
 
 	/** The Constant PIPELINE_NAME. */
 	public static final String PIPELINE_NAME = "__pipelineName";

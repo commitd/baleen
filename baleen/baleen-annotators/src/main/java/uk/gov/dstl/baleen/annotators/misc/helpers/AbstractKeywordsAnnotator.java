@@ -22,7 +22,8 @@ import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.resources.SharedStopwordResource;
 import uk.gov.dstl.baleen.types.common.Buzzword;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 import uk.gov.dstl.baleen.uima.utils.UimaTypesUtils;
 
 /**
@@ -30,7 +31,7 @@ import uk.gov.dstl.baleen.uima.utils.UimaTypesUtils;
  * 
  * @baleen.javadoc
  */
-public abstract class AbstractKeywordsAnnotator extends BaleenAnnotator {
+public abstract class AbstractKeywordsAnnotator extends BaleenTextAwareAnnotator {
 	/**
 	 * Should the extracted keywords be annotated as Buzzwords within the document? 
 	 * 
@@ -80,23 +81,23 @@ public abstract class AbstractKeywordsAnnotator extends BaleenAnnotator {
 	protected Collection<String> stopwords;
 	
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		try{
 			stopwords = stopwordResource.getStopwords(SharedStopwordResource.StopwordList.valueOf(stoplist));
-		}catch(IllegalArgumentException iae){
+		}catch(final IllegalArgumentException iae){
 			getMonitor().info("Value of {} does not match pre-defined list, assuming value is a file", PARAM_STOPLIST);
 			getMonitor().debug("Unable to parse value of {} as StopwordList enum", PARAM_STOPLIST, iae);
 			
-			File f = new File(stoplist);
+			final File f = new File(stoplist);
 			
 			try{
 				stopwords = stopwordResource.getStopwords(f);
-			}catch(IOException ioe){
+			}catch(final IOException ioe){
 				throw new ResourceInitializationException(
 					new InvalidParameterException("Couldn't load stoplist", ioe)
 				);
 			}
-		}catch(IOException ioe){
+		}catch(final IOException ioe){
 			getMonitor().warn("Unable to load Stopword list, resorting to default list", ioe);
 			stopwords = stopwordResource.getStopwords();
 		}
@@ -105,21 +106,14 @@ public abstract class AbstractKeywordsAnnotator extends BaleenAnnotator {
 	/**
 	 * Add the supplied keywords to the CAS as Metadata and, if configured, Buzzwords
 	 */
-	protected void addKeywordsToJCas(JCas jCas, List<String> keywords){
-		Metadata md = new Metadata(jCas);
+	protected void addKeywordsToJCas(final JCas jCas, final List<String> keywords){
+		final Metadata md = new Metadata(jCas);
 		md.setKey("keywords");
 		md.setValue(keywords.stream().collect(Collectors.joining(";")));
 		addToJCasIndex(md);
 		
 		if(addBuzzwords){
-			for(String keyword : keywords){
-				Matcher m = Pattern.compile("\\b"+Pattern.quote(keyword)+"\\b", Pattern.CASE_INSENSITIVE).matcher(jCas.getDocumentText());
-				while(m.find()){
-					Buzzword bw = new Buzzword(jCas, m.start(), m.end());
-					bw.setTags(UimaTypesUtils.toArray(jCas, Arrays.asList("keyword")));
-					addToJCasIndex(bw);
-				}
-			}
+      addAllKeywords(jCas, keywords);
 		}
 	}
 	
@@ -128,27 +122,37 @@ public abstract class AbstractKeywordsAnnotator extends BaleenAnnotator {
 	 * A list of additional buzzwords to be annotated can be provided, for example other variants
 	 * of the main list of keywords (e.g. machines as well as machine)
 	 */
-	protected void addKeywordsToJCas(JCas jCas, List<String> keywords, List<String> additionalBuzzwords){
-		Metadata md = new Metadata(jCas);
+	protected void addKeywordsToJCas(final JCas jCas, final List<String> keywords, final List<String> additionalBuzzwords){
+		final Metadata md = new Metadata(jCas);
 		md.setKey("keywords");
 		md.setValue(keywords.stream().collect(Collectors.joining(";")));
 		addToJCasIndex(md);
 		
 		if(addBuzzwords){
-			Set<String> allKeywords = new HashSet<>(keywords);
+			final Set<String> allKeywords = new HashSet<>(keywords);
 			allKeywords.addAll(additionalBuzzwords);
-			
-			for(String keyword : allKeywords){
-				Matcher m = Pattern.compile("\\b"+Pattern.quote(keyword)+"\\b", Pattern.CASE_INSENSITIVE).matcher(jCas.getDocumentText());
-				while(m.find()){
-					Buzzword bw = new Buzzword(jCas, m.start(), m.end());
-					bw.setTags(UimaTypesUtils.toArray(jCas, Arrays.asList("keyword")));
-					addToJCasIndex(bw);
-				}
-			}
+	         // NOTE: This will add buzzwords outside the Text areas
+
+      addAllKeywords(jCas, allKeywords);
 		}
 	}
-	
+
+  private void addAllKeywords(final JCas jCas, final Collection<String> allKeywords) {
+    final List<TextBlock> blocks = getTextBlocks(jCas);
+    for (final String keyword : allKeywords) {
+      final Pattern pattern =
+          Pattern.compile("\\b" + Pattern.quote(keyword) + "\\b", Pattern.CASE_INSENSITIVE);
+      for (final TextBlock block : blocks) {
+        final Matcher m = pattern.matcher(block.getCoveredText());
+        while (m.find()) {
+          final Buzzword bw = block.newAnnotation(Buzzword.class, m.start(), m.end());
+          bw.setTags(UimaTypesUtils.toArray(jCas, Arrays.asList("keyword")));
+          addToJCasIndex(bw);
+        }
+      }
+    }
+  }
+
 	/**
 	 * Build a regular expression that matches any of the current list of stopwords,
 	 * along with any additional terms provided.
@@ -156,15 +160,15 @@ public abstract class AbstractKeywordsAnnotator extends BaleenAnnotator {
 	 * Any additional terms provided are not escaped, so you can provide your own regular
 	 * expressions to include in the pattern.
 	 */
-	protected Pattern buildStopwordsPattern(String... additionalTerms){
+	protected Pattern buildStopwordsPattern(final String... additionalTerms){
 		//TODO: Replace this with StopwordUtils alternative
-		StringJoiner sj = new StringJoiner("|");
-		for(String s : stopwords){
+		final StringJoiner sj = new StringJoiner("|");
+		for(final String s : stopwords){
 			sj.add(Pattern.quote(s));
 		}
 		
 		if(additionalTerms != null){
-			for(String s : additionalTerms){
+			for(final String s : additionalTerms){
 				sj.add(s);
 			}
 		}

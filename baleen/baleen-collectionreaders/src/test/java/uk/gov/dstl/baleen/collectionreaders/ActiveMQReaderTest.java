@@ -44,13 +44,13 @@ public class ActiveMQReaderTest extends AbstractReaderTest {
 		assertTrue(bcr.doHasNext());
 		bcr.getNext(jCas);
 		assertEquals("Hello, World", jCas.getDocumentText().trim());
-		assertEquals(0, JCasUtil.select(jCas, Metadata.class).size());
+		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
 		jCas.reset();
 
 		assertTrue(bcr.doHasNext());
 		bcr.getNext(jCas);
 		assertEquals("Hello, Test", jCas.getDocumentText().trim());
-		assertEquals(0, JCasUtil.select(jCas, Metadata.class).size());
+		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
 		jCas.reset();
 
 		assertFalse(bcr.doHasNext());

@@ -35,7 +35,7 @@ public class TypeUtils {
 	 * @param jCas A JCas object containing the type system
 	 * @return The class associated with that type
 	 */
-	public static Class<AnnotationBase> getType(String typeName, JCas jCas){
+	public static Class<? extends AnnotationBase> getType(String typeName, JCas jCas){
 		return getType(typeName, jCas.getTypeSystem());
 	}
 

@@ -5,11 +5,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.QuantityUtils;
 import uk.gov.dstl.baleen.types.common.Quantity;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 
 /**
@@ -20,7 +20,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * <p>This annotator assumes that nm refers to nautical miles, not nanometres.</p>
  */
-public class Distance extends BaleenAnnotator {
+public class Distance extends BaleenTextAwareAnnotator {
 	public static final double MI_TO_M = 1609.344;
 	public static final double YD_TO_M = 0.9144;
 	public static final double FT_TO_M = 0.3048;
@@ -38,31 +38,33 @@ public class Distance extends BaleenAnnotator {
 	private final Pattern nmPattern = Pattern.compile("\\b([0-9]+([0-9\\.,]+[0-9])?)[ ]?(hundred|thousand|million|billion|trillion)?[ ]?(nm|nmi|nautical mile(s)?)\\b", Pattern.CASE_INSENSITIVE);
 	
 	@Override
-	public void doProcess(JCas aJCas) throws AnalysisEngineProcessException {
-		String text = aJCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 		
-		process(aJCas, text, kmPattern, "km", 1000);
-		process(aJCas, text, mPattern, "m", 1);
-		process(aJCas, text, cmPattern, "cm", 0.01);
-		process(aJCas, text, mmPattern, "mm", 0.001);
-		process(aJCas, text, miPattern, "mi", MI_TO_M);
-		process(aJCas, text, ydPattern, "yd", YD_TO_M);
-		process(aJCas, text, ftPattern, "ft", FT_TO_M);
-		process(aJCas, text, inPattern, "in", IN_TO_M);
-		process(aJCas, text, nmPattern, "nmi", NM_TO_M);
+		process(block, text, kmPattern, "km", 1000);
+		process(block, text, mPattern, "m", 1);
+		process(block, text, cmPattern, "cm", 0.01);
+		process(block, text, mmPattern, "mm", 0.001);
+		process(block, text, miPattern, "mi", MI_TO_M);
+		process(block, text, ydPattern, "yd", YD_TO_M);
+		process(block, text, ftPattern, "ft", FT_TO_M);
+		process(block, text, inPattern, "in", IN_TO_M);
+		process(block, text, nmPattern, "nmi", NM_TO_M);
 	}
 	
-	private void process(JCas jCas, String text, Pattern pattern, String unit, double scale) {
-		Matcher matcher = pattern.matcher(text);
+	private void process(final TextBlock block, final String text, final Pattern pattern, final String unit, final double scale) {
+		final Matcher matcher = pattern.matcher(text);
 		while(matcher.find()){
-			addQuantity(jCas, matcher, unit, scale);
+			addQuantity(block, matcher, unit, scale);
 		}
 	}
 
-	private void addQuantity(JCas aJCas, Matcher matcher, String unit, double scale) {
-		Quantity quantity = QuantityUtils.createQuantity(aJCas, matcher, unit, scale, "m", "distance");
+	private void addQuantity(final TextBlock block, final Matcher matcher, final String unit, final double scale) {
+		final Quantity quantity = QuantityUtils.createQuantity(block.getJCas(), matcher, unit, scale, "m", "distance");
 		if(quantity != null) {
-			addToJCasIndex(quantity);
+		  // Correct the offset
+		  block.setBeginAndEnd(quantity, quantity.getBegin(), quantity.getEnd());
+		  addToJCasIndex(quantity);
 		}
 	}
 	

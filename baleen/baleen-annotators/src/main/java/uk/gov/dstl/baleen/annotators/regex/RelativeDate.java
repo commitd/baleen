@@ -16,12 +16,12 @@ import java.util.regex.Pattern;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.DateTimeUtils;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
 import uk.gov.dstl.baleen.types.semantic.Temporal;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Extract expressions that refer to a relative date, e.g. yesterday.
@@ -61,7 +61,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * @baleen.javadoc
  */
-public class RelativeDate extends BaleenAnnotator {
+public class RelativeDate extends BaleenTextAwareAnnotator {
 	/**
 	 * The format of dates in the metadata fields 
 	 * 
@@ -91,25 +91,25 @@ public class RelativeDate extends BaleenAnnotator {
 	LocalDate relativeTo = null;
 	
 	@Override
-	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
+	protected void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
 		relativeTo = null;
 		
 		DateTimeFormatter dtf = null;
 		try{
 			dtf = DateTimeFormatter.ofPattern(dateFormat);
-		}catch(IllegalArgumentException iae){
+		}catch(final IllegalArgumentException iae){
 			getMonitor().error("Invalid date format, no relative date will be set", iae);
 		}
 		
 		if(dtf != null){
-			Collection<Metadata> md = JCasUtil.select(jCas, Metadata.class);
-			for(String field : metadataFields){
-				for(Metadata m : md){
+			final Collection<Metadata> md = JCasUtil.select(block.getJCas(), Metadata.class);
+			for(final String field : metadataFields){
+				for(final Metadata m : md){
 					if(m.getKey().equals(field)){
 						try{
 							relativeTo = LocalDate.parse(m.getValue(), dtf);
 							break;
-						}catch(DateTimeParseException dtpe){
+						}catch(final DateTimeParseException dtpe){
 							getMonitor().warn("Metadata field {} found, but content ({}) wasn't parseable", m.getKey(), m.getValue());
 						}
 					}
@@ -120,70 +120,70 @@ public class RelativeDate extends BaleenAnnotator {
 			}
 		}
 		
-		yesterday(jCas);
-		today(jCas);
-		tomorrow(jCas);
-		thisX(jCas);
-		nextLastDay(jCas);
-		nextLastWeek(jCas);
-		nextLastMonth(jCas);
-		nextLastYear(jCas);
-		inTheNextLastX(jCas);
+		yesterday(block);
+		today(block);
+		tomorrow(block);
+		thisX(block);
+		nextLastDay(block);
+		nextLastWeek(block);
+		nextLastMonth(block);
+		nextLastYear(block);
+		inTheNextLastX(block);
 	}
 	
-	private void yesterday(JCas jCas){
-		Pattern p = Pattern.compile("\\b(day before )?yesterday\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void yesterday(final TextBlock block){
+		final Pattern p = Pattern.compile("\\b(day before )?yesterday\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(1) != null){
-				createRelativeDay(jCas, m.start(), m.end(), -2);
+				createRelativeDay(block, m.start(), m.end(), -2);
 			}else{
-				createRelativeDay(jCas, m.start(), m.end(), -1);
+				createRelativeDay(block, m.start(), m.end(), -1);
 			}
 		}
 	}
 	
-	private void today(JCas jCas){
-		Pattern p = Pattern.compile("\\btoday\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void today(final TextBlock block){
+		final Pattern p = Pattern.compile("\\btoday\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
-			createRelativeDay(jCas, m.start(), m.end(), 0);
+			createRelativeDay(block, m.start(), m.end(), 0);
 		}
 	}
 	
-	private void tomorrow(JCas jCas){
-		Pattern p = Pattern.compile("\\b(day after )?tomorrow\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void tomorrow(final TextBlock block){
+		final Pattern p = Pattern.compile("\\b(day after )?tomorrow\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(1) != null){
-				createRelativeDay(jCas, m.start(), m.end(), 2);
+				createRelativeDay(block, m.start(), m.end(), 2);
 			}else{
-				createRelativeDay(jCas, m.start(), m.end(), 1);
+				createRelativeDay(block, m.start(), m.end(), 1);
 			}
 		}
 	}
 	
-	private void thisX(JCas jCas){
-		Pattern p = Pattern.compile("\\bthis (week|month|year)\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void thisX(final TextBlock block){
+		final Pattern p = Pattern.compile("\\bthis (week|month|year)\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if("week".equalsIgnoreCase(m.group(1))){
-				createRelativeWeek(jCas, m.start(), m.end(), 0);
+				createRelativeWeek(block, m.start(), m.end(), 0);
 			}else if("month".equalsIgnoreCase(m.group(1))){
-				createRelativeMonth(jCas, m.start(), m.end(), 0);
+				createRelativeMonth(block, m.start(), m.end(), 0);
 			}else if("year".equalsIgnoreCase(m.group(1))){
-				createRelativeYear(jCas, m.start(), m.end(), 0);
+				createRelativeYear(block, m.start(), m.end(), 0);
 			}
 		}
 	}
 	
-	private void nextLastDay(JCas jCas){
-		Pattern p = Pattern.compile("\\b(next|last) "+DAYS+"\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void nextLastDay(final TextBlock block){
+		final Pattern p = Pattern.compile("\\b(next|last) "+DAYS+"\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			Integer offset = null;
@@ -206,88 +206,88 @@ public class RelativeDate extends BaleenAnnotator {
 				}
 			}
 			
-			createRelativeDay(jCas, m.start(), m.end(), offset);
+			createRelativeDay(block, m.start(), m.end(), offset);
 		}
 	}
 	
-	private void nextLastWeek(JCas jCas){
-		Pattern p = Pattern.compile("\\b((in the|within the|"+DAYS+") )?(next|last) week\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void nextLastWeek(final TextBlock block){
+		final Pattern p = Pattern.compile("\\b((in the|within the|"+DAYS+") )?(next|last) week\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(3) != null){
 				if("next".equalsIgnoreCase(m.group(4))){
-					createRelativeWeekDay(jCas, m.start(), m.end(), 1, DateTimeUtils.asDay(m.group(3)));
+					createRelativeWeekDay(block, m.start(), m.end(), 1, DateTimeUtils.asDay(m.group(3)));
 				}else{
-					createRelativeWeekDay(jCas, m.start(), m.end(), -1, DateTimeUtils.asDay(m.group(3)));
+					createRelativeWeekDay(block, m.start(), m.end(), -1, DateTimeUtils.asDay(m.group(3)));
 				}
 			}else if(m.group(2) != null){
 				if("next".equalsIgnoreCase(m.group(4))){
-					createRelativeWeekPeriod(jCas, m.start(), m.end(), 1);
+					createRelativeWeekPeriod(block, m.start(), m.end(), 1);
 				}else{
-					createRelativeWeekPeriod(jCas, m.start(), m.end(), -1);
+					createRelativeWeekPeriod(block, m.start(), m.end(), -1);
 				}
 			}else{
 				if("next".equalsIgnoreCase(m.group(4))){
-					createRelativeWeek(jCas, m.start(), m.end(), 1);
+					createRelativeWeek(block, m.start(), m.end(), 1);
 				}else{
-					createRelativeWeek(jCas, m.start(), m.end(), -1);
+					createRelativeWeek(block, m.start(), m.end(), -1);
 				}
 			}
 		}
 	}
 	
-	private void nextLastMonth(JCas jCas){
-		Pattern p = Pattern.compile("\\b((in the|within the) )?(next|last) month\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void nextLastMonth(final TextBlock block){
+		final Pattern p = Pattern.compile("\\b((in the|within the) )?(next|last) month\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(2) != null){
 				if("next".equalsIgnoreCase(m.group(3))){
-					createRelativeMonthPeriod(jCas, m.start(), m.end(), 1);
+					createRelativeMonthPeriod(block, m.start(), m.end(), 1);
 				}else{
-					createRelativeMonthPeriod(jCas, m.start(), m.end(), -1);
+					createRelativeMonthPeriod(block, m.start(), m.end(), -1);
 				}
 			}else{
 				if("next".equalsIgnoreCase(m.group(3))){
-					createRelativeMonth(jCas, m.start(), m.end(), 1);
+					createRelativeMonth(block, m.start(), m.end(), 1);
 				}else{
-					createRelativeMonth(jCas, m.start(), m.end(), -1);
+					createRelativeMonth(block, m.start(), m.end(), -1);
 				}
 			}
 		}
 	}
 	
-	private void nextLastYear(JCas jCas){
-		Pattern p = Pattern.compile("\\b((in the|within the|"+MONTHS+") )?(next|last) year\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void nextLastYear(final TextBlock block){
+		final Pattern p = Pattern.compile("\\b((in the|within the|"+MONTHS+") )?(next|last) year\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(3) != null){
 				if("next".equalsIgnoreCase(m.group(4))){
-					createRelativeYearMonth(jCas, m.start(), m.end(), 1, DateTimeUtils.asMonth(m.group(3)));
+					createRelativeYearMonth(block, m.start(), m.end(), 1, DateTimeUtils.asMonth(m.group(3)));
 				}else{
-					createRelativeYearMonth(jCas, m.start(), m.end(), -1, DateTimeUtils.asMonth(m.group(3)));
+					createRelativeYearMonth(block, m.start(), m.end(), -1, DateTimeUtils.asMonth(m.group(3)));
 				}
 			}else if(m.group(2) != null){
 				if("next".equalsIgnoreCase(m.group(4))){
-					createRelativeYearPeriod(jCas, m.start(), m.end(), 1);
+					createRelativeYearPeriod(block, m.start(), m.end(), 1);
 				}else{
-					createRelativeYearPeriod(jCas, m.start(), m.end(), -1);
+					createRelativeYearPeriod(block, m.start(), m.end(), -1);
 				}
 			}else{
 				if("next".equalsIgnoreCase(m.group(4))){
-					createRelativeYear(jCas, m.start(), m.end(), 1);
+					createRelativeYear(block, m.start(), m.end(), 1);
 				}else{
-					createRelativeYear(jCas, m.start(), m.end(), -1);
+					createRelativeYear(block, m.start(), m.end(), -1);
 				}
 			}
 		}
 	}
 	
-	private void inTheNextLastX(JCas jCas){
-		Pattern p = Pattern.compile("\\b(in|within) the (next|last) (\\d+) (day|week|month|year)s\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = p.matcher(jCas.getDocumentText());
+	private void inTheNextLastX(final TextBlock block){
+		final Pattern p = Pattern.compile("\\b(in|within) the (next|last) (\\d+) (day|week|month|year)s\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = p.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			Integer offset = Integer.parseInt(m.group(3));
@@ -296,19 +296,20 @@ public class RelativeDate extends BaleenAnnotator {
 			}
 			
 			if("day".equalsIgnoreCase(m.group(4))){
-				createRelativeDayPeriod(jCas, m.start(), m.end(), offset);
+				createRelativeDayPeriod(block, m.start(), m.end(), offset);
 			}else if("week".equalsIgnoreCase(m.group(4))){
-				createRelativeWeekPeriod(jCas, m.start(), m.end(), offset);
+				createRelativeWeekPeriod(block, m.start(), m.end(), offset);
 			}else if("month".equalsIgnoreCase(m.group(4))){
-				createRelativeMonthPeriod(jCas, m.start(), m.end(), offset);
+				createRelativeMonthPeriod(block, m.start(), m.end(), offset);
 			}else if("year".equalsIgnoreCase(m.group(4))){
-				createRelativeYearPeriod(jCas, m.start(), m.end(), offset);
+				createRelativeYearPeriod(block, m.start(), m.end(), offset);
 			}
 		}
 	}
 	
-	private void createRelativeDayPeriod(JCas jCas, Integer charBegin, Integer charEnd, Integer dayOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
+	private void createRelativeDayPeriod(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer dayOffset){
+		final Temporal t = new Temporal(block.getJCas());
+		block.setBeginAndEnd(t, charBegin, charEnd);
 		
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
@@ -328,16 +329,17 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeDay(JCas jCas, Integer charBegin, Integer charEnd, Integer dayOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeDay(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer dayOffset){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
 		t.setTemporalType(DATE);
 
 		if(relativeTo != null && dayOffset != null){
-			LocalDate d = relativeTo.plusDays(dayOffset);
+			final LocalDate d = relativeTo.plusDays(dayOffset);
 			
 			t.setTimestampStart(d.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 			t.setTimestampStop(d.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
@@ -346,9 +348,10 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeWeekPeriod(JCas jCas, Integer charBegin, Integer charEnd, Integer weekOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeWeekPeriod(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer weekOffset){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);  
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
@@ -367,9 +370,10 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeWeek(JCas jCas, Integer charBegin, Integer charEnd, Integer weekOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeWeek(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer weekOffset){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
@@ -384,16 +388,17 @@ public class RelativeDate extends BaleenAnnotator {
 			
 			t.setTimestampStart(startOfWeek.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 			
-			LocalDate endOfWeek = startOfWeek.plusWeeks(1);
+			final LocalDate endOfWeek = startOfWeek.plusWeeks(1);
 			t.setTimestampStop(endOfWeek.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 		}
 		
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeWeekDay(JCas jCas, Integer charBegin, Integer charEnd, Integer weekOffset, DayOfWeek day){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeWeekDay(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer weekOffset, final DayOfWeek day){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
@@ -417,9 +422,10 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 
-	private void createRelativeMonthPeriod(JCas jCas, Integer charBegin, Integer charEnd, Integer monthOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeMonthPeriod(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer monthOffset){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
@@ -438,16 +444,17 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeMonth(JCas jCas, Integer charBegin, Integer charEnd, Integer monthOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeMonth(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer monthOffset){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
 		t.setTemporalType(DATE);
 
 		if(relativeTo != null && monthOffset != null){
-			YearMonth ym = YearMonth.from(relativeTo).plusMonths(monthOffset);
+			final YearMonth ym = YearMonth.from(relativeTo).plusMonths(monthOffset);
 			
 			t.setTimestampStart(ym.atDay(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 			t.setTimestampStop(ym.plusMonths(1).atDay(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
@@ -456,9 +463,10 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeYearPeriod(JCas jCas, Integer charBegin, Integer charEnd, Integer yearOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeYearPeriod(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer yearOffset){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
@@ -477,16 +485,17 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeYear(JCas jCas, Integer charBegin, Integer charEnd, Integer yearOffset){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeYear(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer yearOffset){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
 		t.setTemporalType(DATE);
 
 		if(relativeTo != null && yearOffset != null){
-			Year y = Year.from(relativeTo).plusYears(yearOffset);
+			final Year y = Year.from(relativeTo).plusYears(yearOffset);
 			
 			t.setTimestampStart(y.atDay(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 			t.setTimestampStop(y.plusYears(1).atDay(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
@@ -495,17 +504,18 @@ public class RelativeDate extends BaleenAnnotator {
 		addToJCasIndex(t);
 	}
 	
-	private void createRelativeYearMonth(JCas jCas, Integer charBegin, Integer charEnd, Integer yearOffset, Month month){
-		Temporal t = new Temporal(jCas, charBegin, charEnd);
-		
+	private void createRelativeYearMonth(final TextBlock block, final Integer charBegin, final Integer charEnd, final Integer yearOffset, final Month month){
+        final Temporal t = new Temporal(block.getJCas());
+        block.setBeginAndEnd(t, charBegin, charEnd);
+        
 		t.setConfidence(1.0);
 		t.setPrecision(RELATIVE);
 		t.setScope(SINGLE);
 		t.setTemporalType(DATE);
 
 		if(relativeTo != null && yearOffset != null){
-			Year y = Year.from(relativeTo).plusYears(yearOffset);
-			YearMonth ym = y.atMonth(month);
+			final Year y = Year.from(relativeTo).plusYears(yearOffset);
+			final YearMonth ym = y.atMonth(month);
 			
 			t.setTimestampStart(ym.atDay(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 			t.setTimestampStop(ym.atEndOfMonth().plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());

@@ -13,11 +13,11 @@ import java.util.regex.Pattern;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.DateTimeUtils;
 import uk.gov.dstl.baleen.types.semantic.Temporal;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate dates and date ranges as Temporal entities. The following examples show the types of dates and ranges that are detected.
@@ -45,7 +45,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * @baleen.javadoc
  */
-public class Date extends BaleenAnnotator{
+public class Date extends BaleenTextAwareAnnotator{
 	/**
 	 * Should we use American dates where applicable (i.e. mm-dd-yy) 
 	 * 
@@ -70,60 +70,58 @@ public class Date extends BaleenAnnotator{
 	private List<Temporal> extracted;
 	
 	@Override
-	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
+	protected void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
 		extracted = new ArrayList<>();
 		
-		identifyYearRanges(jCas);
-		identifyMonthYearRanges(jCas);
-		identifyDayMonthYearRanges(jCas);
-		identifyDates(jCas);
-		identifyMonths(jCas);
-		identifyYears(jCas);
+		identifyYearRanges(block);
+		identifyMonthYearRanges(block);
+		identifyDayMonthYearRanges(block);
+		identifyDates(block);
+		identifyMonths(block);
+		identifyYears(block);
 	}
 	
-	private void identifyYearRanges(JCas jCas){
-		Pattern longYearShortYear = Pattern.compile("\\b(\\d{2})(\\d{2})-(\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = longYearShortYear.matcher(jCas.getDocumentText());
+	private void identifyYearRanges(final TextBlock block){
+		final Pattern longYearShortYear = Pattern.compile("\\b(\\d{2})(\\d{2})-(\\d{2})\\b", Pattern.CASE_INSENSITIVE);
+		final String text = block.getCoveredText();
+		Matcher m = longYearShortYear.matcher(text);
 		
 		while(m.find()){
-			if(dateSeparatorSuffix(jCas, m.end())){
+			if(dateSeparatorSuffix(text, m.end())){
 				continue;
 			}
 			
-			Year y1 = Year.parse(m.group(1)+m.group(2));
-			Year y2 = Year.parse(m.group(1)+m.group(3));
+			final Year y1 = Year.parse(m.group(1)+m.group(2));
+			final Year y2 = Year.parse(m.group(1)+m.group(3));
 			
-			createYearTimeRange(jCas, m.start(), m.end(), y1, y2);
+			createYearTimeRange(block, m.start(), m.end(), y1, y2);
 		}
 		
-		Pattern longYearLongYear = Pattern.compile("\\b(\\d{4})\\s*(-|to|and)\\s*(\\d{4})\\b", Pattern.CASE_INSENSITIVE);
-		m = longYearLongYear.matcher(jCas.getDocumentText());
+		final Pattern longYearLongYear = Pattern.compile("\\b(\\d{4})\\s*(-|to|and)\\s*(\\d{4})\\b", Pattern.CASE_INSENSITIVE);
+		m = longYearLongYear.matcher(text);
 		
 		while(m.find()){
-			if("and".equalsIgnoreCase(m.group(2)) && !betweenPrefix(jCas, m.start())){
+			if("and".equalsIgnoreCase(m.group(2)) && !betweenPrefix(text, m.start())){
 				continue;
 			}
 			
-			Year y1 = Year.parse(m.group(1));
-			Year y2 = Year.parse(m.group(3));
+			final Year y1 = Year.parse(m.group(1));
+			final Year y2 = Year.parse(m.group(3));
 			
-			createYearTimeRange(jCas, m.start(), m.end(), y1, y2);
+			createYearTimeRange(block, m.start(), m.end(), y1, y2);
 		}
 	}
 	
-	private void createYearTimeRange(JCas jCas, Integer charBegin, Integer charEnd, Year y1, Year y2){
-		Temporal dtg = new Temporal(jCas);
-		
-		dtg.setBegin(charBegin);
-		dtg.setEnd(charEnd);
+	private void createYearTimeRange(final TextBlock block, final Integer charBegin, final Integer charEnd, final Year y1, final Year y2){
+		final Temporal dtg = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		dtg.setConfidence(1.0);
 		
 		dtg.setPrecision(EXACT);
 		dtg.setScope(RANGE);
 		dtg.setTemporalType(DATE_TYPE);
 		
-		LocalDate start = y1.atDay(1);
-		LocalDate end = y2.plusYears(1).atDay(1);
+		final LocalDate start = y1.atDay(1);
+		final LocalDate end = y2.plusYears(1).atDay(1);
 		
 		dtg.setTimestampStart(start.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 		dtg.setTimestampStop(end.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
@@ -132,54 +130,52 @@ public class Date extends BaleenAnnotator{
 		extracted.add(dtg);
 	}
 	
-	private void identifyMonthYearRanges(JCas jCas){
-		Pattern sameYear = Pattern.compile("\\b"+MONTHS+"\\s*(-|to|and)\\s*"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = sameYear.matcher(jCas.getDocumentText());
+	private void identifyMonthYearRanges(final TextBlock block){
+		final Pattern sameYear = Pattern.compile("\\b"+MONTHS+"\\s*(-|to|and)\\s*"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
+	    final String text = block.getCoveredText();
+		Matcher m = sameYear.matcher(text);
 		
 		while(m.find()){
-			if("and".equalsIgnoreCase(m.group(14)) && !betweenPrefix(jCas, m.start())){
+			if("and".equalsIgnoreCase(m.group(14)) && !betweenPrefix(text, m.start())){
 				continue;
 			}
 			
-			Year y = DateTimeUtils.asYear(m.group(28));
+			final Year y = DateTimeUtils.asYear(m.group(28));
 			
-			YearMonth ym1 = y.atMonth(DateTimeUtils.asMonth(m.group(1)));
-			YearMonth ym2 = y.atMonth(DateTimeUtils.asMonth(m.group(15)));
+			final YearMonth ym1 = y.atMonth(DateTimeUtils.asMonth(m.group(1)));
+			final YearMonth ym2 = y.atMonth(DateTimeUtils.asMonth(m.group(15)));
 			
-			createMonthYearTimeRange(jCas, m.start(), m.end(), ym1, ym2);
+			createMonthYearTimeRange(block, m.start(), m.end(), ym1, ym2);
 		}
 		
-		Pattern diffYear = Pattern.compile("\\b"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\s*(-|to|and)\\s*"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		m = diffYear.matcher(jCas.getDocumentText());
+		final Pattern diffYear = Pattern.compile("\\b"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\s*(-|to|and)\\s*"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
+		m = diffYear.matcher(text);
 		
 		while(m.find()){
-			if("and".equalsIgnoreCase(m.group(15)) && !betweenPrefix(jCas, m.start())){
+			if("and".equalsIgnoreCase(m.group(15)) && !betweenPrefix(text, m.start())){
 				continue;
 			}
 			
-			Year y1 = DateTimeUtils.asYear(m.group(14));
-			YearMonth ym1 = y1.atMonth(DateTimeUtils.asMonth(m.group(1)));
+			final Year y1 = DateTimeUtils.asYear(m.group(14));
+			final YearMonth ym1 = y1.atMonth(DateTimeUtils.asMonth(m.group(1)));
 			
-			Year y2 = DateTimeUtils.asYear(m.group(29));
-			YearMonth ym2 = y2.atMonth(DateTimeUtils.asMonth(m.group(16)));
+			final Year y2 = DateTimeUtils.asYear(m.group(29));
+			final YearMonth ym2 = y2.atMonth(DateTimeUtils.asMonth(m.group(16)));
 			
-			createMonthYearTimeRange(jCas, m.start(), m.end(), ym1, ym2);
+			createMonthYearTimeRange(block, m.start(), m.end(), ym1, ym2);
 		}
 	}
 	
-	private void createMonthYearTimeRange(JCas jCas, Integer charBegin, Integer charEnd, YearMonth ym1, YearMonth ym2){
-		Temporal dtg = new Temporal(jCas);
-		
-		dtg.setBegin(charBegin);
-		dtg.setEnd(charEnd);
+	private void createMonthYearTimeRange(final TextBlock block, final Integer charBegin, final Integer charEnd, final YearMonth ym1, final YearMonth ym2){
+		final Temporal dtg = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		dtg.setConfidence(1.0);
 		
 		dtg.setPrecision(EXACT);
 		dtg.setScope(RANGE);
 		dtg.setTemporalType(DATE_TYPE);
 		
-		LocalDate start = ym1.atDay(1);
-		LocalDate end = ym2.plusMonths(1).atDay(1);
+		final LocalDate start = ym1.atDay(1);
+		final LocalDate end = ym2.plusMonths(1).atDay(1);
 		
 		dtg.setTimestampStart(start.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 		dtg.setTimestampStop(end.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
@@ -188,60 +184,61 @@ public class Date extends BaleenAnnotator{
 		extracted.add(dtg);
 	}
 	
-	private void identifyDayMonthYearRanges(JCas jCas){
-		Pattern sameMonth = Pattern.compile("\\b"+DAYS+DATES+DATE_SUFFIXES+"?\\s*(-|to|and|\\\\|/)\\s*"+DAYS+DATES+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = sameMonth.matcher(jCas.getDocumentText());
+	private void identifyDayMonthYearRanges(final TextBlock block){
+		final Pattern sameMonth = Pattern.compile("\\b"+DAYS+"([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?\\s*(-|to|and|\\\\|/)\\s*"+DAYS+"([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
+		final String text = block.getCoveredText();
+		Matcher m = sameMonth.matcher(text);
 		
 		while(m.find()){
 			if(!DateTimeUtils.suffixCorrect(Integer.parseInt(m.group(1)), m.group(2)) || !DateTimeUtils.suffixCorrect(Integer.parseInt(m.group(4)), m.group(5))){
 				continue;
 			}
 			
-			Year y = DateTimeUtils.asYear(m.group(19));
-			YearMonth ym = y.atMonth(DateTimeUtils.asMonth(m.group(6)));
+			final Year y = DateTimeUtils.asYear(m.group(19));
+			final YearMonth ym = y.atMonth(DateTimeUtils.asMonth(m.group(6)));
 			
 			LocalDate ld1;
 			LocalDate ld2;
 			try{
 				ld1 = ym.atDay(Integer.parseInt(m.group(1)));
 				ld2 = ym.atDay(Integer.parseInt(m.group(4)));
-			}catch(DateTimeException dte){
-				getMonitor().warn(INVALID_DATE_FOUND, dte);
+			}catch(final DateTimeException dte){
+				getMonitor().warn("Invalid date found", dte);
 				continue;
 			}
 			
-			if(("and".equalsIgnoreCase(m.group(3)) && !betweenPrefix(jCas, m.start())) || "/".equals(m.group(3)) || "\\".equals(m.group(3))){
+			if(("and".equalsIgnoreCase(m.group(3)) && !betweenPrefix(text, m.start())) || "/".equals(m.group(3)) || "\\".equals(m.group(3))){
 				if(ld2.equals(ld1.plusDays(1))){
 					//Create time range
-					createDayMonthYearRange(jCas, m.start(), m.end(), ld1, ld2);
+					createDayMonthYearRange(block, m.start(), m.end(), ld1, ld2);
 				}else{
 					//Create separate dates as they're not adjacent
-					createDate(jCas, m.start(4), m.end(), ld2);
+					createDate(block, m.start(4), m.end(), ld2);
 					
-					Temporal t = createDate(jCas, m.start(), m.end(), ld1);
+					final Temporal t = createDate(block, m.start(), m.end(), ld1);
 					if(t != null)
-						t.setValue(jCas.getDocumentText().substring(m.start(), m.start(3)).trim() + " " + jCas.getDocumentText().substring(m.start(6), m.end()).trim());
+						t.setValue(text.substring(m.start(), m.start(3)).trim() + " " + text.substring(m.start(6), m.end()).trim());
 				}
 			}else{
 				//Create time range
-				createDayMonthYearRange(jCas, m.start(), m.end(), ld1, ld2);
+				createDayMonthYearRange(block, m.start(), m.end(), ld1, ld2);
 			}			
 		}
 		
 		Pattern sameYear = Pattern.compile("\\b"+DAYS+DATES+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s*(-|to|and)\\s*"+DAYS+DATES+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		m = sameYear.matcher(jCas.getDocumentText());
+		m = sameYear.matcher(text);
 		
 		while(m.find()){
 			if(!DateTimeUtils.suffixCorrect(Integer.parseInt(m.group(1)), m.group(2)) || !DateTimeUtils.suffixCorrect(Integer.parseInt(m.group(17)), m.group(18))){
 				continue;
 			}
-			if("and".equalsIgnoreCase(m.group(16)) && !betweenPrefix(jCas, m.start())){
+			if("and".equalsIgnoreCase(m.group(16)) && !betweenPrefix(text, m.start())){
 				continue;
 			}
 			
-			Year y = DateTimeUtils.asYear(m.group(32));
-			YearMonth ym1 = y.atMonth(DateTimeUtils.asMonth(m.group(3)));
-			YearMonth ym2 = y.atMonth(DateTimeUtils.asMonth(m.group(19)));
+			final Year y = DateTimeUtils.asYear(m.group(32));
+			final YearMonth ym1 = y.atMonth(DateTimeUtils.asMonth(m.group(3)));
+			final YearMonth ym2 = y.atMonth(DateTimeUtils.asMonth(m.group(19)));
 			
 			LocalDate ld1;
 			LocalDate ld2;
@@ -253,45 +250,43 @@ public class Date extends BaleenAnnotator{
 				continue;
 			}
 			
-			createDayMonthYearRange(jCas, m.start(), m.end(), ld1, ld2);
+			createDayMonthYearRange(block, m.start(), m.end(), ld1, ld2);
 		}
 		
-		Pattern fullDates = Pattern.compile("\\b"+DAYS+DATES+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\s*(-|to|and)\\s*"+DAYS+DATES+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		m = fullDates.matcher(jCas.getDocumentText());
+		final Pattern fullDates = Pattern.compile("\\b"+DAYS+"([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\s*(-|to|and)\\s*"+DAYS+"([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?\\s+"+MONTHS+"\\s+(\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
+		m = fullDates.matcher(text);
 		
 		while(m.find()){
 			if(!DateTimeUtils.suffixCorrect(Integer.parseInt(m.group(1)), m.group(2)) || !DateTimeUtils.suffixCorrect(Integer.parseInt(m.group(18)), m.group(19))){
 				continue;
 			}
-			if("and".equalsIgnoreCase(m.group(17)) && !betweenPrefix(jCas, m.start())){
+			if("and".equalsIgnoreCase(m.group(17)) && !betweenPrefix(text, m.start())){
 				continue;
 			}
 			
-			Year y1 = DateTimeUtils.asYear(m.group(16));
-			YearMonth ym1 = y1.atMonth(DateTimeUtils.asMonth(m.group(3)));
+			final Year y1 = DateTimeUtils.asYear(m.group(16));
+			final YearMonth ym1 = y1.atMonth(DateTimeUtils.asMonth(m.group(3)));
 
-			Year y2 = DateTimeUtils.asYear(m.group(33));
-			YearMonth ym2 = y2.atMonth(DateTimeUtils.asMonth(m.group(20)));			
+			final Year y2 = DateTimeUtils.asYear(m.group(33));
+			final YearMonth ym2 = y2.atMonth(DateTimeUtils.asMonth(m.group(20)));			
 			
 			LocalDate ld1;
 			LocalDate ld2;
 			try{
 				ld1 = ym1.atDay(Integer.parseInt(m.group(1)));
 				ld2 = ym2.atDay(Integer.parseInt(m.group(18)));
-			}catch(DateTimeException dte){
+			}catch(final DateTimeException dte){
 				getMonitor().warn(INVALID_DATE_FOUND, dte);
 				continue;
 			}
 			
-			createDayMonthYearRange(jCas, m.start(), m.end(), ld1, ld2);
+			createDayMonthYearRange(block, m.start(), m.end(), ld1, ld2);
 		}
 	}
 	
-	private void createDayMonthYearRange(JCas jCas, Integer charBegin, Integer charEnd, LocalDate ld1, LocalDate ld2){
-		Temporal dtg = new Temporal(jCas);
+	private void createDayMonthYearRange(final TextBlock block, final Integer charBegin, final Integer charEnd, final LocalDate ld1, final LocalDate ld2){
+		final Temporal dtg = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		
-		dtg.setBegin(charBegin);
-		dtg.setEnd(charEnd);
 		dtg.setConfidence(1.0);
 		
 		dtg.setPrecision(EXACT);
@@ -305,36 +300,37 @@ public class Date extends BaleenAnnotator{
 		extracted.add(dtg);
 	}
 	
-	private void identifyDates(JCas jCas){
+	private void identifyDates(final TextBlock block){
 		Pattern fullDateDayMonth = Pattern.compile("\\b"+DAYS+DATES+DATE_SUFFIXES+"?\\s+"+MONTHS+",?\\s+(\\d{4}|'?\\d{2}\\b)", Pattern.CASE_INSENSITIVE);
-		Matcher m = fullDateDayMonth.matcher(jCas.getDocumentText());
+		final String text = block.getCoveredText();
+		Matcher m = fullDateDayMonth.matcher(text);
 		
 		while(m.find()){
-			createDateFromMatcher(jCas, m, 16, 3, 1);
+			createDateFromMatcher(block, m, 16, 3, 1);
 		}
 		
 		Pattern fullDateMonthDay = Pattern.compile("\\b"+MONTHS+"\\s+([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?,?\\s+(\\d{4}|'?\\d{2}\\b)", Pattern.CASE_INSENSITIVE);
-		m = fullDateMonthDay.matcher(jCas.getDocumentText());
+		m = fullDateMonthDay.matcher(text);
 		
 		while(m.find()){
-			createDateFromMatcher(jCas, m, 16, 1, 14);
+			createDateFromMatcher(block, m, 16, 1, 14);
 		}
 		
 		Pattern shortDateYearFirst = Pattern.compile("\\b(\\d{4})[-\\\\/\\.](0?[1-9]|1[0-2])[-\\\\/\\.]([0-2]?[0-9]|3[01])\\b", Pattern.CASE_INSENSITIVE);
-		m = shortDateYearFirst.matcher(jCas.getDocumentText());
+		m = shortDateYearFirst.matcher(text);
 		
 		while(m.find()){
-			createDateFromMatcher(jCas, m, 1, 2, 3);
+			createDateFromMatcher(block, m, 1, 2, 3);
 		}
 		
 		Pattern shortDate = Pattern.compile("\\b([0-2]?[0-9]|3[01])[-\\\\/\\.]([0-2]?[0-9]|3[01])[-\\\\/\\.](\\d{4}|\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		m = shortDate.matcher(jCas.getDocumentText());
+		m = shortDate.matcher(text);
 		
 		while(m.find()){
-			Year y = DateTimeUtils.asYear(m.group(3));
+			final Year y = DateTimeUtils.asYear(m.group(3));
 			
-			Integer n1 = Integer.parseInt(m.group(1));
-			Integer n2 = Integer.parseInt(m.group(2));
+			final Integer n1 = Integer.parseInt(m.group(1));
+			final Integer n2 = Integer.parseInt(m.group(2));
 			
 			Integer day;
 			Integer month;
@@ -371,32 +367,27 @@ public class Date extends BaleenAnnotator{
 				continue;
 			}
 			
-			YearMonth ym = y.atMonth(month);		
+			final YearMonth ym = y.atMonth(month);		
 			
 			LocalDate ld;
 			try{
 				ld = ym.atDay(day);
-			}catch(DateTimeException dte){
+			}catch(final DateTimeException dte){
 				getMonitor().warn(INVALID_DATE_FOUND, dte);
 				continue;
 			}
 			
-			createDate(jCas, m.start(), m.end(), ld);
+			createDate(block, m.start(), m.end(), ld);
 		}
 	}
 	
-	private Temporal createDate(JCas jCas, Integer charBegin, Integer charEnd, LocalDate ld){
+	private Temporal createDate(final TextBlock block, final Integer charBegin, final Integer charEnd, final LocalDate ld){
 		//Check the date isn't already covered by a range
-		for(Temporal t : extracted){
-			if(t.getBegin() <= charBegin && t.getEnd() >= charEnd){
-				return null;
-			}
+		if(alreadyExtracted(block, charBegin, charEnd)) {
+		  return null;
 		}
 		
-		Temporal date = new Temporal(jCas);
-		
-		date.setBegin(charBegin);
-		date.setEnd(charEnd);
+		final Temporal date = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		date.setConfidence(1.0);
 		
 		date.setPrecision(EXACT);
@@ -412,13 +403,26 @@ public class Date extends BaleenAnnotator{
 		return date;
 	}
 	
-	private void identifyMonths(JCas jCas){
-		Pattern monthYear = Pattern.compile("\\b((beginning of|start of|early|mid|late|end of)[- ])?"+MONTHS+"\\s+(\\d{4}|'?\\d{2}\\b)", Pattern.CASE_INSENSITIVE);
-		Matcher m = monthYear.matcher(jCas.getDocumentText());
+	private boolean alreadyExtracted(final TextBlock block, final Integer blockBegin, final Integer blockEnd) {
+	  final int docBegin = block.toDocumentOffset(blockBegin);
+	  final int docEnd = block.toDocumentOffset(blockEnd);
+
+      for(final Temporal t : extracted){
+        if(t.getBegin() <= docBegin && t.getEnd() >= docEnd){
+            return true;
+        }
+      }    
+      return false;
+  }
+
+  private void identifyMonths(final TextBlock block){
+		final Pattern monthYear = Pattern.compile("\\b((beginning of|start of|early|mid|late|end of)[- ])?"+MONTHS+"\\s+(\\d{4}|'?\\d{2}\\b)", Pattern.CASE_INSENSITIVE);
+		final String text = block.getCoveredText();
+		final Matcher m = monthYear.matcher(text);
 		
 		while(m.find()){
-			Year y = DateTimeUtils.asYear(m.group(16));
-			YearMonth ym = y.atMonth(DateTimeUtils.asMonth(m.group(3)));		
+			final Year y = DateTimeUtils.asYear(m.group(16));
+			final YearMonth ym = y.atMonth(DateTimeUtils.asMonth(m.group(3)));		
 			
 			if(m.group(2) != null){
 				LocalDate ld1;
@@ -449,33 +453,28 @@ public class Date extends BaleenAnnotator{
 					continue;
 				}
 				
-				createDayMonthYearRange(jCas, m.start(), m.end(), ld1, ld2);
+				createDayMonthYearRange(block, m.start(), m.end(), ld1, ld2);
 			}else{
-				createMonth(jCas, m.start(), m.end(), ym);
+				createMonth(block, m.start(), m.end(), ym);
 			}
 		}
 	}
 	
-	private void createMonth(JCas jCas, Integer charBegin, Integer charEnd, YearMonth ym){
+	private void createMonth(final TextBlock block, final Integer charBegin, final Integer charEnd, final YearMonth ym){
 		//Check the date isn't already covered by a range
-		for(Temporal t : extracted){
-			if(t.getBegin() <= charBegin && t.getEnd() >= charEnd){
-				return;
-			}
-		}
+      if(alreadyExtracted(block, charBegin, charEnd)) {
+        return;
+      }
 		
-		Temporal date = new Temporal(jCas);
+		final Temporal date = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		
-		date.setBegin(charBegin);
-		date.setEnd(charEnd);
 		date.setConfidence(1.0);
-		
 		date.setPrecision(EXACT);
 		date.setScope(SINGLE);
 		date.setTemporalType(DATE_TYPE);
 		
-		LocalDate start = ym.atDay(1);
-		LocalDate end = ym.atEndOfMonth();
+		final LocalDate start = ym.atDay(1);
+		final LocalDate end = ym.atEndOfMonth();
 		
 		date.setTimestampStart(start.atStartOfDay(ZoneOffset.UTC).toEpochSecond());
 		date.setTimestampStop(end.plusDays(1).atStartOfDay(ZoneOffset.UTC).toEpochSecond());
@@ -484,36 +483,33 @@ public class Date extends BaleenAnnotator{
 		extracted.add(date);
 	}
 	
-	private void identifyYears(JCas jCas){
-		Pattern monthYear = Pattern.compile("\\b(19[789][0-9]|20[0-9][0-9]\\b)", Pattern.CASE_INSENSITIVE);
-		Matcher m = monthYear.matcher(jCas.getDocumentText());
+	private void identifyYears(final TextBlock block){
+		final Pattern monthYear = Pattern.compile("\\b(19[789][0-9]|20[0-9][0-9]\\b)", Pattern.CASE_INSENSITIVE);
+		final String text = block.getCoveredText();
+		final Matcher m = monthYear.matcher(text);
 		
 		while(m.find()){
-			Year y = DateTimeUtils.asYear(m.group(1));
+			final Year y = DateTimeUtils.asYear(m.group(1));
 			
-			createYear(jCas, m.start(), m.end(), y);
+			createYear(block, m.start(), m.end(), y);
 		}
 	}
 	
-	private void createYear(JCas jCas, Integer charBegin, Integer charEnd, Year y){
+	private void createYear(final TextBlock block, final Integer charBegin, final Integer charEnd, final Year y){
 		//Check the date isn't already covered by a range
-		for(Temporal t : extracted){
-			if(t.getBegin() <= charBegin && t.getEnd() >= charEnd){
-				return;
-			}
-		}
+      if(alreadyExtracted(block, charBegin, charEnd)) {
+        return;
+      }
 		
-		Temporal date = new Temporal(jCas);
+		final Temporal date = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		
-		date.setBegin(charBegin);
-		date.setEnd(charEnd);
 		date.setConfidence(1.0);
 		
 		date.setPrecision(EXACT);
 		date.setScope(SINGLE);
 		date.setTemporalType(DATE_TYPE);
 
-		LocalDate start = y.atDay(1);
+		final LocalDate start = y.atDay(1);
 		LocalDate end;
 		if(y.isLeap()){
 			end = y.atDay(366);
@@ -528,21 +524,21 @@ public class Date extends BaleenAnnotator{
 		extracted.add(date);
 	}
 	
-	private static boolean betweenPrefix (JCas jCas, Integer matchStart){
-		return jCas.getDocumentText().substring(0, matchStart)
+	private static boolean betweenPrefix (final String text, final Integer matchStart){
+		return text.substring(0, matchStart)
 				.trim().toLowerCase()
 				.endsWith("between");
 	}
 	
-	private static boolean dateSeparatorSuffix (JCas jCas, Integer matchEnd){
-		if(matchEnd >= jCas.getDocumentText().length())
+	private static boolean dateSeparatorSuffix (final String text, final Integer matchEnd){
+		if(matchEnd >= text.length())
 			return false;
 		
-		String nextChar = jCas.getDocumentText().substring(matchEnd, matchEnd + 1);
+		String nextChar = text.substring(matchEnd, matchEnd + 1);
 		return "-".equals(nextChar) || "/".equals(nextChar) || "\\".equals(nextChar);
 	}
 	
-	private void createDateFromMatcher(JCas jCas, Matcher m, Integer yearGroup, Integer monthGroup, Integer dayGroup){
+	private void createDateFromMatcher(TextBlock block, Matcher m, Integer yearGroup, Integer monthGroup, Integer dayGroup){
 		Year y = DateTimeUtils.asYear(m.group(yearGroup));
 		YearMonth ym = y.atMonth(DateTimeUtils.asMonth(m.group(monthGroup)));		
 		
@@ -554,6 +550,6 @@ public class Date extends BaleenAnnotator{
 			return;
 		}
 		
-		createDate(jCas, m.start(), m.end(), ld);
+		createDate(block, m.start(), m.end(), ld);
 	}
 }

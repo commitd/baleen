@@ -2,6 +2,7 @@
 package uk.gov.dstl.baleen.annotators;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.uima.analysis_engine.AnalysisEngine;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -14,6 +15,7 @@ import org.junit.Test;
 import uk.gov.dstl.baleen.annotators.gazetteer.File;
 import uk.gov.dstl.baleen.annotators.testing.AnnotatorTestBase;
 import uk.gov.dstl.baleen.resources.SharedFileResource;
+import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.types.semantic.Location;
 import uk.gov.dstl.baleen.types.semantic.ReferenceTarget;
 
@@ -30,17 +32,17 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 
 	@Test
 	public void test() throws Exception{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Hello world, this is a test");
 		
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Location.class).size());
-		Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
+		final Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
 		assertEquals(WORLD, l.getValue());
 		assertEquals(WORLD, l.getCoveredText());
 		
@@ -51,10 +53,10 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 	@Test
 	public void testmultipleHits() throws Exception{
 		
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		// the same search term appears multiple times in text...
 		jCas.setDocumentText("Hello world, and hello world again.");
@@ -62,7 +64,7 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 		ae.process(jCas);
 		
 		assertEquals(2, JCasUtil.select(jCas, Location.class).size());
-		Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
+		final Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
 		assertEquals(WORLD, l.getValue());
 		assertEquals(WORLD, l.getCoveredText());
 		
@@ -73,10 +75,10 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 	public void testCaseSensitive() throws Exception{
 		//This test demonstrates the case where whitespace is preserved in gazetteer matching.
 		
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION, "caseSensitive", true);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION, "caseSensitive", true);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		// words in term to search for separated by multiple spaces, tabs or newline...
 		jCas.setDocumentText("This text mentions New York and Paris in upper case and new york in lower case");
@@ -85,8 +87,8 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 		
 		// should match "new york" and "Paris", but not "New York"
 		assertEquals(2, JCasUtil.select(jCas, Location.class).size());
-		Location l1 = JCasUtil.selectByIndex(jCas, Location.class, 0);
-		Location l2 = JCasUtil.selectByIndex(jCas, Location.class, 1);
+		final Location l1 = JCasUtil.selectByIndex(jCas, Location.class, 0);
+		final Location l2 = JCasUtil.selectByIndex(jCas, Location.class, 1);
 		assertEquals("Paris", l1.getValue());
 		assertEquals("new york", l2.getValue());
 		
@@ -98,10 +100,10 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 	public void testWhitespaceExact() throws Exception{
 		//This test demonstrates the case where whitespace is preserved in gazetteer matching.
 		
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		// words in term to search for separated by multiple spaces, tabs or newline...
 		jCas.setDocumentText("This text mentions New York, and New    York again, and New	York again, and New \nYork yet again");
@@ -110,7 +112,7 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 		
 		// only one mention of "New York" has the two words separated by a single space (as in the gazetteer)
 		assertEquals(1, JCasUtil.select(jCas, Location.class).size());
-		Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
+		final Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
 		assertEquals(NEW_YORK, l.getValue());
 		
 		ae.destroy();
@@ -120,10 +122,10 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 	public void testWhitespaceNormalized() throws Exception{
 		//This test demonstrates the case where whitespace is preserved in gazetteer matching.
 		
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION, "exactWhitespace", false);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION, "exactWhitespace", false);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		// words in term to search for separated by multiple spaces, tabs or newline...
 		jCas.setDocumentText("This text mentions New York, and New    York again, and New	York again, and New \nYork yet again");
@@ -132,7 +134,7 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 		
 		// Three mentions of "New York" if we reduce any whitespace to a single space (exactWhitespace parameter, which ignores new lines)
 		assertEquals(3, JCasUtil.select(jCas, Location.class).size());
-		Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
+		final Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
 		assertEquals(NEW_YORK, l.getValue());
 		
 		ae.destroy();
@@ -143,10 +145,10 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 	public void testReference() throws Exception{
 		//This test demonstrates the case where whitespace is preserved in gazetteer matching.
 		
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION, "exactWhitespace", false);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION, "exactWhitespace", false);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		// words in term to search for separated by multiple spaces, tabs or newline...
 		jCas.setDocumentText("This text mentions New York (also known as NY and the Big Apple).");
@@ -158,10 +160,36 @@ public class FileGazetteerTest extends AnnotatorTestBase{
 		// ...but they're all the same entity, so only one ReferenceTarget
 		assertEquals(1, JCasUtil.select(jCas, ReferenceTarget .class).size());
 		
-		Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
+		final Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
 		assertEquals(NEW_YORK, l.getValue());
 		
 		ae.destroy();
 	}
+	
+	@Test
+    public void testmultipleHitsWithText() throws Exception{
+        
+        final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(FILE_GAZETTEER, SharedFileResource.class);
+        final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(File.class, FILE_GAZETTEER, erd, FILE_NAME, getClass().getResource(GAZETTEER_TXT).getPath(), TYPE, LOCATION);
+        
+        final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+        
+        // the same search term appears multiple times in text...
+        jCas.setDocumentText("Hello world, and hello world again.");
+        // but then subset using a Text annotation
+        new Text(jCas, 10, jCas.getDocumentText().length()).addToIndexes();
+        
+        ae.process(jCas);
+        
+        assertEquals(1, JCasUtil.select(jCas, Location.class).size());
+        final Location l = JCasUtil.selectByIndex(jCas, Location.class, 0);
+        assertEquals(WORLD, l.getValue());
+        assertEquals(WORLD, l.getCoveredText());
+        assertTrue(l.getBegin() > 10);
+        
+        ae.destroy();
+    }   
+	    
+	
 
 }

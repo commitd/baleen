@@ -10,12 +10,12 @@ import java.util.regex.Pattern;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ExternalResource;
-import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import uk.gov.dstl.baleen.resources.SharedCountryResource;
 import uk.gov.dstl.baleen.types.common.Nationality;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Extract nationality demonyms, e.g. French, from text
@@ -24,7 +24,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * 
  */
-public class NationalityRegex extends BaleenAnnotator {
+public class NationalityRegex extends BaleenTextAwareAnnotator {
 	/**
 	 * Connection to Country Resource
 	 * 
@@ -34,32 +34,30 @@ public class NationalityRegex extends BaleenAnnotator {
 	@ExternalResource(key = KEY_COUNTRY)
 	private SharedCountryResource country;
 
-	private Map<String, Pattern> countryPatterns = new HashMap<>();
+	private final Map<String, Pattern> countryPatterns = new HashMap<>();
 	
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
-		for(Entry<String, String> e : country.getDemonyms().entrySet()){
-			Pattern p = Pattern.compile("\\b" + e.getKey() + "\\b", Pattern.CASE_INSENSITIVE);
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
+		for(final Entry<String, String> e : country.getDemonyms().entrySet()){
+			final Pattern p = Pattern.compile("\\b" + e.getKey() + "\\b", Pattern.CASE_INSENSITIVE);
 			countryPatterns.put(e.getValue(), p);
 		}
 	}
 	
 	@Override
-	public void doProcess(JCas aJCas) throws AnalysisEngineProcessException {
-		String text = aJCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 
-		for(Entry<String, Pattern> e : countryPatterns.entrySet()){
-			Matcher matcher = e.getValue().matcher(text);
+		for(final Entry<String, Pattern> e : countryPatterns.entrySet()){
+			final Matcher matcher = e.getValue().matcher(text);
 			
 			while(matcher.find()){
 				getMonitor().debug("Found nationality '{}' in text", matcher.group(0));
 				
-				Nationality n = new Nationality(aJCas);
+				final Nationality n = new Nationality(block.getJCas());
 				
 				n.setConfidence(1.0f);
-				
-				n.setBegin(matcher.start());
-				n.setEnd(matcher.end());
+				block.setBeginAndEnd(n, matcher.start(), matcher.end());
 				n.setValue(matcher.group(0));
 				
 				n.setCountryCode(e.getKey());

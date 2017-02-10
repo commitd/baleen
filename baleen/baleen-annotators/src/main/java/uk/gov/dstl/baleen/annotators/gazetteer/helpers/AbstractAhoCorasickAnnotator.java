@@ -23,6 +23,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.JCasFactory;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.StringArray;
+import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import com.google.common.base.Strings;
@@ -32,7 +33,8 @@ import uk.gov.dstl.baleen.resources.gazetteer.IGazetteer;
 import uk.gov.dstl.baleen.types.BaleenAnnotation;
 import uk.gov.dstl.baleen.types.semantic.Entity;
 import uk.gov.dstl.baleen.types.semantic.ReferenceTarget;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 import uk.gov.dstl.baleen.uima.utils.TypeSystemSingleton;
 import uk.gov.dstl.baleen.uima.utils.TypeUtils;
 
@@ -45,7 +47,7 @@ import uk.gov.dstl.baleen.uima.utils.TypeUtils;
  *
  * @baleen.javadoc
  */
-public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
+public abstract class AbstractAhoCorasickAnnotator extends BaleenTextAwareAnnotator {
 
 	/**
 	 * Should comparisons be done case sensitively?
@@ -89,7 +91,7 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	protected String subtype;
 
 	protected IGazetteer gazetteer;
-	protected Class<?> entityType;
+	protected Class<? extends Annotation> entityType;
 	protected Trie trie;
 
 	private static final String ERROR_CANT_ASSIGN_ENTITY_PROPERTY = "Unable to assign property on entity - property will be skipped";
@@ -112,22 +114,22 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	public abstract IGazetteer configureGazetteer() throws BaleenException;
 
 	@Override
-	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		try {
 			gazetteer = configureGazetteer();
-		} catch (BaleenException be) {
+		} catch (final BaleenException be) {
 			throw new ResourceInitializationException(be);
 		}
 
 		buildTrie();
 
 		try {
-			entityType = TypeUtils.getType(type, JCasFactory.createJCas(TypeSystemSingleton.getTypeSystemDescriptionInstance()));
+			entityType = (Class<? extends Annotation>) TypeUtils.getType(type, JCasFactory.createJCas(TypeSystemSingleton.getTypeSystemDescriptionInstance()));
 			if (entityType == null) {
 				getMonitor().warn("Type {} not found, Entity will be used instead", type);
 				entityType = Entity.class;
 			}
-		} catch (UIMAException e) {
+		} catch (final UIMAException e) {
 			throw new ResourceInitializationException(e);
 		}
 	}
@@ -143,32 +145,39 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 			builder = builder.caseInsensitive();
 		}
 
-		for (String s : gazetteer.getValues()) {
+		for (final String s : gazetteer.getValues()) {
 			builder = builder.addKeyword(s);
 		}
 
 		trie = builder.build();
 	}
+	
+	@Override
+	protected final void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
+    	// Final so as to prevent other implementation being non text aware
+    	super.doProcess(jCas);
+	}
 
 	@Override
-	public void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		Map<String, List<BaleenAnnotation>> entities = exactWhitespace ? processExactWhitespace(jCas)
-				: processNormalisedWhitespace(jCas);
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final Map<String, List<BaleenAnnotation>> entities = exactWhitespace ? processExactWhitespace(block)
+				: processNormalisedWhitespace(block);
 
-		createReferenceTargets(jCas, entities.values());
+		createReferenceTargets(block, entities.values());
 
 	}
 
-	private Map<String, List<BaleenAnnotation>> processExactWhitespace(JCas jCas) {
-		Map<String, List<BaleenAnnotation>> entities = new HashMap<>();
+	private Map<String, List<BaleenAnnotation>> processExactWhitespace(final TextBlock block) {
+		final Map<String, List<BaleenAnnotation>> entities = new HashMap<>();
 
-		Collection<Emit> emits = trie.parseText(jCas.getDocumentText());
+		final String text = block.getCoveredText();
+    final Collection<Emit> emits = trie.parseText(text);
 
-		for (Emit emit : emits) {
+		for (final Emit emit : emits) {
 			try {
-				String match = jCas.getDocumentText().substring(emit.getStart(), emit.getEnd() + 1);
-				createEntityAndAliases(jCas, emit.getStart(), emit.getEnd() + 1, match, match, entities);
-			} catch (BaleenException be) {
+				final String match = text.substring(emit.getStart(), emit.getEnd() + 1);
+				createEntityAndAliases(block, emit.getStart(), emit.getEnd() + 1, match, match, entities);
+			} catch (final BaleenException be) {
 				getMonitor().error("Unable to create entity of type {} for value '{}'", entityType.getName(),
 						emit.getKeyword(), be);
 				continue;
@@ -178,20 +187,20 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 		return entities;
 	}
 
-	private Map<String, List<BaleenAnnotation>> processNormalisedWhitespace(JCas jCas) {
-		Map<String, List<BaleenAnnotation>> entities = new HashMap<>();
+	private Map<String, List<BaleenAnnotation>> processNormalisedWhitespace(final TextBlock block) {
+		final Map<String, List<BaleenAnnotation>> entities = new HashMap<>();
 
-		TransformedString norm = normaliseString(jCas.getDocumentText());
-		Collection<Emit> emits = trie.parseText(norm.getTransformedString());
+		final TransformedString norm = normaliseString(block.getCoveredText());
+		final Collection<Emit> emits = trie.parseText(norm.getTransformedString());
 
-		for (Emit emit : emits) {
+		for (final Emit emit : emits) {
 			try {
-				Integer start = norm.getMapping().get(emit.getStart());
-				Integer end = norm.getMapping().get(emit.getEnd() + 1);
-				String match = norm.getOriginalString().substring(start, end);
+				final Integer start = norm.getMapping().get(emit.getStart());
+				final Integer end = norm.getMapping().get(emit.getEnd() + 1);
+				final String match = norm.getOriginalString().substring(start, end);
 
-				createEntityAndAliases(jCas, start, end, match, match, entities);
-			} catch (BaleenException be) {
+				createEntityAndAliases(block, start, end, match, match, entities);
+			} catch (final BaleenException be) {
 				getMonitor().error("Unable to create entity of type {} for value '{}'", entityType.getName(),
 						emit.getKeyword(), be);
 				continue;
@@ -201,16 +210,16 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 		return entities;
 	}
 
-	protected void createEntityAndAliases(JCas jCas, Integer start, Integer end, String value, String aliasKey,
-			Map<String, List<BaleenAnnotation>> entities) throws BaleenException {
-		BaleenAnnotation ent = createEntity(jCas, start, end, value, aliasKey);
+	protected void createEntityAndAliases(final TextBlock block, final Integer start, final Integer end, final String value, final String aliasKey,
+			final Map<String, List<BaleenAnnotation>> entities) throws BaleenException {
+		final BaleenAnnotation ent = createEntity(block, start, end, value, aliasKey);
 
-		List<String> aliases = new ArrayList<>(Arrays.asList(gazetteer.getAliases(aliasKey)));
+		final List<String> aliases = new ArrayList<>(Arrays.asList(gazetteer.getAliases(aliasKey)));
 		aliases.add(aliasKey);
 
-		String key = generateKey(aliases);
+		final String key = generateKey(aliases);
 
-		List<BaleenAnnotation> groupEntities = entities.containsKey(key) ? entities.get(key) : new ArrayList<>();
+		final List<BaleenAnnotation> groupEntities = entities.containsKey(key) ? entities.get(key) : new ArrayList<>();
 		groupEntities.add(ent);
 		entities.put(key, groupEntities);
 	}
@@ -221,7 +230,7 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	 * @param aliases
 	 * @return
 	 */
-	protected String generateKey(List<String> aliases) {
+	protected String generateKey(final List<String> aliases) {
 		List<String> correctCaseAliases;
 
 		if (!caseSensitive) {
@@ -238,7 +247,7 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	/**
 	 * Create a new entity of the configured type
 	 *
-	 * @param jCas
+	 * @param block
 	 *            JCas object in which to create the entity
 	 * @param begin
 	 *            The beginning of the entity in the text
@@ -250,17 +259,14 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	 *            The key as it appears in the gazetteer
 	 * @throws Exception
 	 */
-	protected BaleenAnnotation createEntity(JCas jCas, int begin, int end, String value, String gazetteerKey)
+	protected BaleenAnnotation createEntity(final TextBlock block, final int begin, final int end, final String value, final String gazetteerKey)
 			throws BaleenException {
 		BaleenAnnotation ent;
 		try {
-			ent = (BaleenAnnotation) entityType.getConstructor(JCas.class).newInstance(jCas);
-		} catch (Exception e) {
+			ent = (BaleenAnnotation) block.newAnnotation(entityType, begin, end);
+		} catch (final Exception e) {
 			throw new BaleenException("Could not create new entity", e);
 		}
-
-		ent.setBegin(begin);
-		ent.setEnd(end);
 
 		if (ent instanceof Entity) {
 			((Entity) ent).setValue(value);
@@ -270,10 +276,10 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 				((Entity) ent).setSubType(subtype);
 		}
 
-		Map<String, Object> additionalData = gazetteer.getAdditionalData(gazetteerKey);
+		final Map<String, Object> additionalData = gazetteer.getAdditionalData(gazetteerKey);
 
 		if (additionalData != null && !additionalData.isEmpty()) {
-			for (Method m : entityType.getMethods()) {
+			for (final Method m : entityType.getMethods()) {
 				setProperty(ent, m, additionalData);
 			}
 		}
@@ -291,18 +297,21 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	 * @param entities
 	 *            A collection of lists of entities to coreference
 	 */
-	protected void createReferenceTargets(JCas jCas, Collection<List<BaleenAnnotation>> entities) {
-		for (List<BaleenAnnotation> group : entities) {
+	protected void createReferenceTargets(final TextBlock block, final Collection<List<BaleenAnnotation>> entities) {
+	    final int begin = block.toDocumentOffset(0);
+	    final int end = block.toDocumentOffset(block.getCoveredText().length());
+
+		for (final List<BaleenAnnotation> group : entities) {
 			if (group.size() <= 1) {
 				continue;
 			}
 
-			ReferenceTarget rt = new ReferenceTarget(jCas);
-			rt.setBegin(0);
-			rt.setEnd(jCas.getDocumentText().length());
+			final ReferenceTarget rt = new ReferenceTarget(block.getJCas());
+			rt.setBegin(begin);
+			rt.setEnd(end);
 			addToJCasIndex(rt);
 
-			for (BaleenAnnotation e : group) {
+			for (final BaleenAnnotation e : group) {
 				if (e instanceof Entity) {
 					((Entity) e).setReferent(rt);
 				}
@@ -311,12 +320,12 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void setProperty(BaleenAnnotation entity, Method method, Map<String, Object> additionalData) {
+	private void setProperty(final BaleenAnnotation entity, final Method method, final Map<String, Object> additionalData) {
 		if (method.getName().startsWith("set") && method.getName().substring(3, 4).matches("[A-Z]")
 				&& method.getParameterCount() == 1) {
 			String property = method.getName().substring(3);
 			property = property.substring(0, 1).toLowerCase() + property.substring(1);
-			Object obj = additionalData.get(property);
+			final Object obj = additionalData.get(property);
 
 			if (obj == null) {
 				return;
@@ -334,28 +343,28 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 		}
 	}
 
-	private void setPropertyObject(BaleenAnnotation entity, Method method, Object obj) {
+	private void setPropertyObject(final BaleenAnnotation entity, final Method method, final Object obj) {
 		try {
 			method.invoke(entity, obj);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			getMonitor().error(ERROR_CANT_ASSIGN_ENTITY_PROPERTY, e);
 		}
 	}
 
-	private void setPropertyString(BaleenAnnotation entity, Method method, String string) {
+	private void setPropertyString(final BaleenAnnotation entity, final Method method, final String string) {
 		try {
 			method.invoke(entity, string);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			getMonitor().error(ERROR_CANT_ASSIGN_ENTITY_PROPERTY, e);
 		}
 	}
 
-	private void setPropertyArray(BaleenAnnotation entity, Method method, List<Object> obj) {
+	private void setPropertyArray(final BaleenAnnotation entity, final Method method, final List<Object> obj) {
 		if (StringArray.class.isAssignableFrom(method.getParameterTypes()[0])) {
 			try {
-				StringArray sa = listToStringArray(entity.getCAS().getJCas(), obj);
+				final StringArray sa = listToStringArray(entity.getCAS().getJCas(), obj);
 				method.invoke(entity, sa);
-			} catch (Exception e) {
+			} catch (final Exception e) {
 				getMonitor().error(ERROR_CANT_ASSIGN_ENTITY_PROPERTY, e);
 			}
 		} else {
@@ -372,12 +381,12 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 	 *            The string to normalise
 	 * @return A TransformedString mapping between the original and normalised text
 	 */
-	public static TransformedString normaliseString(String s) {
+	public static TransformedString normaliseString(final String s) {
 		String remaining = s;
-		StringBuilder builder = new StringBuilder();
+		final StringBuilder builder = new StringBuilder();
 
 		String previousChar = "";
-		Map<Integer, Integer> indexMap = new HashMap<>();
+		final Map<Integer, Integer> indexMap = new HashMap<>();
 
 		Integer index = 0;
 
@@ -403,11 +412,11 @@ public abstract class AbstractAhoCorasickAnnotator extends BaleenAnnotator {
 		return new TransformedString(s, builder.toString(), indexMap);
 	}
 
-	private StringArray listToStringArray(JCas jCas, List<Object> l) {
-		StringArray sa = new StringArray(jCas, l.size());
+	private StringArray listToStringArray(final JCas jCas, final List<Object> l) {
+		final StringArray sa = new StringArray(jCas, l.size());
 
 		int index = 0;
-		for (Object o : l) {
+		for (final Object o : l) {
 			sa.set(index, o.toString());
 			index++;
 		}

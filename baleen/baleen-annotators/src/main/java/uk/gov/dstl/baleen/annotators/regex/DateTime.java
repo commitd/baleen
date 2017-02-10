@@ -14,11 +14,11 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
 
 import uk.gov.dstl.baleen.annotators.helpers.DateTimeUtils;
 import uk.gov.dstl.baleen.types.semantic.Temporal;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /**
  * Annotate date time strings as Temporal entities. The following examples show the types of date times that are detected.
@@ -30,7 +30,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  * 
  * @baleen.javadoc
  */
-public class DateTime extends BaleenAnnotator {
+public class DateTime extends BaleenTextAwareAnnotator {
 	private static final String DAYS = "(?:(?:Mon|Monday|Tue|Tues|Tuesday|Wed|Wednesday|Thu|Thurs|Thursday|Fri|Friday|Sat|Saturday|Sun|Sunday)\\s+)?";	//Non-capturing as we don't use this information
 	private static final String MONTHS = "(Jan(uary)?|Feb(ruary)?|Mar(ch)?|Apr(il)?|May|Jun(e)?|Jul(y)?|Aug(ust)?|Sep(t)?(ember)?|Oct(ober)?|Nov(ember)?|Dec(ember)?)";
 	private static final String DATE_SUFFIXES = "(st|nd|rd|th)";
@@ -41,16 +41,16 @@ public class DateTime extends BaleenAnnotator {
 			"|");
 	
 	@Override
-	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		processIso(jCas);
-		processTimeOnDate(jCas);
-		processDayMonthTime(jCas);
-		processMonthDayTime(jCas);
+	protected void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		processIso(block);
+		processTimeOnDate(block);
+		processDayMonthTime(block);
+		processMonthDayTime(block);
 	}
 	
-	private void processIso(JCas jCas){
-		Pattern iso8601 = Pattern.compile("\\b(\\d{4})-?(\\d{2})-?(\\d{2})[T ](\\d{2}):?(\\d{2}):?(\\d{2})(\\.\\d{3})?(Z|[-+]\\d{2}:\\d{2})?\\b");
-		Matcher m = iso8601.matcher(jCas.getDocumentText());
+	private void processIso(final TextBlock block){
+		final Pattern iso8601 = Pattern.compile("\\b(\\d{4})-?(\\d{2})-?(\\d{2})[T ](\\d{2}):?(\\d{2}):?(\\d{2})(\\.\\d{3})?(Z|[-+]\\d{2}:\\d{2})?\\b");
+		final Matcher m = iso8601.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			try{
@@ -62,20 +62,20 @@ public class DateTime extends BaleenAnnotator {
 					zdt = ZonedDateTime.parse(m.group().replaceAll(" ", "T"), DateTimeFormatter.ISO_DATE_TIME);
 				}
 				
-				createDateTime(jCas, m.start(), m.end(), zdt);
-			}catch(DateTimeParseException dtpe){
+				createDateTime(block, m.start(), m.end(), zdt);
+			}catch(final DateTimeParseException dtpe){
 				getMonitor().debug("Unable to parse date time {}", m.group(), dtpe);
 			}
 		}
 	}
 	
-	private void processTimeOnDate(JCas jCas){
-		Pattern timeOnDate = Pattern.compile("\\b([01][0-9]|2[0-3]):?([0-5][0-9]):?([0-5][0-9])?(hrs)? on ([0-2]?[0-9]|3[01]) "+MONTHS+" (\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = timeOnDate.matcher(jCas.getDocumentText());
+	private void processTimeOnDate(final TextBlock block){
+		final Pattern timeOnDate = Pattern.compile("\\b([01][0-9]|2[0-3]):?([0-5][0-9]):?([0-5][0-9])?(hrs)? on ([0-2]?[0-9]|3[01]) "+MONTHS+" (\\d{4}|'?\\d{2})\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = timeOnDate.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			if(m.group(3) != null){
-				ZonedDateTime zdt = ZonedDateTime.of(
+				final ZonedDateTime zdt = ZonedDateTime.of(
 						DateTimeUtils.asYear(m.group(19)).getValue(),
 						DateTimeUtils.asMonth(m.group(6)).getValue(),
 						Integer.parseInt(m.group(5)),
@@ -84,10 +84,10 @@ public class DateTime extends BaleenAnnotator {
 						Integer.parseInt(m.group(3)),
 						0, ZoneOffset.UTC);
 				
-				createDateTime(jCas, m.start(), m.end(), zdt);
+				createDateTime(block, m.start(), m.end(), zdt);
 
 			}else{
-				ZonedDateTime zdtStart = ZonedDateTime.of(
+				final ZonedDateTime zdtStart = ZonedDateTime.of(
 						DateTimeUtils.asYear(m.group(19)).getValue(),
 						DateTimeUtils.asMonth(m.group(6)).getValue(),
 						Integer.parseInt(m.group(5)),
@@ -95,16 +95,16 @@ public class DateTime extends BaleenAnnotator {
 						Integer.parseInt(m.group(2)),
 						0, 0, ZoneOffset.UTC);
 				
-				ZonedDateTime zdtEnd = zdtStart.plusMinutes(1);
+				final ZonedDateTime zdtEnd = zdtStart.plusMinutes(1);
 				
-				createDateTime(jCas, m.start(), m.end(), zdtStart, zdtEnd);
+				createDateTime(block, m.start(), m.end(), zdtStart, zdtEnd);
 			}
 		}
 	}
 	
-	private void processDayMonthTime(JCas jCas){
-		Pattern dayMonthTime = Pattern.compile("\\b"+DAYS+"([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?\\s+"+MONTHS+",?\\s+(\\d{4}|'?\\d{2})\\s+([01][0-9]|2[0-3]):?([0-5][0-9]):?([0-5][0-9])?\\s*(Z|"+TIME_ZONES+")?\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = dayMonthTime.matcher(jCas.getDocumentText());
+	private void processDayMonthTime(final TextBlock block){
+		final Pattern dayMonthTime = Pattern.compile("\\b"+DAYS+"([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?\\s+"+MONTHS+",?\\s+(\\d{4}|'?\\d{2})\\s+([01][0-9]|2[0-3]):?([0-5][0-9]):?([0-5][0-9])?\\s*(Z|"+TIME_ZONES+")?\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = dayMonthTime.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			ZoneId zone;
@@ -115,7 +115,7 @@ public class DateTime extends BaleenAnnotator {
 			}
 			
 			if(m.group(19) != null){
-				ZonedDateTime zdt = ZonedDateTime.of(
+				final ZonedDateTime zdt = ZonedDateTime.of(
 						DateTimeUtils.asYear(m.group(16)).getValue(),
 						DateTimeUtils.asMonth(m.group(3)).getValue(),
 						Integer.parseInt(m.group(1)),
@@ -124,9 +124,9 @@ public class DateTime extends BaleenAnnotator {
 						Integer.parseInt(m.group(19)),
 						0, zone);
 				
-				createDateTime(jCas, m.start(), m.end(), zdt);
+				createDateTime(block, m.start(), m.end(), zdt);
 			}else{
-				ZonedDateTime zdtStart = ZonedDateTime.of(
+				final ZonedDateTime zdtStart = ZonedDateTime.of(
 						DateTimeUtils.asYear(m.group(16)).getValue(),
 						DateTimeUtils.asMonth(m.group(3)).getValue(),
 						Integer.parseInt(m.group(1)),
@@ -134,16 +134,16 @@ public class DateTime extends BaleenAnnotator {
 						Integer.parseInt(m.group(18)),
 						0, 0, zone);
 				
-				ZonedDateTime zdtEnd = zdtStart.plusMinutes(1);
+				final ZonedDateTime zdtEnd = zdtStart.plusMinutes(1);
 				
-				createDateTime(jCas, m.start(), m.end(), zdtStart, zdtEnd);
+				createDateTime(block, m.start(), m.end(), zdtStart, zdtEnd);
 			}
 		}
 	}
 	
-	private void processMonthDayTime(JCas jCas){
-		Pattern monthDayTime = Pattern.compile("\\b"+MONTHS+"\\s+([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?,?\\s+(\\d{4}|'?\\d{2})\\s+([01][0-9]|2[0-3]):?([0-5][0-9]):?([0-5][0-9])?\\s*(Z|"+TIME_ZONES+")?\\b", Pattern.CASE_INSENSITIVE);
-		Matcher m = monthDayTime.matcher(jCas.getDocumentText());
+	private void processMonthDayTime(final TextBlock block){
+		final Pattern monthDayTime = Pattern.compile("\\b"+MONTHS+"\\s+([0-2]?[0-9]|3[01])\\s*"+DATE_SUFFIXES+"?,?\\s+(\\d{4}|'?\\d{2})\\s+([01][0-9]|2[0-3]):?([0-5][0-9]):?([0-5][0-9])?\\s*(Z|"+TIME_ZONES+")?\\b", Pattern.CASE_INSENSITIVE);
+		final Matcher m = monthDayTime.matcher(block.getCoveredText());
 		
 		while(m.find()){
 			ZoneId zone;
@@ -154,7 +154,7 @@ public class DateTime extends BaleenAnnotator {
 			}
 			
 			if(m.group(19) != null){
-				ZonedDateTime zdt = ZonedDateTime.of(
+				final ZonedDateTime zdt = ZonedDateTime.of(
 						DateTimeUtils.asYear(m.group(16)).getValue(),
 						DateTimeUtils.asMonth(m.group(1)).getValue(),
 						Integer.parseInt(m.group(14)),
@@ -163,9 +163,9 @@ public class DateTime extends BaleenAnnotator {
 						Integer.parseInt(m.group(19)),
 						0, zone);
 				
-				createDateTime(jCas, m.start(), m.end(), zdt);
+				createDateTime(block, m.start(), m.end(), zdt);
 			}else{
-				ZonedDateTime zdtStart = ZonedDateTime.of(
+				final ZonedDateTime zdtStart = ZonedDateTime.of(
 						DateTimeUtils.asYear(m.group(16)).getValue(),
 						DateTimeUtils.asMonth(m.group(1)).getValue(),
 						Integer.parseInt(m.group(14)),
@@ -173,18 +173,15 @@ public class DateTime extends BaleenAnnotator {
 						Integer.parseInt(m.group(18)),
 						0, 0, zone);
 				
-				ZonedDateTime zdtEnd = zdtStart.plusMinutes(1);
+				final ZonedDateTime zdtEnd = zdtStart.plusMinutes(1);
 				
-				createDateTime(jCas, m.start(), m.end(), zdtStart, zdtEnd);
+				createDateTime(block, m.start(), m.end(), zdtStart, zdtEnd);
 			}
 		}
 	}
 
-	private void createDateTime(JCas jCas, Integer charBegin, Integer charEnd, ZonedDateTime zdt){
-		Temporal dt = new Temporal(jCas);
-		
-		dt.setBegin(charBegin);
-		dt.setEnd(charEnd);
+	private void createDateTime(final TextBlock block, final Integer charBegin, final Integer charEnd, final ZonedDateTime zdt){
+		final Temporal dt = block.newAnnotation(Temporal.class, charBegin, charEnd);
 		dt.setConfidence(1.0);
 		
 		dt.setPrecision("EXACT");
@@ -197,11 +194,9 @@ public class DateTime extends BaleenAnnotator {
 		addToJCasIndex(dt);
 	}
 	
-	private void createDateTime(JCas jCas, Integer charBegin, Integer charEnd, ZonedDateTime zdtStart, ZonedDateTime zdtEnd){
-		Temporal dt = new Temporal(jCas);
-		
-		dt.setBegin(charBegin);
-		dt.setEnd(charEnd);
+	private void createDateTime(final TextBlock block,  final Integer charBegin, final Integer charEnd, final ZonedDateTime zdtStart, final ZonedDateTime zdtEnd){
+      final Temporal dt = block.newAnnotation(Temporal.class, charBegin, charEnd);
+
 		dt.setConfidence(1.0);
 		
 		dt.setPrecision("EXACT");

@@ -10,7 +10,8 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 import uk.gov.dstl.baleen.types.Base;
 import uk.gov.dstl.baleen.types.semantic.Entity;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.BaleenTextAwareAnnotator;
+import uk.gov.dstl.baleen.uima.data.TextBlock;
 
 /** An abstract base class for building RegexAnnotators.
  *
@@ -20,7 +21,7 @@ import uk.gov.dstl.baleen.uima.BaleenAnnotator;
  *
  * @param <T> the type of entity produced.
  */
-public abstract class AbstractRegexAnnotator<T extends Annotation> extends BaleenAnnotator {
+public abstract class AbstractRegexAnnotator<T extends Annotation> extends BaleenTextAwareAnnotator {
 
 	private Pattern pattern;
 	private double confidence;
@@ -31,7 +32,7 @@ public abstract class AbstractRegexAnnotator<T extends Annotation> extends Balee
 	 * @param caseSensitive should this be treated a case sensitive
 	 * @param confidence the confidence to assign to created entities.
 	 */
-	protected AbstractRegexAnnotator(String pattern, boolean caseSensitive, double confidence) {
+	protected AbstractRegexAnnotator(final String pattern, final boolean caseSensitive, final double confidence) {
 		this(Pattern.compile(pattern, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE), 0, confidence);
 	}
 
@@ -39,7 +40,7 @@ public abstract class AbstractRegexAnnotator<T extends Annotation> extends Balee
 	 * @param pattern the regex pattern
 	 * @param confidence the confidence to assign to created entities.
 	 */
-	protected AbstractRegexAnnotator(Pattern pattern, double confidence) {
+	protected AbstractRegexAnnotator(final Pattern pattern, final double confidence) {
 		this(pattern, 0, confidence);
 	}
 
@@ -49,7 +50,7 @@ public abstract class AbstractRegexAnnotator<T extends Annotation> extends Balee
 	 * @param caseSensitive should this be treated a case sensitive
 	 * @param confidence the confidence to assign to created entities.
 	 */
-	protected AbstractRegexAnnotator(String pattern, int matcherGroup, boolean caseSensitive, double confidence) {
+	protected AbstractRegexAnnotator(final String pattern, final int matcherGroup, final boolean caseSensitive, final double confidence) {
 		this(Pattern.compile(pattern, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE), matcherGroup, confidence);
 	}
 
@@ -58,7 +59,7 @@ public abstract class AbstractRegexAnnotator<T extends Annotation> extends Balee
 	 * @param matcherGroup the matcher group to use as the content of the entity
 	 * @param confidence the confidence to assign to created entities.
 	 */
-	protected AbstractRegexAnnotator(Pattern pattern, int matcherGroup, double confidence) {
+	protected AbstractRegexAnnotator(final Pattern pattern, final int matcherGroup, final double confidence) {
 		this.pattern = pattern;
 		this.matcherGroup = matcherGroup;
 		this.confidence = confidence;
@@ -77,16 +78,15 @@ public abstract class AbstractRegexAnnotator<T extends Annotation> extends Balee
 	protected abstract T create(JCas jCas, Matcher matcher);
 
 	@Override
-	public void doProcess(JCas jCas) throws AnalysisEngineProcessException {
-		String text = jCas.getDocumentText();
+	public void doProcessTextBlock(final TextBlock block) throws AnalysisEngineProcessException {
+		final String text = block.getCoveredText();
 
-		Matcher matcher = pattern.matcher(text);
+		final Matcher matcher = pattern.matcher(text);
 		while(matcher.find()){
-			Annotation a = create(jCas, matcher);
+			final Annotation a = create(block.getJCas(), matcher);
 
 			if(a != null) {
-				a.setBegin(matcher.start(matcherGroup));
-				a.setEnd(matcher.end(matcherGroup));
+			    block.setBeginAndEnd(a, matcher.start(matcherGroup), matcher.end(matcherGroup));
 				if(a instanceof Base) {
 					((Base)a).setConfidence(confidence);
 				}

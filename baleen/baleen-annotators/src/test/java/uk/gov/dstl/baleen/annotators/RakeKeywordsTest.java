@@ -2,6 +2,7 @@
 package uk.gov.dstl.baleen.annotators;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -25,6 +26,7 @@ import uk.gov.dstl.baleen.annotators.misc.RakeKeywords;
 import uk.gov.dstl.baleen.annotators.testing.AnnotatorTestBase;
 import uk.gov.dstl.baleen.resources.SharedStopwordResource;
 import uk.gov.dstl.baleen.types.common.Buzzword;
+import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
 
 public class RakeKeywordsTest extends AnnotatorTestBase {
@@ -32,19 +34,19 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 
 	@Test
 	public void testNoBuzzwords() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for contructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types.");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
 		assertEquals(9, keywords.size());
 		assertTrue(keywords.contains("minimal generating sets"));
 		assertTrue(keywords.contains("linear diophantine equations"));
@@ -61,19 +63,19 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testBuzzwords() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, true);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, true);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for contructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types.");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
 		assertEquals(9, keywords.size());
 		assertTrue(keywords.contains("minimal generating sets"));
 		assertTrue(keywords.contains("linear diophantine equations"));
@@ -103,19 +105,19 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testMaxNumber() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 3, RakeKeywords.PARAM_ADD_BUZZWORDS, false);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 3, RakeKeywords.PARAM_ADD_BUZZWORDS, false);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for contructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types.");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
 		assertEquals(3, keywords.size());
 		assertTrue(keywords.contains("minimal generating sets"));
 		assertTrue(keywords.contains("linear diophantine equations"));
@@ -126,20 +128,20 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testCharacters() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Thursday 28th January - Test Report\n\n\tMichelle was seen meeting Katie at the Diner (Mary's Diner, on Main Street), at approximately 6:00pm. Michelle was later seen to be leaving the Diner, carrying a black folder of unknown contents. Katie is a known sympathiser, and it is hypothesised that she passed training materials to Michelle. When questioned later, Michelle stated: \"I know nothing of any training materials/folder!\".");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
-		for(String keyword : keywords){
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		for(final String keyword : keywords){
 			assertEquals("", keyword.replaceAll("[a-z0-9 ]", ""));
 		}
 		
@@ -148,19 +150,19 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testFoxStoplist() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false, RakeKeywords.PARAM_STOPLIST, SharedStopwordResource.StopwordList.FOX);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false, RakeKeywords.PARAM_STOPLIST, SharedStopwordResource.StopwordList.FOX);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for contructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types.");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
 		assertEquals(8, keywords.size());
 		assertTrue(keywords.contains("minimal generating sets"));
 		assertTrue(keywords.contains("linear diophantine equations"));
@@ -176,19 +178,19 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testCustomStoplist() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false, RakeKeywords.PARAM_STOPLIST, getClass().getResource("exampleStoplist.txt").getPath());
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false, RakeKeywords.PARAM_STOPLIST, getClass().getResource("exampleStoplist.txt").getPath());
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Bill and Ben went off to the shops in London town.");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
 		assertEquals(1, keywords.size());
 		assertTrue(keywords.contains("london town"));
 		
@@ -197,19 +199,19 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testStemmer() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, true, RakeKeywords.PARAM_STEMMING, SnowballStemmer.ALGORITHM.ENGLISH);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, true, RakeKeywords.PARAM_STEMMING, SnowballStemmer.ALGORITHM.ENGLISH);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for contructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types.");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
 		assertEquals(11, keywords.size());
 		assertTrue(keywords.contains("minimal generating sets"));
 		assertTrue(keywords.contains("linear diophantine equations"));
@@ -243,19 +245,19 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testBadStemmer() throws ResourceInitializationException, AnalysisEngineProcessException{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false, RakeKeywords.PARAM_STEMMING, "NotARealStemmer");
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, false, RakeKeywords.PARAM_STEMMING, "NotARealStemmer");
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText("Compatibility of systems of linear constraints over the set of natural numbers. Criteria of compatibility of a system of linear Diophantine equations, strict inequations, and nonstrict inequations are considered. Upper bounds for components of a minimal set of solutions and algorithms of construction of minimal generating sets of solutions for all types of systems are given. These criteria and the corresponding algorithms for contructing a minimal supporting set of solutions can be used in solving all the considered types of systems and systems of mixed types.");
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		
-		List<String> keywords = Arrays.asList(md.getValue().split(";"));
+		final List<String> keywords = Arrays.asList(md.getValue().split(";"));
 		assertEquals(9, keywords.size());
 		assertTrue(keywords.contains("minimal generating sets"));
 		assertTrue(keywords.contains("linear diophantine equations"));
@@ -272,20 +274,45 @@ public class RakeKeywordsTest extends AnnotatorTestBase {
 	
 	@Test
 	public void testLongDocument() throws Exception{
-		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
-		AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, true);
+		final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+		final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, true);
 		
-		AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+		final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
 		
 		jCas.setDocumentText(new String(Files.readAllBytes(Paths.get(getClass().getResource("turing.txt").toURI()))));
 		ae.process(jCas);
 		
 		assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
-		Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+		final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
 		assertEquals("keywords", md.getKey());
 		assertNotNull(md.getValue());
 		
 		ae.destroy();
 	}
 	
+	   @Test
+	    public void testLongDocumentWithText() throws Exception{
+	        final ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(STOPWORDS, SharedStopwordResource.class);
+	        final AnalysisEngineDescription aed = AnalysisEngineFactory.createEngineDescription(RakeKeywords.class, STOPWORDS, erd, RakeKeywords.PARAM_MAX_KEYWORDS, 12, RakeKeywords.PARAM_ADD_BUZZWORDS, true);
+	        
+	        final AnalysisEngine ae = AnalysisEngineFactory.createEngine(aed);
+	        
+	        jCas.setDocumentText(new String(Files.readAllBytes(Paths.get(getClass().getResource("turing.txt").toURI()))));
+	        ae.process(jCas);
+	        final String fullDocKeywords = JCasUtil.selectByIndex(jCas, Metadata.class, 0).getValue();
+	        
+	        jCas.reset();
+	        
+	        jCas.setDocumentText(new String(Files.readAllBytes(Paths.get(getClass().getResource("turing.txt").toURI()))));
+	        new Text(jCas, 0, 250).addToIndexes();
+	        ae.process(jCas);
+	        
+	        assertEquals(1, JCasUtil.select(jCas, Metadata.class).size());
+	        final Metadata md = JCasUtil.selectByIndex(jCas, Metadata.class, 0);
+	        assertEquals("keywords", md.getKey());
+	        assertNotNull(md.getValue());
+	        assertNotEquals(fullDocKeywords, md.getValue());
+	        
+	        ae.destroy();
+	    }
 }
