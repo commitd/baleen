@@ -19,10 +19,10 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.tenode.baleen.extraction.Extraction;
-import com.tenode.baleen.extraction.exception.ExtractionException;
-import com.tenode.baleen.extraction.tika.TikaFormatExtractor;
 
+import io.committed.krill.extraction.Extraction;
+import io.committed.krill.extraction.exception.ExtractionException;
+import io.committed.krill.extraction.tika.TikaFormatExtractor;
 import uk.gov.dstl.baleen.common.structure.TextBlocks;
 import uk.gov.dstl.baleen.contentextractors.helpers.AbstractContentExtractor;
 import uk.gov.dstl.baleen.contentextractors.helpers.DocumentToJCasConverter;

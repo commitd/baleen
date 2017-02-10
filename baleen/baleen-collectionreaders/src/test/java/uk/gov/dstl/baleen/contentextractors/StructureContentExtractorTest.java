@@ -22,10 +22,10 @@ import org.junit.Test;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
-import com.tenode.baleen.extraction.Extraction;
-import com.tenode.baleen.extraction.exception.ExtractionException;
-import com.tenode.baleen.extraction.impl.DefaultExtraction;
 
+import io.committed.krill.extraction.Extraction;
+import io.committed.krill.extraction.exception.ExtractionException;
+import io.committed.krill.extraction.impl.DefaultExtraction;
 import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
