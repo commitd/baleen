@@ -96,6 +96,7 @@ public class TemplateSelectorAnnotator extends BaleenAnnotator {
     templateField.setName(key);
     templateField.setBegin(element.getBegin());
     templateField.setEnd(element.getEnd());
+    templateField.setConfidence(1d);
     addToJCasIndex(templateField);
   }
 
