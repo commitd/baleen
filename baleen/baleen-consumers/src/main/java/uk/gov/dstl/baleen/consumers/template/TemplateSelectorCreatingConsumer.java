@@ -8,10 +8,10 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
-import org.apache.uima.jcas.tcas.DocumentAnnotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.gov.dstl.baleen.consumers.utils.SourceUtils;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.structure.Anchor;
@@ -55,7 +55,6 @@ import uk.gov.dstl.baleen.uima.BaleenConsumer;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -85,7 +84,7 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 
   /**
    * A list of structural types which will be considered during template path analysis.
-   * 
+   *
    * @baleen.config Paragraph,TableCell,ListItem,Aside, ...
    */
   public static final String PARAM_TYPE_NAMES = "types";
@@ -127,20 +126,13 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
       properties.put(templateField.getName(), generatePath(jCas, templateField));
     }
 
-    String documentSourceName = getDocumentSourceName(jCas);
+    String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());
 
     try (Writer w = createOutputWriter(documentSourceName)) {
       properties.store(w, "Template Selectors - generated from " + documentSourceName);
     } catch (IOException e) {
       throw new AnalysisEngineProcessException(e);
     }
-  }
-
-  private String getDocumentSourceName(final JCas jCas) {
-    DocumentAnnotation documentAnnotation = getSupport().getDocumentAnnotation(jCas);
-    String sourceUri = documentAnnotation.getSourceUri();
-    URI uri = URI.create(sourceUri);
-    return FilenameUtils.getName(uri.getPath());
   }
 
   private Writer createOutputWriter(final String documentSourceName) throws IOException {

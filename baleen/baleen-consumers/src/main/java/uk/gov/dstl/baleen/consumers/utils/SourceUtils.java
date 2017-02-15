@@ -2,8 +2,14 @@
 package uk.gov.dstl.baleen.consumers.utils;
 
 import java.io.File;
+import java.net.URI;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.tcas.DocumentAnnotation;
+import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+import uk.gov.dstl.baleen.uima.UimaSupport;
 
 /** 
  * Helper for dealing with sourceUrl. 
@@ -55,5 +61,31 @@ public class SourceUtils {
 		} else {
 			return new File(subUrl);
 		}
+	}
+
+	/**
+	 * Returns the base filename from DocumentAnnotation source URI in the given
+	 * JCas.
+	 * <p>
+	 * The basename is the main part of the filename, without extension or
+	 * enclosing paths, e.g. for path '/some/directory/SomeFile.txt' this method
+	 * will return 'SomeFile'.
+	 * </p>
+	 *
+	 * @param jCas
+	 *            the {@link JCas} from which to get the document annotation.
+	 * @param support
+	 *            an appropriately initialised {@link UimaSupport} instance
+	 *            (typically obtained through
+	 *            {@link BaleenAnnotator#getSupport()}).
+	 * @return the filename
+	 * @throws IllegalArgumentException
+	 *             if there is an error parsing the document source URI.
+	 */
+	public static String getDocumentSourceBaseName(final JCas jCas, final UimaSupport support) {
+		DocumentAnnotation documentAnnotation = support.getDocumentAnnotation(jCas);
+		String sourceUri = documentAnnotation.getSourceUri();
+		URI uri = URI.create(sourceUri);
+		return FilenameUtils.getName(uri.getPath());
 	}
 }
