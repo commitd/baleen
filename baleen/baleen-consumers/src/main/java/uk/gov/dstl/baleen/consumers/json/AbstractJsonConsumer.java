@@ -26,7 +26,6 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.cas.Sofa;
 import org.apache.uima.resource.ResourceInitializationException;
 import uk.gov.dstl.baleen.consumers.utils.SourceUtils;
-import uk.gov.dstl.baleen.types.BaleenAnnotation;
 import uk.gov.dstl.baleen.uima.BaleenConsumer;
 
 public abstract class AbstractJsonConsumer extends BaleenConsumer {
@@ -67,7 +66,7 @@ public abstract class AbstractJsonConsumer extends BaleenConsumer {
 	private void writeSofa(JsonGenerator generator, JCas jCas) throws IOException {
 		Sofa sofa = jCas.getSofa();
 		generator.writeFieldName("sofa");
-		writeJson(generator, sofa);
+		writeFS(generator, sofa);
 	}
 
 	private Writer createOutputWriter(final String documentSourceName) throws IOException {
@@ -83,38 +82,49 @@ public abstract class AbstractJsonConsumer extends BaleenConsumer {
 		return Files.newBufferedWriter(outputFilePath, StandardCharsets.UTF_8);
 	}
 
-	private void writeAnnotations(JsonGenerator generator, Iterable<? extends BaleenAnnotation> selectedAnnotations)
+	private void writeAnnotations(JsonGenerator generator, Iterable<? extends FeatureStructure> selectedAnnotations)
 			throws IOException {
 		generator.writeFieldName("annotations");
 		generator.writeStartArray();
-		for (BaleenAnnotation baleenAnnotation : selectedAnnotations) {
-			writeJson(generator, baleenAnnotation);
+		for (FeatureStructure baleenAnnotation : selectedAnnotations) {
+			writeFS(generator, baleenAnnotation);
 		}
 		generator.writeEndArray();
 	}
 
-	private void writeJson(JsonGenerator generator, FeatureStructure annotation) throws IOException {
+	private void writeFS(JsonGenerator generator, FeatureStructure annotation) throws IOException {
 		generator.writeStartObject();
+
 		Type type = annotation.getType();
+		generator.writeStringField("type", type.getName());
+
 		List<Feature> features = type.getFeatures();
 		if (annotation instanceof AnnotationFS) {
 			AnnotationFS annotationFS = (AnnotationFS) annotation;
-			generator.writeStringField("coveredText", annotationFS.getCoveredText());
+			if (!(annotationFS.getEnd() == 0 && annotationFS.getBegin() == 0)) {
+				generator.writeStringField("coveredText", annotationFS.getCoveredText());
+			}
 		}
-		for (Feature feature : features) {
-			if (feature.getRange().isPrimitive()) {
-				writePrimitive(generator, annotation, feature);
-			} else if (feature.getRange().isArray()) {
-				writeArray(generator, annotation, feature);
-			} else {
-				FeatureStructure featureValue = annotation.getFeatureValue(feature);
-				if (featureValue != null) {
-					if (!"uima.cas.AnnotationBase:sofa".equals(feature.getName())) {
+
+		if (features.size() > 0) {
+			generator.writeObjectFieldStart("fields");
+			for (Feature feature : features) {
+				if (feature.getRange().isPrimitive()) {
+					writePrimitive(generator, annotation, feature);
+				} else if (feature.getRange().isArray()) {
+					writeArray(generator, annotation, feature);
+				} else {
+					FeatureStructure featureValue = annotation.getFeatureValue(feature);
+					if (featureValue != null) {
+						if ("uima.cas.AnnotationBase:sofa".equals(feature.getName())) {
+							continue;
+						}
 						generator.writeFieldName(feature.getShortName());
-						writeJson(generator, featureValue);
+						writeFS(generator, featureValue);
 					}
 				}
 			}
+			generator.writeEndObject();
 		}
 		generator.writeEndObject();
 	}
@@ -174,6 +184,6 @@ public abstract class AbstractJsonConsumer extends BaleenConsumer {
 		}
 	}
 
-	protected abstract Iterable<? extends BaleenAnnotation> selectAnnotations(JCas jCas);
+	protected abstract Iterable<? extends FeatureStructure> selectAnnotations(JCas jCas);
 
 }
