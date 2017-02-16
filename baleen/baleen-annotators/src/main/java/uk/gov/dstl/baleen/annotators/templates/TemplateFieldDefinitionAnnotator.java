@@ -19,7 +19,7 @@ public class TemplateFieldDefinitionAnnotator
 
   public static final String DEFAULT_DATA_TYPE = "String";
 
-  private static final String TEMPLATE_TOKEN_REGEX = "<<([A-Za-z0-9]+)>>";
+  private static final String TEMPLATE_TOKEN_REGEX = "<<field:([A-Za-z0-9]+)>>";
 
   private static final Pattern TEMPLATE_TOKEN_PATTERN = Pattern.compile(TEMPLATE_TOKEN_REGEX);
 
