@@ -1,13 +1,13 @@
 package uk.gov.dstl.baleen.consumers.utils;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
-
 import uk.gov.dstl.baleen.types.structure.Structure;
 
 /**
@@ -61,27 +61,27 @@ public class StructureHierarchy {
     });
 
     final Node parent = new Node(null);
-    final Stack<Node> stack = new Stack<>();
-    stack.push(parent);
+    final Deque<Node> deque = new ArrayDeque<>();
+    deque.push(parent);
 
-    select.forEach(s -> build(stack, s));
+    select.forEach(s -> build(deque, s));
 
     return parent;
 
   }
 
-  private static void build(Stack<Node> stack, Structure s) {
-    final Node parent = getParent(stack, s);
+  private static void build(Deque<Node> deque, Structure s) {
+    final Node parent = getParent(deque, s);
     final Node node = new Node(s);
     parent.addChild(node);
-    stack.push(node);
+    deque.push(node);
   }
 
-  private static Node getParent(Stack<Node> stack, Structure s) {
-    while (stack.peek().getEnd() <= s.getBegin()) {
-      stack.pop();
+  private static Node getParent(Deque<Node> deque, Structure s) {
+    while (deque.peek().getEnd() <= s.getBegin()) {
+      deque.pop();
     }
-    return stack.peek();
+    return deque.peek();
   }
 
 
