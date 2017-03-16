@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 import uk.gov.dstl.baleen.types.Base;
 
 
-/** Wrapper around a record (multiple fields) in a document (eg a row in a table).
- * Updated by JCasGen Thu Feb 16 11:18:50 GMT 2017
+/** Start marker of a record (multiple fields) in a document (eg a row in a table).
+ * Updated by JCasGen Thu Mar 16 15:32:13 GMT 2017
  * XML source: /Users/jrfry/dev/dstl/private/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
 public class Record extends Base {
@@ -75,6 +75,28 @@ public class Record extends Base {
   private void readObject() {/*default - does nothing empty block */}
      
  
+    
+  //*--------------*
+  //* Feature: marker
+
+  /** getter for marker - gets Which type of record marker - either 'begin' or 'end'
+   * @generated
+   * @return value of the feature 
+   */
+  public String getMarker() {
+    if (Record_Type.featOkTst && ((Record_Type)jcasType).casFeat_marker == null)
+      jcasType.jcas.throwFeatMissing("marker", "uk.gov.dstl.baleen.types.templates.Record");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((Record_Type)jcasType).casFeatCode_marker);}
+    
+  /** setter for marker - sets Which type of record marker - either 'begin' or 'end' 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setMarker(String v) {
+    if (Record_Type.featOkTst && ((Record_Type)jcasType).casFeat_marker == null)
+      jcasType.jcas.throwFeatMissing("marker", "uk.gov.dstl.baleen.types.templates.Record");
+    jcasType.ll_cas.ll_setStringValue(addr, ((Record_Type)jcasType).casFeatCode_marker, v);}    
+   
     
   //*--------------*
   //* Feature: name

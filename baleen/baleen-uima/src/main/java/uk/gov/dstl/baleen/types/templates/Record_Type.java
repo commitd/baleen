@@ -10,8 +10,8 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
-/** Wrapper around a record (multiple fields) in a document (eg a row in a table).
- * Updated by JCasGen Thu Feb 16 11:18:50 GMT 2017
+/** Start marker of a record (multiple fields) in a document (eg a row in a table).
+ * Updated by JCasGen Thu Mar 16 15:32:13 GMT 2017
  * @generated */
 public class Record_Type extends Base_Type {
   /** @generated */
@@ -21,6 +21,30 @@ public class Record_Type extends Base_Type {
      @modifiable */
   @SuppressWarnings ("hiding")
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("uk.gov.dstl.baleen.types.templates.Record");
+ 
+  /** @generated */
+  final Feature casFeat_marker;
+  /** @generated */
+  final int     casFeatCode_marker;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getMarker(int addr) {
+        if (featOkTst && casFeat_marker == null)
+      jcas.throwFeatMissing("marker", "uk.gov.dstl.baleen.types.templates.Record");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_marker);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setMarker(int addr, String v) {
+        if (featOkTst && casFeat_marker == null)
+      jcas.throwFeatMissing("marker", "uk.gov.dstl.baleen.types.templates.Record");
+    ll_cas.ll_setStringValue(addr, casFeatCode_marker, v);}
+    
+  
  
   /** @generated */
   final Feature casFeat_name;
@@ -56,6 +80,10 @@ public class Record_Type extends Base_Type {
   public Record_Type(JCas jcas, Type casType) {
     super(jcas, casType);
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
+
+ 
+    casFeat_marker = jcas.getRequiredFeatureDE(casType, "marker", "uima.cas.String", featOkTst);
+    casFeatCode_marker  = (null == casFeat_marker) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_marker).getCode();
 
  
     casFeat_name = jcas.getRequiredFeatureDE(casType, "name", "uima.cas.String", featOkTst);

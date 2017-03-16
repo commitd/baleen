@@ -3,12 +3,11 @@
   <name>Baleen Type System - Templates</name>
   <description>XML definition of the Baleen type system for document templates.
 
-    This XML file classified as UK OFFICIAL.
-  </description>
+    This XML file classified as UK OFFICIAL.</description>
   <version>1.0</version>
   <vendor>Dstl</vendor>
   <imports>
-    <import name="types/base_type_system" />
+    <import name="types/base_type_system"/>
   </imports>
   <types>
     <typeDescription>
@@ -37,10 +36,14 @@
     </typeDescription>
     <typeDescription>
       <name>uk.gov.dstl.baleen.types.templates.Record</name>
-      <description>Wrapper around a record (multiple fields) in a document (eg a row in a table).
-      </description>
+      <description>Start marker of a record (multiple fields) in a document (eg a row in a table).</description>
       <supertypeName>uk.gov.dstl.baleen.types.Base</supertypeName>
       <features>
+        <featureDescription>
+          <name>marker</name>
+          <description>Which type of record marker - either 'begin' or 'end'</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
         <featureDescription>
           <name>name</name>
           <description>The name of the record, eg Address</description>
