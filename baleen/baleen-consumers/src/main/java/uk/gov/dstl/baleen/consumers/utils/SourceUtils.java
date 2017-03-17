@@ -2,7 +2,6 @@
 package uk.gov.dstl.baleen.consumers.utils;
 
 import java.io.File;
-import java.net.URI;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -85,7 +84,6 @@ public class SourceUtils {
 	public static String getDocumentSourceBaseName(final JCas jCas, final UimaSupport support) {
 		DocumentAnnotation documentAnnotation = support.getDocumentAnnotation(jCas);
 		String sourceUri = documentAnnotation.getSourceUri();
-		URI uri = URI.create(sourceUri);
-		return FilenameUtils.getName(uri.getPath());
+		return FilenameUtils.getName(sourceUri);
 	}
 }
