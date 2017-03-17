@@ -77,6 +77,7 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 			Summary.class, Table.class, TableBody.class, TableCell.class, TableFooter.class, TableHeader.class,
 			TableRow.class, Unordered.class };
 
+
 	/**
 	 * A list of structural types which will be considered during template path
 	 * analysis.
@@ -93,6 +94,7 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 	@ConfigurationParameter(name = PARAM_OUTPUT_FILE, defaultValue = "templateSelectors")
 	private String outputDirectory = "templateSelectors";
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		super.doInitialize(aContext);
@@ -120,7 +122,7 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 		final Collection<TemplateFieldDefinition> templateFields = JCasUtil.select(jCas, TemplateFieldDefinition.class);
 
 		for (TemplateFieldDefinition templateField : templateFields) {
-			properties.put(templateField.getName(), SelectorUtils.generatePath(jCas, templateField, structuralClasses));
+			properties.put(templateField.getName(), SelectorUtils.generatePath(templateField, structuralClasses));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());

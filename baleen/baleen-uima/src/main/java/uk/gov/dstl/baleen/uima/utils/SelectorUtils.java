@@ -6,6 +6,8 @@ import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.BaleenAnnotation;
 import uk.gov.dstl.baleen.types.structure.Structure;
+import uk.gov.dstl.baleen.types.templates.Record;
+import uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -109,29 +111,35 @@ public class SelectorUtils {
 		return CpeBuilderUtils.getClassFromString(typeName, packages);
 	}
 
-	private static class SelectorPart {
+	static class SelectorPart {
 
-		private Class<Structure> type;
+		Class<Structure> type;
 
-		private String psuedoSelector;
+		String psuedoSelector;
 
-		private SelectorPart(Class<Structure> type) {
+		SelectorPart(Class<Structure> type) {
 			this.type = type;
 		}
 
-		private SelectorPart(Class<Structure> type, String psuedoSelector) {
+		SelectorPart(Class<Structure> type, String psuedoSelector) {
 			this.type = type;
 			this.psuedoSelector = psuedoSelector;
 		}
 	}
 
-	public static String generatePath(final JCas jCas, final BaleenAnnotation templateField,
+	public static String generatePath(BaleenAnnotation parent, BaleenAnnotation child,
+			Set<Class<? extends Structure>> structuralClasses) {
+		String parentPath = generatePath(parent, structuralClasses);
+		String childPath = generatePath(child, structuralClasses);
+		return childPath.replace(parentPath, "").trim();
+	}
+
+	public static String generatePath(final BaleenAnnotation templateField,
 			Set<Class<? extends Structure>> structuralClasses) {
 		StringBuilder sb = new StringBuilder();
 		List<Structure> covering = JCasUtil.selectCovering(Structure.class, templateField);
 		ListIterator<Structure> iterator = covering.listIterator();
 		Structure previous = null;
-
 		while (iterator.hasNext()) {
 			previous = iterator.next();
 			if (structuralClasses.contains(previous.getClass())) {
@@ -142,6 +150,17 @@ public class SelectorUtils {
 
 		if (previous != null) {
 			sb.append(previous.getType().getShortName());
+			List<? extends Structure> previousOfType = JCasUtil.selectPreceding(previous.getClass(), previous,
+					Integer.MAX_VALUE);
+			long previousDepth = previous.getDepth();
+			long sameTypeSameDepthPreceedingCount = previousOfType.stream().filter(s -> s.getDepth() == previousDepth)
+					.count();
+			if (sameTypeSameDepthPreceedingCount > 1) {
+				sb.append(":nth-of-type(");
+				sb.append(sameTypeSameDepthPreceedingCount + 1);
+				sb.append(")");
+			}
+
 			while (iterator.hasNext()) {
 				Structure next = iterator.next();
 				if (!structuralClasses.contains(next.getClass())) {
@@ -174,4 +193,5 @@ public class SelectorUtils {
 	private static Class<Structure> getStructureClass(Structure type) {
 		return (Class<Structure>) type.getClass();
 	}
+
 }
