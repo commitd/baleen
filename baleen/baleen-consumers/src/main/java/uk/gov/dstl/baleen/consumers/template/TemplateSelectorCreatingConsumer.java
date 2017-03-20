@@ -18,8 +18,6 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.dstl.baleen.consumers.utils.SourceUtils;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
@@ -64,8 +62,6 @@ import uk.gov.dstl.baleen.uima.BaleenConsumer;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 
 public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(TemplateSelectorCreatingConsumer.class);
 
 	private static final String DEFAULT_STRUCTURAL_PACKAGE = "uk.gov.dstl.baleen.types.structure";
 
@@ -143,7 +139,7 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 		Path outputFilePath = directoryPath.resolve(baseName + ".properties");
 
 		if (Files.exists(outputFilePath)) {
-			LOGGER.warn("Overwriting existing output properties file {}", outputFilePath);
+			getMonitor().warn("Overwriting existing output properties file {}", outputFilePath);
 		}
 		return Files.newBufferedWriter(outputFilePath, StandardCharsets.UTF_8);
 	}

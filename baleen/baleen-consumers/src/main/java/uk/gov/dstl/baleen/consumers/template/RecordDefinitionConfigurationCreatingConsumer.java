@@ -23,8 +23,6 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.dstl.baleen.consumers.utils.SourceUtils;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
@@ -70,8 +68,6 @@ import uk.gov.dstl.baleen.uima.BaleenConsumer;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 
 public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsumer {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(RecordDefinitionConfigurationCreatingConsumer.class);
 
 	private static final String DEFAULT_STRUCTURAL_PACKAGE = "uk.gov.dstl.baleen.types.structure";
 
@@ -156,7 +152,7 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 		Path outputFilePath = directoryPath.resolve(baseName + ".yml");
 
 		if (Files.exists(outputFilePath)) {
-			LOGGER.warn("Overwriting existing output properties file {}", outputFilePath.toString());
+			getMonitor().warn("Overwriting existing output properties file {}", outputFilePath.toString());
 		}
 		return Files.newBufferedWriter(outputFilePath, StandardCharsets.UTF_8);
 	}

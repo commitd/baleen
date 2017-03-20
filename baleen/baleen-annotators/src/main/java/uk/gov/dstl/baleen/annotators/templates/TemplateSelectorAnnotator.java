@@ -5,8 +5,6 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.structure.Structure;
 import uk.gov.dstl.baleen.types.templates.TemplateField;
@@ -35,8 +33,6 @@ import java.util.Properties;
  * </p>
  */
 public class TemplateSelectorAnnotator extends BaleenAnnotator {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TemplateSelectorAnnotator.class);
 
   private static final String DEFAULT_STRUCTURAL_PACKAGE = "uk.gov.dstl.baleen.types.structure";
 
@@ -74,7 +70,7 @@ public class TemplateSelectorAnnotator extends BaleenAnnotator {
       selectorsFromPath.stringPropertyNames()
           .forEach(p -> selectors.put(p, selectorsFromPath.getProperty(p)));
     } catch (IOException e) {
-      LOGGER.warn("Failed to read from selectors file {}", path);
+      getMonitor().warn("Failed to read from selectors file {}", path);
     }
   }
 
