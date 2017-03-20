@@ -132,16 +132,19 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 						recordDefinition.getName());
 				continue;
 			}
-			String precedingPath = SelectorUtils.generatePath(precedingStructure.iterator().next(), structuralClasses);
-			String followingPath = SelectorUtils.generatePath(followingStructure.iterator().next(), structuralClasses);
+			String precedingPath = SelectorUtils.generatePath(jCas, precedingStructure.iterator().next(),
+					structuralClasses);
+			String followingPath = SelectorUtils.generatePath(jCas, followingStructure.iterator().next(),
+					structuralClasses);
 
 			List<TemplateFieldDefinition> fields = JCasUtil.selectCovered(TemplateFieldDefinition.class,
 					recordDefinition);
 			Map<String, String> fieldPaths = new HashMap<>();
 
 			for (TemplateFieldDefinition templateFieldDefinition : fields) {
-				String fieldPath = SelectorUtils.generatePath(recordDefinition, templateFieldDefinition,
-						structuralClasses);
+
+				String fieldPath = SelectorUtils.generatePath(jCas, templateFieldDefinition, structuralClasses);
+
 				fieldPaths.put(templateFieldDefinition.getName(), fieldPath);
 			}
 			definitions.add(new RecordDefinitionConfiguration(recordDefinition.getName(), precedingPath, followingPath,

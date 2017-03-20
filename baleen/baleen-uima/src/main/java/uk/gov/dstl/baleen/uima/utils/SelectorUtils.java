@@ -141,14 +141,14 @@ public class SelectorUtils {
 		}
 	}
 
-	public static String generatePath(BaleenAnnotation parent, BaleenAnnotation child,
+	public static String generatePath(JCas jcas, BaleenAnnotation parent, BaleenAnnotation child,
 			Set<Class<? extends Structure>> structuralClasses) {
-		String parentPath = generatePath(parent, structuralClasses);
-		String childPath = generatePath(child, structuralClasses);
+		String parentPath = generatePath(jcas, parent, structuralClasses);
+		String childPath = generatePath(jcas, child, structuralClasses);
 		return childPath.replace(parentPath, "").trim();
 	}
 
-	public static String generatePath(final BaleenAnnotation templateField,
+	public static String generatePath(final JCas jCas, final BaleenAnnotation templateField,
 			Set<Class<? extends Structure>> structuralClasses) {
 		StringBuilder sb = new StringBuilder();
 		List<Structure> covering = JCasUtil.selectCovering(Structure.class, templateField);
@@ -164,12 +164,14 @@ public class SelectorUtils {
 
 		if (previous != null) {
 			sb.append(previous.getType().getShortName());
-			List<? extends Structure> previousOfType = JCasUtil.selectPreceding(previous.getClass(), previous,
-					Integer.MAX_VALUE);
 			long previousDepth = previous.getDepth();
-			long sameTypeSameDepthPreceedingCount = previousOfType.stream().filter(s -> s.getDepth() == previousDepth)
-					.count();
-			if (sameTypeSameDepthPreceedingCount > 1) {
+			long countOfType = JCasUtil.select(jCas, previous.getClass()).stream()
+					.filter(s -> s.getDepth() == previousDepth).count();
+			if (countOfType > 1) {
+				List<? extends Structure> previousOfType = JCasUtil.selectPreceding(previous.getClass(), previous,
+						Integer.MAX_VALUE);
+				long sameTypeSameDepthPreceedingCount = previousOfType.stream()
+						.filter(s -> s.getDepth() == previousDepth).count();
 				sb.append(":nth-of-type(");
 				sb.append(sameTypeSameDepthPreceedingCount + 1);
 				sb.append(")");

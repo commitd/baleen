@@ -118,7 +118,7 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 		final Collection<TemplateFieldDefinition> templateFields = JCasUtil.select(jCas, TemplateFieldDefinition.class);
 
 		for (TemplateFieldDefinition templateField : templateFields) {
-			properties.put(templateField.getName(), SelectorUtils.generatePath(templateField, structuralClasses));
+			properties.put(templateField.getName(), SelectorUtils.generatePath(jCas, templateField, structuralClasses));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());
