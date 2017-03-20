@@ -35,7 +35,7 @@
       </features>
     </typeDescription>
     <typeDescription>
-      <name>uk.gov.dstl.baleen.types.templates.Record</name>
+      <name>uk.gov.dstl.baleen.types.templates.RecordMarker</name>
       <description>Start marker of a record (multiple fields) in a document (eg a row in a table).</description>
       <supertypeName>uk.gov.dstl.baleen.types.Base</supertypeName>
       <features>

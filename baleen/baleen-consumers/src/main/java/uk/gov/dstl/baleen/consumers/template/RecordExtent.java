@@ -1,14 +1,14 @@
 package uk.gov.dstl.baleen.consumers.template;
 
-import uk.gov.dstl.baleen.types.templates.Record;
+import uk.gov.dstl.baleen.types.templates.RecordMarker;
 
 public class RecordExtent {
 
 	private final String name;
 
-	private Record startAnnotation;
+	private RecordMarker startAnnotation;
 
-	private Record endAnnotation;
+	private RecordMarker endAnnotation;
 
 	public RecordExtent(String name) {
 		this.name = name;
@@ -18,19 +18,19 @@ public class RecordExtent {
 		return name;
 	}
 
-	public Record getStartAnnotation() {
+	public RecordMarker getStartAnnotation() {
 		return startAnnotation;
 	}
 
-	public void setStartAnnotation(Record startAnnotation) {
+	public void setStartAnnotation(RecordMarker startAnnotation) {
 		this.startAnnotation = startAnnotation;
 	}
 
-	public Record getEndAnnotation() {
+	public RecordMarker getEndAnnotation() {
 		return endAnnotation;
 	}
 
-	public void setEndAnnotation(Record endAnnotation) {
+	public void setEndAnnotation(RecordMarker endAnnotation) {
 		this.endAnnotation = endAnnotation;
 	}
 

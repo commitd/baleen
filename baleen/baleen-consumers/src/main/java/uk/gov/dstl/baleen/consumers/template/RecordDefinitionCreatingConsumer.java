@@ -64,7 +64,7 @@ import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.TextDocument;
 import uk.gov.dstl.baleen.types.structure.Unordered;
-import uk.gov.dstl.baleen.types.templates.Record;
+import uk.gov.dstl.baleen.types.templates.RecordMarker;
 import uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition;
 import uk.gov.dstl.baleen.uima.BaleenConsumer;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
@@ -123,7 +123,7 @@ public class RecordDefinitionCreatingConsumer extends BaleenConsumer {
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
 		Collection<RecordDefinition> definitions = new ArrayList<>();
 
-		Collection<Record> records = JCasUtil.select(jCas, Record.class);
+		Collection<RecordMarker> records = JCasUtil.select(jCas, RecordMarker.class);
 		Map<String, RecordExtent> recordExtents = gatherRecordExtents(records);
 		for (RecordExtent recordExtent : recordExtents.values()) {
 			if (recordExtent.getStartAnnotation() == null) {
@@ -160,10 +160,10 @@ public class RecordDefinitionCreatingConsumer extends BaleenConsumer {
 		}
 	}
 
-	private Map<String, RecordExtent> gatherRecordExtents(final Collection<Record> records) {
+	private Map<String, RecordExtent> gatherRecordExtents(final Collection<RecordMarker> records) {
 		Map<String, RecordExtent> recordExtents = new HashMap<>();
 		// build record extents
-		for (Record record : records) {
+		for (RecordMarker record : records) {
 			RecordExtent extent = new RecordExtent(record.getName());
 			// reuse existing entry if present
 			RecordExtent put = recordExtents.putIfAbsent(record.getName(), extent);

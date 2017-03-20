@@ -6,8 +6,6 @@ import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.BaleenAnnotation;
 import uk.gov.dstl.baleen.types.structure.Structure;
-import uk.gov.dstl.baleen.types.templates.Record;
-import uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition;
 
 import java.util.ArrayList;
 import java.util.Collections;
