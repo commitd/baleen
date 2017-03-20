@@ -8,12 +8,19 @@ public class RecordDefinitionConfiguration {
 
 	private Map<String, String> fieldPaths;
 
+	private String precedingPath;
+
+	private String followingPath;
+
 	public RecordDefinitionConfiguration() {
 		// for reflective construction in Jackson
 	}
 
-	public RecordDefinitionConfiguration(String name, Map<String, String> fieldPaths) {
+	public RecordDefinitionConfiguration(String name, String precedingPath, String followingPath,
+			Map<String, String> fieldPaths) {
 		this.name = name;
+		this.precedingPath = precedingPath;
+		this.followingPath = followingPath;
 		this.fieldPaths = fieldPaths;
 	}
 
@@ -23,6 +30,22 @@ public class RecordDefinitionConfiguration {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getPrecedingPath() {
+		return precedingPath;
+	}
+
+	public void setPrecedingPath(String precedingPath) {
+		this.precedingPath = precedingPath;
+	}
+
+	public String getFollowingPath() {
+		return followingPath;
+	}
+
+	public void setFollowingPath(String followingPath) {
+		this.followingPath = followingPath;
 	}
 
 	public Map<String, String> getFieldPaths() {

@@ -122,6 +122,18 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 		Collection<RecordDefinition> recordDefinitions = JCasUtil.select(jCas, RecordDefinition.class);
 		for (RecordDefinition recordDefinition : recordDefinitions) {
 
+			List<Structure> precedingStructure = JCasUtil.selectPreceding(Structure.class, recordDefinition, 1);
+			List<Structure> followingStructure = JCasUtil.selectFollowing(Structure.class, recordDefinition, 1);
+
+			if (precedingStructure.size() != 1 || followingStructure.size() != 1) {
+				getMonitor().warn(
+						"Could not find preceeding or following structure elements for record definition {} - giving up",
+						recordDefinition.getName());
+				continue;
+			}
+			String precedingPath = SelectorUtils.generatePath(precedingStructure.iterator().next(), structuralClasses);
+			String followingPath = SelectorUtils.generatePath(followingStructure.iterator().next(), structuralClasses);
+
 			List<TemplateFieldDefinition> fields = JCasUtil.selectCovered(TemplateFieldDefinition.class,
 					recordDefinition);
 			Map<String, String> fieldPaths = new HashMap<>();
@@ -131,7 +143,8 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 						structuralClasses);
 				fieldPaths.put(templateFieldDefinition.getName(), fieldPath);
 			}
-			definitions.add(new RecordDefinitionConfiguration(recordDefinition.getName(), fieldPaths));
+			definitions.add(new RecordDefinitionConfiguration(recordDefinition.getName(), precedingPath, followingPath,
+					fieldPaths));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());
