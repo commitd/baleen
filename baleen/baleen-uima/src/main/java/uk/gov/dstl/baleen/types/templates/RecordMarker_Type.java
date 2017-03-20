@@ -10,8 +10,8 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
-/** Start marker of a record (multiple fields) in a document (eg a row in a table).
- * Updated by JCasGen Mon Mar 20 12:18:20 GMT 2017
+/** Beginning / end marker of a record (multiple fields) in a template document, used to create record definitions for subsequent annotation of real documents.
+ * Updated by JCasGen Mon Mar 20 12:26:47 GMT 2017
  * @generated */
 public class RecordMarker_Type extends Base_Type {
   /** @generated */
