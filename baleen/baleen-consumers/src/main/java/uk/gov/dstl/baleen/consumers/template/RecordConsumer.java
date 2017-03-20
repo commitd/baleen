@@ -56,7 +56,7 @@ public class RecordConsumer extends BaleenConsumer {
 		Collection<ExtractedRecord> records = new ArrayList<>();
 		Collection<Record> recordAnnotations = JCasUtil.select(jCas, Record.class);
 		for (Record recordAnnotation : recordAnnotations) {
-			Collection<TemplateField> fieldAnnotations = JCasUtil.select(jCas, TemplateField.class);
+			Collection<TemplateField> fieldAnnotations = JCasUtil.selectCovered(TemplateField.class, recordAnnotation);
 			Map<String, String> fieldValues = new HashMap<>();
 			for (TemplateField templateField : fieldAnnotations) {
 				fieldValues.put(templateField.getName(), templateField.getCoveredText());
