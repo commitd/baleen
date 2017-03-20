@@ -1,4 +1,4 @@
-package uk.gov.dstl.baleen.consumers.template;
+package uk.gov.dstl.baleen.annotators.templates;
 
 import java.util.Map;
 
