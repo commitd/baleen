@@ -1,5 +1,6 @@
 package uk.gov.dstl.baleen.uima.utils;
 
+import org.apache.uima.cas.text.AnnotationFS;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
@@ -8,13 +9,13 @@ import uk.gov.dstl.baleen.types.BaleenAnnotation;
 import uk.gov.dstl.baleen.types.structure.Structure;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class SelectorUtils {
 
@@ -64,45 +65,62 @@ public class SelectorUtils {
 	 */
 	public static List<? extends Structure> select(JCas jCas, String selectorString, String... packages)
 			throws InvalidParameterException {
-		List<SelectorPart> selectorParts = parseSelector(selectorString, packages);
-		Iterator<SelectorPart> iterator = selectorParts.iterator();
 
-		if (iterator.hasNext()) {
-			SelectorPart selectorPart = iterator.next();
-			List<Structure> candidates = JCasUtil.selectCovered(jCas, selectorPart.type, 0,
-					jCas.getDocumentText().length());
-			while (iterator.hasNext()) {
-				List<Structure> newCandidates = new ArrayList<>();
-				selectorPart = iterator.next();
-				for (Structure structure : candidates) {
-					List<Structure> covered = JCasUtil.selectCovered(selectorPart.type, structure);
-					if (selectorPart.psuedoSelector != null) {
-						Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(selectorPart.psuedoSelector);
-						if (matcher.matches()) {
-							int nth = Integer.parseInt(matcher.group(1));
-							int parentDepth = structure.getDepth();
-							int count = 0;
-							for (Structure child : covered) {
-								if (child.getDepth() == parentDepth + 1) {
-									count++;
-								}
-								if (count == nth) {
-									newCandidates.add(child);
-									break;
-								}
-							}
-						}
-					} else {
-						newCandidates.addAll(covered);
-					}
+		List<SelectorPart> selectorParts = parseSelector(selectorString, packages);
+		List<Structure> result = new ArrayList<>();
+
+		OptionalInt min = JCasUtil.select(jCas, Structure.class).stream().mapToInt(Structure::getDepth).min();
+		if (min.isPresent() && !selectorParts.isEmpty()) {
+			int depth = min.getAsInt();
+			SelectorPart selectorPart = selectorParts.get(0);
+			List<Structure> parents = JCasUtil
+					.selectCovered(selectorPart.type, (AnnotationFS) jCas.getDocumentAnnotationFs()).stream()
+					.filter(s -> depth == s.getDepth()).collect(Collectors.toList());
+			select(selectorParts.subList(1, selectorParts.size()), selectorPart, result, depth + 1, parents);
+		}
+
+		return result;
+	}
+
+	private static void select(List<SelectorPart> remainingParts, SelectorPart selectorPart, List<Structure> result,
+			int depth, List<Structure> parents) {
+		// there are no further parts to examine, so add all of the parent
+		// candidates to the result
+		if (remainingParts.isEmpty()) {
+			if (selectorPart.psuedoSelector != null) {
+				Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(selectorPart.psuedoSelector);
+				if (matcher.matches()) {
+					int nth = Integer.parseInt(matcher.group(1));
+					result.add(nthOfChild(parents, nth));
 				}
-				candidates = newCandidates;
-				if (!newCandidates.isEmpty() && !iterator.hasNext()) {
-					return candidates;
+			} else {
+				result.addAll(parents);
+			}
+		} else {
+			if (selectorPart.psuedoSelector != null) {
+				Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(selectorPart.psuedoSelector);
+				if (matcher.matches()) {
+					int nth = Integer.parseInt(matcher.group(1));
+					SelectorPart newSelectorPart = remainingParts.get(0);
+					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.type, nthOfChild(parents, nth))
+							.stream().filter(s -> depth == s.getDepth()).collect(Collectors.toList());
+					select(remainingParts.subList(1, remainingParts.size()), newSelectorPart, result, depth + 1,
+							newParents);
+				}
+			} else {
+				for (Structure structure : parents) {
+					SelectorPart newSelectorPart = remainingParts.get(0);
+					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.type, structure).stream()
+							.filter(s -> depth == s.getDepth()).collect(Collectors.toList());
+					select(remainingParts.subList(1, remainingParts.size()), newSelectorPart, result, depth + 1,
+							newParents);
 				}
 			}
 		}
-		return Collections.emptyList();
+	}
+
+	private static Structure nthOfChild(List<Structure> structures, int n) {
+		return structures.get(n - 1);
 	}
 
 	private static Class<Structure> getType(String typeName, String[] packages) throws InvalidParameterException {
@@ -110,9 +128,7 @@ public class SelectorUtils {
 	}
 
 	static class SelectorPart {
-
 		Class<Structure> type;
-
 		String psuedoSelector;
 
 		SelectorPart(Class<Structure> type) {
