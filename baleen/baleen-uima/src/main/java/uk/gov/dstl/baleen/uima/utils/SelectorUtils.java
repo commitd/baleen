@@ -91,7 +91,10 @@ public class SelectorUtils {
 				Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(selectorPart.psuedoSelector);
 				if (matcher.matches()) {
 					int nth = Integer.parseInt(matcher.group(1));
-					result.add(nthOfChild(parents, nth));
+					Structure nthOfChild = nthOfChild(parents, nth);
+					if (nthOfChild != null) {
+						result.add(nthOfChild);
+					}
 				}
 			} else {
 				result.addAll(parents);
@@ -102,8 +105,12 @@ public class SelectorUtils {
 				if (matcher.matches()) {
 					int nth = Integer.parseInt(matcher.group(1));
 					SelectorPart newSelectorPart = remainingParts.get(0);
-					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.type, nthOfChild(parents, nth))
-							.stream().filter(s -> depth == s.getDepth()).collect(Collectors.toList());
+					Structure nthOfChild = nthOfChild(parents, nth);
+					if (nthOfChild == null) {
+						return;
+					}
+					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.type, nthOfChild).stream()
+							.filter(s -> depth == s.getDepth()).collect(Collectors.toList());
 					select(remainingParts.subList(1, remainingParts.size()), newSelectorPart, result, depth + 1,
 							newParents);
 				}
@@ -120,6 +127,9 @@ public class SelectorUtils {
 	}
 
 	private static Structure nthOfChild(List<Structure> structures, int n) {
+		if (n > structures.size()) {
+			return null;
+		}
 		return structures.get(n - 1);
 	}
 
