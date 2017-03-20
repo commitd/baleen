@@ -2,21 +2,18 @@ package uk.gov.dstl.baleen.consumers.template;
 
 import java.util.Map;
 
-public class RecordDefinition {
+public class RecordDefinitionConfiguration {
 
 	private String name;
 
-	private String recordBeginPath;
-
 	private Map<String, String> fieldPaths;
 
-	public RecordDefinition() {
+	public RecordDefinitionConfiguration() {
 		// for reflective construction in Jackson
 	}
 
-	public RecordDefinition(String name, String recordBeginPath, Map<String, String> fieldPaths) {
+	public RecordDefinitionConfiguration(String name, Map<String, String> fieldPaths) {
 		this.name = name;
-		this.recordBeginPath = recordBeginPath;
 		this.fieldPaths = fieldPaths;
 	}
 
@@ -26,14 +23,6 @@ public class RecordDefinition {
 
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	public String getRecordBeginPath() {
-		return recordBeginPath;
-	}
-
-	public void setRecordBeginPath(String recordBeginPath) {
-		this.recordBeginPath = recordBeginPath;
 	}
 
 	public Map<String, String> getFieldPaths() {

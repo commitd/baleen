@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Mon Mar 20 12:17:36 GMT 2017 */
+/* First created by JCasGen Mon Mar 20 15:20:44 GMT 2017 */
 package uk.gov.dstl.baleen.types.templates;
 
 import org.apache.uima.jcas.JCas; 
@@ -11,15 +11,15 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** Beginning / end marker of a record (multiple fields) in a template document, used to create record definitions for subsequent annotation of real documents.
- * Updated by JCasGen Mon Mar 20 12:26:47 GMT 2017
+ * Updated by JCasGen Mon Mar 20 15:20:44 GMT 2017
  * XML source: /Users/jrfry/dev/dstl/private/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
-public class RecordMarker extends Base {
+public class RecordDefinition extends Base {
   /** @generated
    * @ordered 
    */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = JCasRegistry.register(RecordMarker.class);
+  public final static int typeIndexID = JCasRegistry.register(RecordDefinition.class);
   /** @generated
    * @ordered 
    */
@@ -33,14 +33,14 @@ public class RecordMarker extends Base {
  
   /** Never called.  Disable default constructor
    * @generated */
-  protected RecordMarker() {/* intentionally empty block */}
+  protected RecordDefinition() {/* intentionally empty block */}
     
   /** Internal - constructor used by generator 
    * @generated
    * @param addr low level Feature Structure reference
    * @param type the type of this Feature Structure 
    */
-  public RecordMarker(int addr, TOP_Type type) {
+  public RecordDefinition(int addr, TOP_Type type) {
     super(addr, type);
     readObject();
   }
@@ -48,7 +48,7 @@ public class RecordMarker extends Base {
   /** @generated
    * @param jcas JCas to which this Feature Structure belongs 
    */
-  public RecordMarker(JCas jcas) {
+  public RecordDefinition(JCas jcas) {
     super(jcas);
     readObject();   
   } 
@@ -58,7 +58,7 @@ public class RecordMarker extends Base {
    * @param begin offset to the begin spot in the SofA
    * @param end offset to the end spot in the SofA 
   */  
-  public RecordMarker(JCas jcas, int begin, int end) {
+  public RecordDefinition(JCas jcas, int begin, int end) {
     super(jcas);
     setBegin(begin);
     setEnd(end);
@@ -77,28 +77,6 @@ public class RecordMarker extends Base {
  
     
   //*--------------*
-  //* Feature: marker
-
-  /** getter for marker - gets Which type of record marker - either 'begin' or 'end'
-   * @generated
-   * @return value of the feature 
-   */
-  public String getMarker() {
-    if (RecordMarker_Type.featOkTst && ((RecordMarker_Type)jcasType).casFeat_marker == null)
-      jcasType.jcas.throwFeatMissing("marker", "uk.gov.dstl.baleen.types.templates.RecordMarker");
-    return jcasType.ll_cas.ll_getStringValue(addr, ((RecordMarker_Type)jcasType).casFeatCode_marker);}
-    
-  /** setter for marker - sets Which type of record marker - either 'begin' or 'end' 
-   * @generated
-   * @param v value to set into the feature 
-   */
-  public void setMarker(String v) {
-    if (RecordMarker_Type.featOkTst && ((RecordMarker_Type)jcasType).casFeat_marker == null)
-      jcasType.jcas.throwFeatMissing("marker", "uk.gov.dstl.baleen.types.templates.RecordMarker");
-    jcasType.ll_cas.ll_setStringValue(addr, ((RecordMarker_Type)jcasType).casFeatCode_marker, v);}    
-   
-    
-  //*--------------*
   //* Feature: name
 
   /** getter for name - gets The name of the record, eg Address
@@ -106,18 +84,18 @@ public class RecordMarker extends Base {
    * @return value of the feature 
    */
   public String getName() {
-    if (RecordMarker_Type.featOkTst && ((RecordMarker_Type)jcasType).casFeat_name == null)
-      jcasType.jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.RecordMarker");
-    return jcasType.ll_cas.ll_getStringValue(addr, ((RecordMarker_Type)jcasType).casFeatCode_name);}
+    if (RecordDefinition_Type.featOkTst && ((RecordDefinition_Type)jcasType).casFeat_name == null)
+      jcasType.jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.RecordDefinition");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((RecordDefinition_Type)jcasType).casFeatCode_name);}
     
   /** setter for name - sets The name of the record, eg Address 
    * @generated
    * @param v value to set into the feature 
    */
   public void setName(String v) {
-    if (RecordMarker_Type.featOkTst && ((RecordMarker_Type)jcasType).casFeat_name == null)
-      jcasType.jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.RecordMarker");
-    jcasType.ll_cas.ll_setStringValue(addr, ((RecordMarker_Type)jcasType).casFeatCode_name, v);}    
+    if (RecordDefinition_Type.featOkTst && ((RecordDefinition_Type)jcasType).casFeat_name == null)
+      jcasType.jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.RecordDefinition");
+    jcasType.ll_cas.ll_setStringValue(addr, ((RecordDefinition_Type)jcasType).casFeatCode_name, v);}    
   }
 
     

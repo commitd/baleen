@@ -64,14 +64,14 @@ import uk.gov.dstl.baleen.types.structure.TableHeader;
 import uk.gov.dstl.baleen.types.structure.TableRow;
 import uk.gov.dstl.baleen.types.structure.TextDocument;
 import uk.gov.dstl.baleen.types.structure.Unordered;
-import uk.gov.dstl.baleen.types.templates.RecordMarker;
+import uk.gov.dstl.baleen.types.templates.RecordDefinition;
 import uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition;
 import uk.gov.dstl.baleen.uima.BaleenConsumer;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 
-public class RecordDefinitionCreatingConsumer extends BaleenConsumer {
+public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsumer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(RecordDefinitionCreatingConsumer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RecordDefinitionConfigurationCreatingConsumer.class);
 
 	private static final String DEFAULT_STRUCTURAL_PACKAGE = "uk.gov.dstl.baleen.types.structure";
 
@@ -121,34 +121,21 @@ public class RecordDefinitionCreatingConsumer extends BaleenConsumer {
 
 	@Override
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
-		Collection<RecordDefinition> definitions = new ArrayList<>();
+		Collection<RecordDefinitionConfiguration> definitions = new ArrayList<>();
 
-		Collection<RecordMarker> records = JCasUtil.select(jCas, RecordMarker.class);
-		Map<String, RecordExtent> recordExtents = gatherRecordExtents(records);
-		for (RecordExtent recordExtent : recordExtents.values()) {
-			if (recordExtent.getStartAnnotation() == null) {
-				LOGGER.warn("Missing start record annotation for " + recordExtent.getName() + " in "
-						+ SourceUtils.getDocumentSourceBaseName(jCas, getSupport()));
-				continue;
-			} else if (recordExtent.getEndAnnotation() == null) {
-				LOGGER.warn("Missing end record annotation for " + recordExtent.getName() + " in "
-						+ SourceUtils.getDocumentSourceBaseName(jCas, getSupport()));
-				continue;
-			}
+		Collection<RecordDefinition> recordDefinitions = JCasUtil.select(jCas, RecordDefinition.class);
+		for (RecordDefinition recordDefinition : recordDefinitions) {
 
-			String recordBeginPath = SelectorUtils.generatePath(recordExtent.getStartAnnotation(), structuralClasses);
-			String recordEndPath = SelectorUtils.generatePath(recordExtent.getStartAnnotation(), structuralClasses);
-
-			List<TemplateFieldDefinition> fields = JCasUtil.selectBetween(TemplateFieldDefinition.class,
-					recordExtent.getStartAnnotation(), recordExtent.getEndAnnotation());
+			List<TemplateFieldDefinition> fields = JCasUtil.selectCovered(TemplateFieldDefinition.class,
+					recordDefinition);
 			Map<String, String> fieldPaths = new HashMap<>();
+
 			for (TemplateFieldDefinition templateFieldDefinition : fields) {
-				String fieldPath = SelectorUtils.generatePath(recordExtent.getStartAnnotation(),
-						templateFieldDefinition, structuralClasses);
+				String fieldPath = SelectorUtils.generatePath(recordDefinition, templateFieldDefinition,
+						structuralClasses);
 				fieldPaths.put(templateFieldDefinition.getName(), fieldPath);
 			}
-
-			definitions.add(new RecordDefinition(recordExtent.getName(), recordBeginPath, fieldPaths));
+			definitions.add(new RecordDefinitionConfiguration(recordDefinition.getName(), fieldPaths));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());
@@ -158,30 +145,6 @@ public class RecordDefinitionCreatingConsumer extends BaleenConsumer {
 		} catch (IOException e) {
 			throw new AnalysisEngineProcessException(e);
 		}
-	}
-
-	private Map<String, RecordExtent> gatherRecordExtents(final Collection<RecordMarker> records) {
-		Map<String, RecordExtent> recordExtents = new HashMap<>();
-		// build record extents
-		for (RecordMarker record : records) {
-			RecordExtent extent = new RecordExtent(record.getName());
-			// reuse existing entry if present
-			RecordExtent put = recordExtents.putIfAbsent(record.getName(), extent);
-			extent = put == null ? extent : put;
-
-			switch (record.getMarker()) {
-			case "begin":
-				extent.setStartAnnotation(record);
-				break;
-			case "end":
-				extent.setEndAnnotation(record);
-				break;
-			default:
-				LOGGER.warn("Invalid record marker type {} for Record annotation {}", record.getMarker(), record);
-				break;
-			}
-		}
-		return recordExtents;
 	}
 
 	private Writer createOutputWriter(final String documentSourceName) throws IOException {

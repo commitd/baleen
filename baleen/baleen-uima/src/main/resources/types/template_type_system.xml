@@ -35,15 +35,10 @@
       </features>
     </typeDescription>
     <typeDescription>
-      <name>uk.gov.dstl.baleen.types.templates.RecordMarker</name>
+      <name>uk.gov.dstl.baleen.types.templates.RecordDefinition</name>
       <description>Beginning / end marker of a record (multiple fields) in a template document, used to create record definitions for subsequent annotation of real documents.</description>
       <supertypeName>uk.gov.dstl.baleen.types.Base</supertypeName>
       <features>
-        <featureDescription>
-          <name>marker</name>
-          <description>Which type of record marker - either 'begin' or 'end'</description>
-          <rangeTypeName>uima.cas.String</rangeTypeName>
-        </featureDescription>
         <featureDescription>
           <name>name</name>
           <description>The name of the record, eg Address</description>
