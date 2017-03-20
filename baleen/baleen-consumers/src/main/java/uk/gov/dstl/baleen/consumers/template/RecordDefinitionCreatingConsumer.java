@@ -136,7 +136,8 @@ public class RecordDefinitionCreatingConsumer extends BaleenConsumer {
 				continue;
 			}
 
-			String recordPath = SelectorUtils.generatePath(recordExtent.getStartAnnotation(), structuralClasses);
+			String recordBeginPath = SelectorUtils.generatePath(recordExtent.getStartAnnotation(), structuralClasses);
+			String recordEndPath = SelectorUtils.generatePath(recordExtent.getStartAnnotation(), structuralClasses);
 
 			List<TemplateFieldDefinition> fields = JCasUtil.selectBetween(TemplateFieldDefinition.class,
 					recordExtent.getStartAnnotation(), recordExtent.getEndAnnotation());
@@ -147,7 +148,7 @@ public class RecordDefinitionCreatingConsumer extends BaleenConsumer {
 				fieldPaths.put(templateFieldDefinition.getName(), fieldPath);
 			}
 
-			definitions.add(new RecordDefinition(recordExtent.getName(), recordPath, fieldPaths));
+			definitions.add(new RecordDefinition(recordExtent.getName(), recordBeginPath, fieldPaths));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());

@@ -6,13 +6,17 @@ public class RecordDefinition {
 
 	private String name;
 
-	private String recordPath;
+	private String recordBeginPath;
 
 	private Map<String, String> fieldPaths;
 
-	public RecordDefinition(String name, String recordPath, Map<String, String> fieldPaths) {
+	public RecordDefinition() {
+		// for reflective construction in Jackson
+	}
+
+	public RecordDefinition(String name, String recordBeginPath, Map<String, String> fieldPaths) {
 		this.name = name;
-		this.recordPath = recordPath;
+		this.recordBeginPath = recordBeginPath;
 		this.fieldPaths = fieldPaths;
 	}
 
@@ -24,12 +28,12 @@ public class RecordDefinition {
 		this.name = name;
 	}
 
-	public String getRecordPath() {
-		return recordPath;
+	public String getRecordBeginPath() {
+		return recordBeginPath;
 	}
 
-	public void setRecordPath(String recordPath) {
-		this.recordPath = recordPath;
+	public void setRecordBeginPath(String recordBeginPath) {
+		this.recordBeginPath = recordBeginPath;
 	}
 
 	public Map<String, String> getFieldPaths() {
