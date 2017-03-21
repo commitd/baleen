@@ -17,17 +17,57 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * Some utility functions for working with a CSS selector-like syntax for
+ * selecting structural annotations.
+ * 
+ * Currently only the contains (<code>&gt;</code> operator) is supported, and
+ * the optional <code>nth-of-type(n)</code> pseudo selector. It is required that
+ * structural annotations have a <code>depth</code> feature such that nesting
+ * can be approximated.
+ * 
+ * Example selectors:
+ * 
+ * <ul>
+ * <li><code>Section > Heading</code>
+ * <li><code>Heading:nth-of-type(2)</code>
+ * <li><code>Section:nth-of-type(1) &gt; Paragraph</code>
+ * <li><code>Table:nth-of-type(2) &gt; TableBody &gt; TableRow:nth-of-type(3) &gt; TableCell:nth-of-type(2) &gt; Paragraph:nth-of-type(1)</code>
+ * </ul>
+ * 
+ */
 public class SelectorUtils {
 
+	/** The Constant NTH_OF_TYPE_REGEX. */
 	private static final String NTH_OF_TYPE_REGEX = "nth-of-type\\((\\d+)\\)";
 
+	/** The Constant NTH_OF_TYPE_PATTERN. */
 	private static final Pattern NTH_OF_TYPE_PATTERN = Pattern.compile(NTH_OF_TYPE_REGEX);
 
+	/**
+	 * Private no-args constructor to make general construction more difficult.
+	 */
+	private SelectorUtils() {
+	}
+
+	/**
+	 * Internal method that parses the selector string and returns an ordered
+	 * List of {@link SelectorPart} objects that represent each clause between
+	 * <code>&gt;<code> symbols.
+	 *
+	 * @param value
+	 *            the value
+	 * @param packages
+	 *            the packages
+	 * @return the list
+	 * @throws InvalidParameterException
+	 *             the invalid parameter exception
+	 */
 	private static List<SelectorPart> parseSelector(String value, String... packages) throws InvalidParameterException {
 		List<SelectorPart> selectorParts = new ArrayList<>();
 		String[] parts = value.split("\\s*>\\s*");
 		for (String part : parts) {
-			int colon = part.indexOf(":");
+			int colon = part.indexOf(':');
 			if (colon != -1) {
 				String[] typeAndQualifier = part.split(":");
 				selectorParts.add(new SelectorPart(getType(typeAndQualifier[0], packages), typeAndQualifier[1]));
@@ -63,9 +103,8 @@ public class SelectorUtils {
 	 *             if one of the selector element names cannot be resolved to a
 	 *             type.
 	 */
-	public static List<? extends Structure> select(JCas jCas, String selectorString, String... packages)
+	public static List<Structure> select(JCas jCas, String selectorString, String... packages)
 			throws InvalidParameterException {
-
 		List<SelectorPart> selectorParts = parseSelector(selectorString, packages);
 		List<Structure> result = new ArrayList<>();
 
@@ -74,7 +113,7 @@ public class SelectorUtils {
 			int depth = min.getAsInt();
 			SelectorPart selectorPart = selectorParts.get(0);
 			List<Structure> parents = JCasUtil
-					.selectCovered(selectorPart.type, (AnnotationFS) jCas.getDocumentAnnotationFs()).stream()
+					.selectCovered(selectorPart.getType(), (AnnotationFS) jCas.getDocumentAnnotationFs()).stream()
 					.filter(s -> depth == s.getDepth()).collect(Collectors.toList());
 			select(selectorParts.subList(1, selectorParts.size()), selectorPart, result, depth + 1, parents);
 		}
@@ -82,16 +121,31 @@ public class SelectorUtils {
 		return result;
 	}
 
+	/**
+	 * Internal recursive selection method.
+	 *
+	 * @param remainingParts
+	 *            the remaining parts
+	 * @param selectorPart
+	 *            the selector part
+	 * @param result
+	 *            the result
+	 * @param depth
+	 *            the depth
+	 * @param parents
+	 *            the parents
+	 */
 	private static void select(List<SelectorPart> remainingParts, SelectorPart selectorPart, List<Structure> result,
 			int depth, List<Structure> parents) {
 		// there are no further parts to examine, so add all of the parent
 		// candidates to the result
+		String psuedoSelectorClause = selectorPart.getPsuedoSelectorClause();
 		if (remainingParts.isEmpty()) {
-			if (selectorPart.psuedoSelector != null) {
-				Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(selectorPart.psuedoSelector);
+			if (psuedoSelectorClause != null) {
+				Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(psuedoSelectorClause);
 				if (matcher.matches()) {
 					int nth = Integer.parseInt(matcher.group(1));
-					Structure nthOfChild = nthOfChild(parents, nth);
+					Structure nthOfChild = elementAt(parents, nth);
 					if (nthOfChild != null) {
 						result.add(nthOfChild);
 					}
@@ -100,16 +154,16 @@ public class SelectorUtils {
 				result.addAll(parents);
 			}
 		} else {
-			if (selectorPart.psuedoSelector != null) {
-				Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(selectorPart.psuedoSelector);
+			if (psuedoSelectorClause != null) {
+				Matcher matcher = NTH_OF_TYPE_PATTERN.matcher(psuedoSelectorClause);
 				if (matcher.matches()) {
 					int nth = Integer.parseInt(matcher.group(1));
 					SelectorPart newSelectorPart = remainingParts.get(0);
-					Structure nthOfChild = nthOfChild(parents, nth);
+					Structure nthOfChild = elementAt(parents, nth);
 					if (nthOfChild == null) {
 						return;
 					}
-					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.type, nthOfChild).stream()
+					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.getType(), nthOfChild).stream()
 							.filter(s -> depth == s.getDepth()).collect(Collectors.toList());
 					select(remainingParts.subList(1, remainingParts.size()), newSelectorPart, result, depth + 1,
 							newParents);
@@ -117,7 +171,7 @@ public class SelectorUtils {
 			} else {
 				for (Structure structure : parents) {
 					SelectorPart newSelectorPart = remainingParts.get(0);
-					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.type, structure).stream()
+					List<Structure> newParents = JCasUtil.selectCovered(newSelectorPart.getType(), structure).stream()
 							.filter(s -> depth == s.getDepth()).collect(Collectors.toList());
 					select(remainingParts.subList(1, remainingParts.size()), newSelectorPart, result, depth + 1,
 							newParents);
@@ -126,38 +180,50 @@ public class SelectorUtils {
 		}
 	}
 
-	private static Structure nthOfChild(List<Structure> structures, int n) {
-		if (n > structures.size()) {
+	/**
+	 * Returns nth element in the list, or null if the index is out of bounds.
+	 *
+	 * @param structures
+	 *            the structures
+	 * @param index
+	 *            the index to return
+	 * @return the structure
+	 */
+	private static Structure elementAt(List<Structure> structures, int index) {
+		if (index > structures.size() || index < 0) {
 			return null;
 		}
-		return structures.get(n - 1);
+		return structures.get(index - 1);
 	}
 
+	/**
+	 * Gets the {@link Structure} type for the given type name, within the given
+	 * packages.
+	 *
+	 * @param typeName
+	 *            the type name
+	 * @param packages
+	 *            the packages
+	 * @return the type
+	 * @throws InvalidParameterException
+	 *             the invalid parameter exception
+	 */
 	private static Class<Structure> getType(String typeName, String[] packages) throws InvalidParameterException {
 		return CpeBuilderUtils.getClassFromString(typeName, packages);
 	}
 
-	static class SelectorPart {
-		Class<Structure> type;
-		String psuedoSelector;
-
-		SelectorPart(Class<Structure> type) {
-			this.type = type;
-		}
-
-		SelectorPart(Class<Structure> type, String psuedoSelector) {
-			this.type = type;
-			this.psuedoSelector = psuedoSelector;
-		}
-	}
-
-	public static String generatePath(JCas jcas, BaleenAnnotation parent, BaleenAnnotation child,
-			Set<Class<? extends Structure>> structuralClasses) {
-		String parentPath = generatePath(jcas, parent, structuralClasses);
-		String childPath = generatePath(jcas, child, structuralClasses);
-		return childPath.replace(parentPath, "").trim();
-	}
-
+	/**
+	 * Generates a selector path for the given BaleenAnnotation, using types in
+	 * the given list of {@link Structure}s only.
+	 *
+	 * @param jCas
+	 *            the jcas
+	 * @param templateField
+	 *            the template field
+	 * @param structuralClasses
+	 *            the structural classes
+	 * @return the string
+	 */
 	public static String generatePath(final JCas jCas, final BaleenAnnotation templateField,
 			Set<Class<? extends Structure>> structuralClasses) {
 		StringBuilder sb = new StringBuilder();
@@ -197,16 +263,16 @@ public class SelectorUtils {
 				for (Structure child : children) {
 					if (child.getDepth() == previous.getDepth() + 1) {
 						count++;
-					}
-					if (child.getCoveredText().contains(templateField.getCoveredText())) {
-						sb.append(" > ");
-						sb.append(next.getType().getShortName());
-						if (children.size() > 1) {
-							sb.append(":nth-of-type(");
-							sb.append(count);
-							sb.append(")");
+						if (child.getCoveredText().contains(templateField.getCoveredText())) {
+							sb.append(" > ");
+							sb.append(next.getType().getShortName());
+							if (children.size() > 1) {
+								sb.append(":nth-of-type(");
+								sb.append(count);
+								sb.append(")");
+							}
+							break;
 						}
-						break;
 					}
 				}
 				previous = next;
@@ -215,6 +281,13 @@ public class SelectorUtils {
 		return sb.toString();
 	}
 
+	/**
+	 * Gets the structure class for the given Structure instance.
+	 *
+	 * @param type
+	 *            the type
+	 * @return the structure class
+	 */
 	@SuppressWarnings("unchecked")
 	private static Class<Structure> getStructureClass(Structure type) {
 		return (Class<Structure>) type.getClass();
