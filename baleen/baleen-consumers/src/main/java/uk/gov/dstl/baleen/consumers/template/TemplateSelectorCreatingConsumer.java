@@ -18,61 +18,29 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.reflections.Reflections;
+import uk.gov.dstl.baleen.annotators.templates.TemplateFieldDefinitionAnnotator;
 import uk.gov.dstl.baleen.consumers.utils.SourceUtils;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
-import uk.gov.dstl.baleen.types.structure.Anchor;
-import uk.gov.dstl.baleen.types.structure.Aside;
-import uk.gov.dstl.baleen.types.structure.Caption;
-import uk.gov.dstl.baleen.types.structure.DefinitionDescription;
-import uk.gov.dstl.baleen.types.structure.DefinitionItem;
-import uk.gov.dstl.baleen.types.structure.DefinitionList;
-import uk.gov.dstl.baleen.types.structure.Details;
-import uk.gov.dstl.baleen.types.structure.Document;
-import uk.gov.dstl.baleen.types.structure.Figure;
-import uk.gov.dstl.baleen.types.structure.Footer;
-import uk.gov.dstl.baleen.types.structure.Header;
-import uk.gov.dstl.baleen.types.structure.Heading;
-import uk.gov.dstl.baleen.types.structure.Link;
-import uk.gov.dstl.baleen.types.structure.ListItem;
-import uk.gov.dstl.baleen.types.structure.Ordered;
-import uk.gov.dstl.baleen.types.structure.Page;
-import uk.gov.dstl.baleen.types.structure.Paragraph;
-import uk.gov.dstl.baleen.types.structure.Preformatted;
-import uk.gov.dstl.baleen.types.structure.Quotation;
-import uk.gov.dstl.baleen.types.structure.Section;
-import uk.gov.dstl.baleen.types.structure.Sentence;
-import uk.gov.dstl.baleen.types.structure.Sheet;
-import uk.gov.dstl.baleen.types.structure.Slide;
-import uk.gov.dstl.baleen.types.structure.SlideShow;
-import uk.gov.dstl.baleen.types.structure.SpreadSheet;
 import uk.gov.dstl.baleen.types.structure.Structure;
-import uk.gov.dstl.baleen.types.structure.Style;
-import uk.gov.dstl.baleen.types.structure.Summary;
-import uk.gov.dstl.baleen.types.structure.Table;
-import uk.gov.dstl.baleen.types.structure.TableBody;
-import uk.gov.dstl.baleen.types.structure.TableCell;
-import uk.gov.dstl.baleen.types.structure.TableFooter;
-import uk.gov.dstl.baleen.types.structure.TableHeader;
-import uk.gov.dstl.baleen.types.structure.TableRow;
-import uk.gov.dstl.baleen.types.structure.TextDocument;
-import uk.gov.dstl.baleen.types.structure.Unordered;
 import uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition;
 import uk.gov.dstl.baleen.uima.BaleenConsumer;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 
+/**
+ * Writes {@link Properties} files from TemplateFieldDefinition annotations
+ * containing field names and the structural selector paths to extract them.
+ * <p>
+ * See {@link SelectorUtils}.
+ * </p>
+ * <p>
+ * This consumer should be used with {@link TemplateFieldDefinitionAnnotator}.
+ * <p>
+ */
 public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 
 	private static final String DEFAULT_STRUCTURAL_PACKAGE = "uk.gov.dstl.baleen.types.structure";
-
-	private static final Class<?>[] DEFAULT_STRUCTURAL_CLASSES = { Anchor.class, Aside.class, Caption.class,
-			DefinitionDescription.class, DefinitionItem.class, DefinitionList.class, Details.class, SlideShow.class,
-			Document.class, SpreadSheet.class, TextDocument.class, Figure.class, Footer.class, Header.class,
-			Heading.class, Link.class, ListItem.class, Ordered.class, Page.class, Sheet.class, Slide.class,
-			Paragraph.class, Preformatted.class, Quotation.class, Section.class, Sentence.class, Style.class,
-			Summary.class, Table.class, TableBody.class, TableCell.class, TableFooter.class, TableHeader.class,
-			TableRow.class, Unordered.class };
-
 
 	/**
 	 * A list of structural types which will be considered during template path
@@ -81,25 +49,28 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 	 * @baleen.config Paragraph,TableCell,ListItem,Aside, ...
 	 */
 	public static final String PARAM_TYPE_NAMES = "types";
+
+	/** The type names. */
 	@ConfigurationParameter(name = PARAM_TYPE_NAMES, mandatory = false)
 	private String[] typeNames;
 
+	/** The structural classes. */
 	private Set<Class<? extends Structure>> structuralClasses;
 
-	public static final String PARAM_OUTPUT_FILE = "outputDirectory";
-	@ConfigurationParameter(name = PARAM_OUTPUT_FILE, defaultValue = "templateSelectors")
+	/** The Constant PARAM_OUTPUT_DIRECTORY. */
+	public static final String PARAM_OUTPUT_DIRECTORY = "outputDirectory";
+
+	/** The output directory. */
+	@ConfigurationParameter(name = PARAM_OUTPUT_DIRECTORY, defaultValue = "templateSelectors")
 	private String outputDirectory = "templateSelectors";
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		super.doInitialize(aContext);
 
 		if (typeNames == null || typeNames.length == 0) {
-			structuralClasses = new HashSet<>();
-			for (Class<?> clazz : DEFAULT_STRUCTURAL_CLASSES) {
-				structuralClasses.add((Class<? extends Structure>) clazz);
-			}
+			Reflections reflections = new Reflections(DEFAULT_STRUCTURAL_PACKAGE);
+			structuralClasses = reflections.getSubTypesOf(Structure.class);
 		} else {
 			structuralClasses = new HashSet<>();
 			for (final String typeName : typeNames) {
@@ -130,21 +101,27 @@ public class TemplateSelectorCreatingConsumer extends BaleenConsumer {
 		}
 	}
 
+	/**
+	 * Creates the output writer.
+	 *
+	 * @param documentSourceName
+	 *            the document source name
+	 * @return the writer
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private Writer createOutputWriter(final String documentSourceName) throws IOException {
 		Path directoryPath = Paths.get(outputDirectory);
-		if (!Files.exists(directoryPath)) {
+		if (!directoryPath.toFile().exists()) {
 			Files.createDirectories(directoryPath);
 		}
 		String baseName = FilenameUtils.getBaseName(documentSourceName);
 		Path outputFilePath = directoryPath.resolve(baseName + ".properties");
 
-		if (Files.exists(outputFilePath)) {
+		if (outputFilePath.toFile().exists()) {
 			getMonitor().warn("Overwriting existing output properties file {}", outputFilePath);
 		}
 		return Files.newBufferedWriter(outputFilePath, StandardCharsets.UTF_8);
 	}
-
-
-
 
 }

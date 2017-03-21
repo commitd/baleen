@@ -54,6 +54,12 @@
 		</dependency>
 		<dependency>
 			<groupId>uk.gov.dstl.baleen</groupId>
+			<artifactId>baleen-annotators</artifactId>
+			<version>${baleen.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.gov.dstl.baleen</groupId>
 			<artifactId>baleen-resources</artifactId>
 			<version>${baleen.version}</version>
 			<type>test-jar</type>

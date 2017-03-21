@@ -24,63 +24,36 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.reflections.Reflections;
+import uk.gov.dstl.baleen.annotators.templates.RecordAnnotator;
+import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionAnnotator;
 import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionConfiguration;
-import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionConfiguration.Kind;
+import uk.gov.dstl.baleen.annotators.templates.TemplateFieldDefinitionAnnotator;
 import uk.gov.dstl.baleen.consumers.utils.SourceUtils;
 import uk.gov.dstl.baleen.cpe.CpeBuilderUtils;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
-import uk.gov.dstl.baleen.types.structure.Anchor;
-import uk.gov.dstl.baleen.types.structure.Aside;
-import uk.gov.dstl.baleen.types.structure.Caption;
-import uk.gov.dstl.baleen.types.structure.DefinitionDescription;
-import uk.gov.dstl.baleen.types.structure.DefinitionItem;
-import uk.gov.dstl.baleen.types.structure.DefinitionList;
-import uk.gov.dstl.baleen.types.structure.Details;
-import uk.gov.dstl.baleen.types.structure.Document;
-import uk.gov.dstl.baleen.types.structure.Figure;
-import uk.gov.dstl.baleen.types.structure.Footer;
-import uk.gov.dstl.baleen.types.structure.Header;
-import uk.gov.dstl.baleen.types.structure.Heading;
-import uk.gov.dstl.baleen.types.structure.Link;
-import uk.gov.dstl.baleen.types.structure.ListItem;
-import uk.gov.dstl.baleen.types.structure.Ordered;
-import uk.gov.dstl.baleen.types.structure.Page;
-import uk.gov.dstl.baleen.types.structure.Paragraph;
-import uk.gov.dstl.baleen.types.structure.Preformatted;
-import uk.gov.dstl.baleen.types.structure.Quotation;
-import uk.gov.dstl.baleen.types.structure.Section;
-import uk.gov.dstl.baleen.types.structure.Sentence;
-import uk.gov.dstl.baleen.types.structure.Sheet;
-import uk.gov.dstl.baleen.types.structure.Slide;
-import uk.gov.dstl.baleen.types.structure.SlideShow;
-import uk.gov.dstl.baleen.types.structure.SpreadSheet;
 import uk.gov.dstl.baleen.types.structure.Structure;
-import uk.gov.dstl.baleen.types.structure.Style;
-import uk.gov.dstl.baleen.types.structure.Summary;
-import uk.gov.dstl.baleen.types.structure.Table;
-import uk.gov.dstl.baleen.types.structure.TableBody;
-import uk.gov.dstl.baleen.types.structure.TableCell;
-import uk.gov.dstl.baleen.types.structure.TableFooter;
-import uk.gov.dstl.baleen.types.structure.TableHeader;
-import uk.gov.dstl.baleen.types.structure.TableRow;
-import uk.gov.dstl.baleen.types.structure.TextDocument;
-import uk.gov.dstl.baleen.types.structure.Unordered;
 import uk.gov.dstl.baleen.types.templates.RecordDefinition;
 import uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition;
 import uk.gov.dstl.baleen.uima.BaleenConsumer;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 
+/**
+ * Writes RecordDefinitions, and the TemplateFieldDefinitions that they cover,
+ * to YAML files for subsequent use in {@link RecordAnnotator}.
+ * <p>
+ * See {@link RecordAnnotator} for a description of the format.
+ * </p>
+ * 
+ * <p>
+ * This consumer should be used with {@link RecordDefinitionAnnotator} and
+ * {@link TemplateFieldDefinitionAnnotator}.
+ * </p>
+ */
 public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsumer {
 
+	/** The Constant DEFAULT_STRUCTURAL_PACKAGE. */
 	private static final String DEFAULT_STRUCTURAL_PACKAGE = "uk.gov.dstl.baleen.types.structure";
-
-	private static final Class<?>[] DEFAULT_STRUCTURAL_CLASSES = { Anchor.class, Aside.class, Caption.class,
-			DefinitionDescription.class, DefinitionItem.class, DefinitionList.class, Details.class, SlideShow.class,
-			Document.class, SpreadSheet.class, TextDocument.class, Figure.class, Footer.class, Header.class,
-			Heading.class, Link.class, ListItem.class, Ordered.class, Page.class, Sheet.class, Slide.class,
-			Paragraph.class, Preformatted.class, Quotation.class, Section.class, Sentence.class, Style.class,
-			Summary.class, Table.class, TableBody.class, TableCell.class, TableFooter.class, TableHeader.class,
-			TableRow.class, Unordered.class };
 
 	/**
 	 * A list of structural types which will be considered during record path
@@ -89,31 +62,39 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 	 * @baleen.config Paragraph,TableCell,ListItem,Aside, ...
 	 */
 	public static final String PARAM_TYPE_NAMES = "types";
+
+	/** The type names. */
 	@ConfigurationParameter(name = PARAM_TYPE_NAMES, mandatory = false)
 	private String[] typeNames;
 
+	/** The structural classes. */
 	private Set<Class<? extends Structure>> structuralClasses;
 
-	public static final String PARAM_OUTPUT_FILE = "outputDirectory";
-	@ConfigurationParameter(name = PARAM_OUTPUT_FILE, defaultValue = "recordDefinitions")
+	/** The Constant PARAM_OUTPUT_DIRECTORY. */
+	public static final String PARAM_OUTPUT_DIRECTORY = "outputDirectory";
+
+	/** The output directory. */
+	@ConfigurationParameter(name = PARAM_OUTPUT_DIRECTORY, defaultValue = "recordDefinitions")
 	private String outputDirectory = "recordDefinitions";
 
+	/** The object mapper. */
 	private final ObjectMapper objectMapper;
 
+	/**
+	 * Instantiates a new record definition configuration creating consumer.
+	 */
 	public RecordDefinitionConfigurationCreatingConsumer() {
 		objectMapper = new ObjectMapper(new YAMLFactory());
 		objectMapper.setSerializationInclusion(Include.NON_NULL);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
 		super.doInitialize(aContext);
 		structuralClasses = new HashSet<>();
 		if (typeNames == null || typeNames.length == 0) {
-			for (Class<?> clazz : DEFAULT_STRUCTURAL_CLASSES) {
-				structuralClasses.add((Class<? extends Structure>) clazz);
-			}
+			Reflections reflections = new Reflections(DEFAULT_STRUCTURAL_PACKAGE);
+			structuralClasses = reflections.getSubTypesOf(Structure.class);
 		} else {
 			for (final String typeName : typeNames) {
 				try {
@@ -154,8 +135,8 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 			allFieldDefinitions.removeAll(fields);
 
 			Map<String, String> fieldPaths = makeFieldPaths(jCas, fields);
-			definitions.add(new RecordDefinitionConfiguration(recordDefinition.getName(), Kind.NAMED, precedingPath,
-					followingPath, fieldPaths));
+			definitions.add(new RecordDefinitionConfiguration(recordDefinition.getName(), precedingPath, followingPath,
+					fieldPaths));
 		}
 
 		if (!allFieldDefinitions.isEmpty()) {
@@ -170,6 +151,15 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 		}
 	}
 
+	/**
+	 * Make field selector name/path maps
+	 *
+	 * @param jCas
+	 *            the jCas
+	 * @param fields
+	 *            the fields
+	 * @return the map of name/path pairs
+	 */
 	private Map<String, String> makeFieldPaths(final JCas jCas, Collection<TemplateFieldDefinition> fields) {
 		Map<String, String> fieldPaths = new HashMap<>();
 
@@ -181,16 +171,25 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 		return fieldPaths;
 	}
 
+	/**
+	 * Creates the output writer for the configuration yaml files.
+	 *
+	 * @param documentSourceName
+	 *            the document source name
+	 * @return the writer
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	private Writer createOutputWriter(final String documentSourceName) throws IOException {
 		Path directoryPath = Paths.get(outputDirectory);
-		if (!Files.exists(directoryPath)) {
+		if (!directoryPath.toFile().exists()) {
 			Files.createDirectories(directoryPath);
 		}
 		String baseName = FilenameUtils.getBaseName(documentSourceName);
-		Path outputFilePath = directoryPath.resolve(baseName + ".yml");
+		Path outputFilePath = directoryPath.resolve(baseName + ".yaml");
 
-		if (Files.exists(outputFilePath)) {
-			getMonitor().warn("Overwriting existing output properties file {}", outputFilePath.toString());
+		if (outputFilePath.toFile().exists()) {
+			getMonitor().warn("Overwriting existing output properties file {}", outputFilePath);
 		}
 		return Files.newBufferedWriter(outputFilePath, StandardCharsets.UTF_8);
 	}
