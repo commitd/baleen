@@ -11,15 +11,21 @@ import java.util.regex.Pattern;
  * Annotates template fields found in documents using a regular expression.
  * <p>
  * Template fields are text surrounded by ASCII double angle brackets, eg
- * <<fieldname>> for the field "fieldname".
+ * &lt;&lt;field:fieldname&gt;&gt; for the field "fieldname".
  * </p>
  */
 public class TemplateFieldDefinitionAnnotator extends AbstractRegexAnnotator<TemplateFieldDefinition> {
 
+	/** The Constant TEMPLATE_TOKEN_REGEX. */
 	private static final String TEMPLATE_TOKEN_REGEX = "<<field:([A-Za-z0-9]+)>>";
 
+	/** The Constant TEMPLATE_TOKEN_PATTERN. */
 	private static final Pattern TEMPLATE_TOKEN_PATTERN = Pattern.compile(TEMPLATE_TOKEN_REGEX);
 
+	/**
+	 * Instantiates a new template field definition annotator which will
+	 * assigning confidence 1.0 to all matched field definitions.
+	 */
 	public TemplateFieldDefinitionAnnotator() {
 		super(TEMPLATE_TOKEN_PATTERN, 1.0);
 	}
