@@ -9,8 +9,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.io.FilenameUtils;
@@ -49,19 +51,25 @@ public class RecordConsumer extends BaleenConsumer {
 		} else {
 			objectMapper = new ObjectMapper(new YAMLFactory());
 		}
+		objectMapper.setSerializationInclusion(Include.NON_NULL);
 	}
 
 	@Override
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
 		Collection<ExtractedRecord> records = new ArrayList<>();
 		Collection<Record> recordAnnotations = JCasUtil.select(jCas, Record.class);
+
+		HashSet<TemplateField> allFields = new HashSet<>(JCasUtil.select(jCas, TemplateField.class));
+
 		for (Record recordAnnotation : recordAnnotations) {
 			Collection<TemplateField> fieldAnnotations = JCasUtil.selectCovered(TemplateField.class, recordAnnotation);
-			Map<String, String> fieldValues = new HashMap<>();
-			for (TemplateField templateField : fieldAnnotations) {
-				fieldValues.put(templateField.getName(), templateField.getCoveredText());
-			}
+			allFields.removeAll(fieldAnnotations);
+			Map<String, String> fieldValues = getFieldValues(fieldAnnotations);
 			records.add(new ExtractedRecord(recordAnnotation.getName(), fieldValues));
+		}
+
+		if (!allFields.isEmpty()) {
+			records.add(new ExtractedRecord(getFieldValues(allFields)));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());
@@ -70,6 +78,14 @@ public class RecordConsumer extends BaleenConsumer {
 		} catch (IOException e) {
 			throw new AnalysisEngineProcessException(e);
 		}
+	}
+
+	private Map<String, String> getFieldValues(Collection<TemplateField> fieldAnnotations) {
+		Map<String, String> fieldValues = new HashMap<>();
+		for (TemplateField templateField : fieldAnnotations) {
+			fieldValues.put(templateField.getName(), templateField.getCoveredText());
+		}
+		return fieldValues;
 	}
 
 	private Writer createOutputWriter(final String documentSourceName) throws IOException {

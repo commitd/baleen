@@ -7,6 +7,7 @@ import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionConfiguration.Kind;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.structure.Structure;
 import uk.gov.dstl.baleen.types.templates.Record;
@@ -68,41 +69,45 @@ public class RecordAnnotator extends BaleenConsumer {
 	@Override
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
 		for (RecordDefinitionConfiguration recordDefinition : recordDefinitions) {
-
-			Structure preceding = null;
-			try {
-				String preceedingPath = recordDefinition.getPrecedingPath();
-				List<? extends Structure> precedingStructure = SelectorUtils.select(jCas, preceedingPath,
-						DEFAULT_STRUCTURAL_PACKAGE);
-				if (precedingStructure.size() == 1) {
-					preceding = precedingStructure.iterator().next();
-				}
-			} catch (InvalidParameterException e) {
-				getMonitor().warn("Failed to select structure preceeding record " + recordDefinition.getName(), e);
-				continue;
-			}
-
-			Structure following = null;
-			try {
-				String followingPath = recordDefinition.getFollowingPath();
-				List<? extends Structure> followingStructure = SelectorUtils.select(jCas, followingPath,
-						DEFAULT_STRUCTURAL_PACKAGE);
-				if (followingStructure.size() == 1) {
-					following = followingStructure.iterator().next();
-				}
-			} catch (InvalidParameterException e) {
-				getMonitor().warn("Failed to select structure preceeding record " + recordDefinition.getName(), e);
-				continue;
-			}
-
-			if (preceding == null || following == null) {
-				continue;
-			}
-
-			createRecord(jCas, recordDefinition.getName(), preceding.getEnd(), following.getBegin());
-
 			createTemplateFields(jCas, recordDefinition.getFieldPaths());
+			if (recordDefinition.getKind() == Kind.NAMED) {
+				createRecord(recordDefinition, jCas);
+			}
 		}
+	}
+
+	private void createRecord(RecordDefinitionConfiguration recordDefinition, JCas jCas) {
+		Structure preceding = null;
+		try {
+			String preceedingPath = recordDefinition.getPrecedingPath();
+			List<? extends Structure> precedingStructure = SelectorUtils.select(jCas, preceedingPath,
+					DEFAULT_STRUCTURAL_PACKAGE);
+			if (precedingStructure.size() == 1) {
+				preceding = precedingStructure.iterator().next();
+			}
+		} catch (InvalidParameterException e) {
+			getMonitor().warn("Failed to select structure preceeding record " + recordDefinition.getName(), e);
+			return;
+		}
+
+		Structure following = null;
+		try {
+			String followingPath = recordDefinition.getFollowingPath();
+			List<? extends Structure> followingStructure = SelectorUtils.select(jCas, followingPath,
+					DEFAULT_STRUCTURAL_PACKAGE);
+			if (followingStructure.size() == 1) {
+				following = followingStructure.iterator().next();
+			}
+		} catch (InvalidParameterException e) {
+			getMonitor().warn("Failed to select structure preceeding record " + recordDefinition.getName(), e);
+			return;
+		}
+
+		if (preceding == null || following == null) {
+			return;
+		}
+
+		createRecordAnnotation(jCas, recordDefinition.getName(), preceding.getEnd(), following.getBegin());
 	}
 
 	private void createTemplateFields(JCas jCas, Map<String, String> fieldPaths) {
@@ -113,7 +118,7 @@ public class RecordAnnotator extends BaleenConsumer {
 				List<? extends Structure> pathStructures = SelectorUtils.select(jCas, path, DEFAULT_STRUCTURAL_PACKAGE);
 				if (pathStructures.size() == 1) {
 					Structure structure = pathStructures.get(0);
-					createField(jCas, fieldName, structure.getBegin(), structure.getEnd());
+					createFieldAnnotation(jCas, fieldName, structure.getBegin(), structure.getEnd());
 				} else {
 					getMonitor().warn("Expected single structure element for field {} but got {} - ignoring", fieldName,
 							pathStructures.size());
@@ -124,7 +129,7 @@ public class RecordAnnotator extends BaleenConsumer {
 		}
 	}
 
-	private void createField(JCas jCas, String name, int begin, int end) {
+	private void createFieldAnnotation(JCas jCas, String name, int begin, int end) {
 		TemplateField field = new TemplateField(jCas);
 		field.setBegin(begin);
 		field.setEnd(end);
@@ -133,7 +138,7 @@ public class RecordAnnotator extends BaleenConsumer {
 
 	}
 
-	private void createRecord(JCas jCas, String name, int begin, int end) {
+	private void createRecordAnnotation(JCas jCas, String name, int begin, int end) {
 		Record record = new Record(jCas);
 		record.setBegin(begin);
 		record.setEnd(end);
