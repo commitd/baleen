@@ -1,0 +1,64 @@
+{
+  "sofa" : {
+    "type" : "uima.cas.Sofa",
+    "fields" : {
+      "sofaNum" : 1,
+      "sofaID" : "_InitialView",
+      "mimeType" : "text",
+      "sofaString" : "The quick brown fox jumped over the lazy dog's back.\nThe quick brown cat jumped over the lazy dog's back.",
+      "sofaURI" : null
+    }
+  },
+  "annotations" : [ {
+    "type" : "uk.gov.dstl.baleen.types.structure.Paragraph",
+    "coveredText" : "The quick brown fox jumped over the lazy dog's back.",
+    "fields" : {
+      "begin" : 0,
+      "end" : 52,
+      "internalId" : 1,
+      "confidence" : 0.0,
+      "depth" : 1,
+      "elementClass" : null
+    }
+  }, {
+    "type" : "uk.gov.dstl.baleen.types.semantic.Event",
+    "coveredText" : "The quick brown cat jumped over the lazy dog's back.",
+    "fields" : {
+      "begin" : 53,
+      "end" : 105,
+      "internalId" : 3,
+      "confidence" : 0.0,
+      "value" : null,
+      "entities" : [ {
+        "type" : "uk.gov.dstl.baleen.types.common.Person",
+        "coveredText" : "at ",
+        "fields" : {
+          "begin" : 70,
+          "end" : 73,
+          "internalId" : 2,
+          "confidence" : 0.0,
+          "value" : "cat",
+          "isNormalised" : false,
+          "subType" : null,
+          "title" : null,
+          "gender" : null
+        }
+      } ],
+      "arguments" : [ "cat", "dog" ]
+    }
+  }, {
+    "type" : "uk.gov.dstl.baleen.types.common.Person",
+    "coveredText" : "at ",
+    "fields" : {
+      "begin" : 70,
+      "end" : 73,
+      "internalId" : 2,
+      "confidence" : 0.0,
+      "value" : "cat",
+      "isNormalised" : false,
+      "subType" : null,
+      "title" : null,
+      "gender" : null
+    }
+  } ]
+}

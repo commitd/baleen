@@ -4,7 +4,10 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import uk.gov.dstl.baleen.types.templates.TemplateField;
 
-public class TemplateFieldJsonReportConsumer extends AbstractJsonConsumer {
+/**
+ * Writes all TemplateFields to a JSON document.
+ */
+public class TemplateFieldJsonReportConsumer extends AbstractJsonConsumer<TemplateField> {
 
 	@Override
 	protected Iterable<TemplateField> selectAnnotations(JCas jCas) {

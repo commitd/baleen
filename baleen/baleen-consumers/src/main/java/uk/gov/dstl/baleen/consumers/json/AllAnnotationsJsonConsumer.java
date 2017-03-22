@@ -4,7 +4,10 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import uk.gov.dstl.baleen.types.BaleenAnnotation;
 
-public class AllAnnotationsJsonConsumer extends AbstractJsonConsumer {
+/**
+ * Writes all BaleenAnnotations to a JSON document.
+ */
+public class AllAnnotationsJsonConsumer extends AbstractJsonConsumer<BaleenAnnotation> {
 
 	@Override
 	protected Iterable<BaleenAnnotation> selectAnnotations(JCas jCas) {
