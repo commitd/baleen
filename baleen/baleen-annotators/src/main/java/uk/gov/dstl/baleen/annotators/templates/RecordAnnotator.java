@@ -31,8 +31,8 @@ import java.util.Map.Entry;
  * and the the fields contained within them.
  * 
  * <p>
- * Each definition file consists of an array/list of objects with following
- * fields:
+ * Each YAML configuration file contains multiple definitions in an array/list,
+ * with each definition being an object with following fields:
  * <p>
  * <dl>
  * <dt>fields</dt>
@@ -51,6 +51,30 @@ import java.util.Map.Entry;
  * with the name of the record.
  * <dd>
  * </dl>
+ * 
+ * An example YAML configuration could be:
+ * 
+ * <pre>
+---
+- name: "NamedRecord"
+  kind: "NAMED"
+  fieldPaths:
+    Description: "Paragraph:nth-of-type(8)"
+    FullName: "Table:nth-of-type(2) > TableBody > TableRow:nth-of-type(2) >\
+      \ TableCell:nth-of-type(2) > Paragraph"
+  precedingPath: "Paragraph:nth-of-type(6)"
+  followingPath: "Paragraph:nth-of-type(10)"
+- kind: "DEFAULT"
+  fieldPaths:
+    DocumentTitle: "Heading:nth-of-type(2)"
+    DocumentDate: "Paragraph:nth-of-type(3)"
+ * </pre>
+ * <p>
+ * Configurations are typically created by running a pipeline with the
+ * RecordDefinitionConfigurationCreatingConsumer, which uses annotations created
+ * by RecordDefinitionAnnotation and TemplateFieldDefinitionAnnotator running
+ * over template documents.
+ * </p>
  */
 public class RecordAnnotator extends BaleenConsumer {
 
