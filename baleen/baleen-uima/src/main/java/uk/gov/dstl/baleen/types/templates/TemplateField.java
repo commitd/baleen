@@ -11,7 +11,7 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** An field identified from a template
- * Updated by JCasGen Thu Feb 02 11:58:46 GMT 2017
+ * Updated by JCasGen Thu Mar 23 16:25:28 GMT 2017
  * XML source: /Users/jrfry/dev/dstl/private/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
 public class TemplateField extends Base {
@@ -96,6 +96,28 @@ public class TemplateField extends Base {
     if (TemplateField_Type.featOkTst && ((TemplateField_Type)jcasType).casFeat_name == null)
       jcasType.jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.TemplateField");
     jcasType.ll_cas.ll_setStringValue(addr, ((TemplateField_Type)jcasType).casFeatCode_name, v);}    
+   
+    
+  //*--------------*
+  //* Feature: source
+
+  /** getter for source - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getSource() {
+    if (TemplateField_Type.featOkTst && ((TemplateField_Type)jcasType).casFeat_source == null)
+      jcasType.jcas.throwFeatMissing("source", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((TemplateField_Type)jcasType).casFeatCode_source);}
+    
+  /** setter for source - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setSource(String v) {
+    if (TemplateField_Type.featOkTst && ((TemplateField_Type)jcasType).casFeat_source == null)
+      jcasType.jcas.throwFeatMissing("source", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    jcasType.ll_cas.ll_setStringValue(addr, ((TemplateField_Type)jcasType).casFeatCode_source, v);}    
   }
 
     

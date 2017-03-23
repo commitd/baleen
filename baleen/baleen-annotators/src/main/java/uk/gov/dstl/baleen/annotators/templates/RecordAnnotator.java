@@ -1,7 +1,11 @@
 package uk.gov.dstl.baleen.annotators.templates;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -20,8 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -90,7 +92,7 @@ public class RecordAnnotator extends BaleenConsumer {
 	private final ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
 	/** The record definitions. */
-	private final Collection<RecordDefinitionConfiguration> recordDefinitions = new ArrayList<>();
+	private final Multimap<String, RecordDefinitionConfiguration> recordDefinitions = HashMultimap.create();
 
 	@Override
 	public void doInitialize(final UimaContext aContext) throws ResourceInitializationException {
@@ -124,7 +126,8 @@ public class RecordAnnotator extends BaleenConsumer {
 			List<RecordDefinitionConfiguration> fileDefinitions = objectMapper
 					.readValue(Files.newBufferedReader(path, StandardCharsets.UTF_8), objectMapper.getTypeFactory()
 							.constructCollectionType(List.class, RecordDefinitionConfiguration.class));
-			recordDefinitions.addAll(fileDefinitions);
+			String namespace = FilenameUtils.getBaseName(path.toString());
+			recordDefinitions.putAll(namespace, fileDefinitions);
 		} catch (IOException e) {
 			getMonitor().warn("Failed to read from recordDefinitions from file " + path, e);
 		}
@@ -132,10 +135,12 @@ public class RecordAnnotator extends BaleenConsumer {
 
 	@Override
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
-		for (RecordDefinitionConfiguration recordDefinition : recordDefinitions) {
-			createTemplateFields(jCas, recordDefinition.getFieldPaths());
+		for (Entry<String, RecordDefinitionConfiguration> entry : recordDefinitions.entries()) {
+			RecordDefinitionConfiguration recordDefinition = entry.getValue();
+			String source = entry.getKey();
+			createTemplateFields(source, recordDefinition.getFieldPaths(), jCas);
 			if (recordDefinition.getKind() == Kind.NAMED) {
-				createRecord(recordDefinition, jCas);
+				createRecord(source, recordDefinition, jCas);
 			}
 		}
 	}
@@ -144,13 +149,15 @@ public class RecordAnnotator extends BaleenConsumer {
 	 * Creates the record based on the paths in the record definition.
 	 * 
 	 * If errors occur during selection these are logged.
+	 * 
+	 * @param source
 	 *
 	 * @param recordDefinition
 	 *            the record definition
 	 * @param jCas
 	 *            the jCas
 	 */
-	private void createRecord(RecordDefinitionConfiguration recordDefinition, JCas jCas) {
+	private void createRecord(String source, RecordDefinitionConfiguration recordDefinition, JCas jCas) {
 		Structure preceding = null;
 		try {
 			String preceedingPath = recordDefinition.getPrecedingPath();
@@ -181,7 +188,7 @@ public class RecordAnnotator extends BaleenConsumer {
 			return;
 		}
 
-		createRecordAnnotation(jCas, recordDefinition.getName(), preceding.getEnd(), following.getBegin());
+		createRecordAnnotation(jCas, source, recordDefinition.getName(), preceding.getEnd(), following.getBegin());
 	}
 
 	/**
@@ -189,11 +196,11 @@ public class RecordAnnotator extends BaleenConsumer {
 	 * the record definition.
 	 *
 	 * @param jCas
-	 *            the j cas
+	 *            the jCas
 	 * @param fieldPaths
 	 *            the field paths
 	 */
-	private void createTemplateFields(JCas jCas, Map<String, String> fieldPaths) {
+	private void createTemplateFields(String source, Map<String, String> fieldPaths, JCas jCas) {
 		for (Entry<String, String> entry : fieldPaths.entrySet()) {
 			String path = entry.getValue();
 			String fieldName = entry.getKey();
@@ -201,7 +208,7 @@ public class RecordAnnotator extends BaleenConsumer {
 				List<? extends Structure> pathStructures = SelectorUtils.select(jCas, path, DEFAULT_STRUCTURAL_PACKAGE);
 				if (pathStructures.size() == 1) {
 					Structure structure = pathStructures.get(0);
-					createFieldAnnotation(jCas, fieldName, structure.getBegin(), structure.getEnd());
+					createFieldAnnotation(jCas, source, fieldName, structure.getBegin(), structure.getEnd());
 				} else {
 					getMonitor().warn("Expected single structure element for field {} but got {} - ignoring", fieldName,
 							pathStructures.size());
@@ -219,16 +226,18 @@ public class RecordAnnotator extends BaleenConsumer {
 	 *            the JCas
 	 * @param name
 	 *            the name
+	 * @param
 	 * @param begin
 	 *            the begin
 	 * @param end
 	 *            the end
 	 */
-	private void createFieldAnnotation(JCas jCas, String name, int begin, int end) {
+	private void createFieldAnnotation(JCas jCas, String source, String name, int begin, int end) {
 		TemplateField field = new TemplateField(jCas);
 		field.setBegin(begin);
 		field.setEnd(end);
 		field.setName(name);
+		field.setSource(source);
 		addToJCasIndex(field);
 	}
 
@@ -239,14 +248,16 @@ public class RecordAnnotator extends BaleenConsumer {
 	 *            the JCas
 	 * @param name
 	 *            the name
+	 * @param string
 	 * @param begin
 	 *            the begin
 	 * @param end
 	 *            the end
 	 */
-	private void createRecordAnnotation(JCas jCas, String name, int begin, int end) {
+	private void createRecordAnnotation(JCas jCas, String source, String name, int begin, int end) {
 		Record record = new Record(jCas);
 		record.setBegin(begin);
+		record.setSource(source);
 		record.setEnd(end);
 		record.setName(name);
 		addToJCasIndex(record);

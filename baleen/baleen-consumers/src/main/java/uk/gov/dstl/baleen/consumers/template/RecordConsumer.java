@@ -1,12 +1,14 @@
 package uk.gov.dstl.baleen.consumers.template;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
@@ -74,6 +77,7 @@ public class RecordConsumer extends BaleenConsumer {
 		super.doInitialize(aContext);
 		if ("json".equals(outputFormat)) {
 			objectMapper = new ObjectMapper();
+			objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true);
 			outputFileExtension = "json";
 		} else {
 			objectMapper = new ObjectMapper(new YAMLFactory());
@@ -84,7 +88,7 @@ public class RecordConsumer extends BaleenConsumer {
 
 	@Override
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
-		Collection<ExtractedRecord> records = new ArrayList<>();
+		Multimap<String, ExtractedRecord> records = HashMultimap.create();
 		Collection<Record> recordAnnotations = JCasUtil.select(jCas, Record.class);
 
 		HashSet<TemplateField> allFields = new HashSet<>(JCasUtil.select(jCas, TemplateField.class));
@@ -93,16 +97,21 @@ public class RecordConsumer extends BaleenConsumer {
 			Collection<TemplateField> fieldAnnotations = JCasUtil.selectCovered(TemplateField.class, recordAnnotation);
 			allFields.removeAll(fieldAnnotations);
 			Map<String, String> fieldValues = makeFieldValues(fieldAnnotations);
-			records.add(new ExtractedRecord(recordAnnotation.getName(), fieldValues));
+			records.put(recordAnnotation.getSource(), new ExtractedRecord(recordAnnotation.getName(), fieldValues));
 		}
 
-		if (!allFields.isEmpty()) {
-			records.add(new ExtractedRecord(makeFieldValues(allFields)));
+		Multimap<String, TemplateField> remainingFields = HashMultimap.create();
+		for (TemplateField templateField : allFields) {
+			remainingFields.put(templateField.getSource(), templateField);
+		}
+
+		for (String source : remainingFields.keySet()) {
+			records.put(source, new ExtractedRecord(makeFieldValues(remainingFields.get(source))));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());
 		try (Writer w = createOutputWriter(documentSourceName)) {
-			objectMapper.writeValue(w, records);
+			objectMapper.writeValue(w, records.asMap());
 		} catch (IOException e) {
 			throw new AnalysisEngineProcessException(e);
 		}

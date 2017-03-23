@@ -7,10 +7,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -50,7 +53,8 @@ public class RecordConsumerTest extends AbstractAnnotatorTest {
 	@Before
 	public void setup() throws IOException {
 		jCas.setDocumentText(TEXT);
-		tempDirectory = Files.createTempDirectory(RecordConsumerTest.class.getSimpleName());
+		String sourceName = RecordConsumerTest.class.getSimpleName();
+		tempDirectory = Files.createTempDirectory(sourceName);
 		tempDirectory.toFile().deleteOnExit();
 
 		DocumentAnnotation documentAnnotation = (DocumentAnnotation) jCas.getDocumentAnnotationFs();
@@ -60,30 +64,35 @@ public class RecordConsumerTest extends AbstractAnnotatorTest {
 		record1.setBegin(0);
 		record1.setEnd(52);
 		record1.setName("record1");
+		record1.setSource(sourceName);
 		record1.addToIndexes();
 
 		TemplateField record1Field1 = new TemplateField(jCas);
 		record1Field1.setBegin(0);
 		record1Field1.setEnd(15);
 		record1Field1.setName("record1Field1");
+		record1Field1.setSource(sourceName);
 		record1Field1.addToIndexes();
 
 		TemplateField record1Field2 = new TemplateField(jCas);
 		record1Field2.setBegin(16);
 		record1Field2.setEnd(31);
 		record1Field2.setName("record1Field2");
+		record1Field2.setSource(sourceName);
 		record1Field2.addToIndexes();
 
 		Record record2 = new Record(jCas);
 		record2.setBegin(53);
 		record2.setEnd(105);
 		record2.setName("record2");
+		record2.setSource(sourceName);
 		record2.addToIndexes();
 
 		TemplateField record2Field1 = new TemplateField(jCas);
 		record2Field1.setBegin(53);
 		record2Field1.setEnd(68);
 		record2Field1.setName("record2Field1");
+		record2Field1.setSource(sourceName);
 		record2Field1.addToIndexes();
 
 		TemplateField record2Field2 = new TemplateField(jCas);
@@ -96,12 +105,14 @@ public class RecordConsumerTest extends AbstractAnnotatorTest {
 		noRecordField1.setBegin(106);
 		noRecordField1.setEnd(121);
 		noRecordField1.setName("noRecordField1");
+		noRecordField1.setSource(sourceName);
 		noRecordField1.addToIndexes();
 
 		TemplateField noRecordField2 = new TemplateField(jCas);
 		noRecordField2.setBegin(122);
 		noRecordField2.setEnd(137);
 		noRecordField2.setName("noRecordField2");
+		noRecordField2.setSource(sourceName);
 		noRecordField2.addToIndexes();
 	}
 
@@ -113,8 +124,9 @@ public class RecordConsumerTest extends AbstractAnnotatorTest {
 		Path yamlFile = Paths.get(tempDirectory.toString(), RecordConsumerTest.class.getSimpleName() + ".yaml");
 		yamlFile.toFile().deleteOnExit();
 
-		List<ExtractedRecord> records = YAMLMAPPER.readValue(yamlFile.toFile(),
-				YAMLMAPPER.getTypeFactory().constructCollectionType(List.class, ExtractedRecord.class));
+		Map<String, List<ExtractedRecord>> records = YAMLMAPPER.readValue(yamlFile.toFile(),
+				new TypeReference<Map<String, List<ExtractedRecord>>>() {
+				});
 
 		checkRecords(records);
 
@@ -130,18 +142,21 @@ public class RecordConsumerTest extends AbstractAnnotatorTest {
 		Path jsonFile = Paths.get(tempDirectory.toString(), RecordConsumerTest.class.getSimpleName() + ".json");
 		jsonFile.toFile().deleteOnExit();
 
-		List<ExtractedRecord> records = JSONMAPPER.readValue(jsonFile.toFile(),
-				JSONMAPPER.getTypeFactory().constructCollectionType(List.class, ExtractedRecord.class));
+		Map<String, List<ExtractedRecord>> records = JSONMAPPER.readValue(jsonFile.toFile(),
+				new TypeReference<Map<String, List<ExtractedRecord>>>() {
+				});
 
 		checkRecords(records);
 
 		Files.delete(jsonFile);
 	}
 
-	private void checkRecords(List<ExtractedRecord> records) {
-		ExtractedRecord record1 = records.stream()
-				.filter(p -> p.getKind().equals(Kind.NAMED) && p.getName().equals("record1"))
-				.collect(Collectors.toList()).get(0);
+	private void checkRecords(Map<String, List<ExtractedRecord>> recordMap) {
+		List<ExtractedRecord> records = recordMap.get(RecordConsumerTest.class.getSimpleName());
+		Stream<ExtractedRecord> recordStream = records.stream()
+				.filter(p -> p.getKind().equals(Kind.NAMED) && p.getName().equals("record1"));
+		List<ExtractedRecord> collect = recordStream.collect(Collectors.toList());
+		ExtractedRecord record1 = collect.get(0);
 		assertEquals(Kind.NAMED, record1.getKind());
 		assertEquals(2, record1.getFields().size());
 		assertEquals("The quick brown", record1.getFields().get("record1Field1"));

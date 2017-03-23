@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
 /** An field identified from a template
- * Updated by JCasGen Thu Feb 02 11:58:46 GMT 2017
+ * Updated by JCasGen Thu Mar 23 16:25:28 GMT 2017
  * @generated */
 public class TemplateField_Type extends Base_Type {
   /** @generated */
@@ -45,6 +45,30 @@ public class TemplateField_Type extends Base_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_name, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_source;
+  /** @generated */
+  final int     casFeatCode_source;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getSource(int addr) {
+        if (featOkTst && casFeat_source == null)
+      jcas.throwFeatMissing("source", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_source);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setSource(int addr, String v) {
+        if (featOkTst && casFeat_source == null)
+      jcas.throwFeatMissing("source", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    ll_cas.ll_setStringValue(addr, casFeatCode_source, v);}
+    
+  
 
 
 
@@ -60,6 +84,10 @@ public class TemplateField_Type extends Base_Type {
  
     casFeat_name = jcas.getRequiredFeatureDE(casType, "name", "uima.cas.String", featOkTst);
     casFeatCode_name  = (null == casFeat_name) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_name).getCode();
+
+ 
+    casFeat_source = jcas.getRequiredFeatureDE(casType, "source", "uima.cas.String", featOkTst);
+    casFeatCode_source  = (null == casFeat_source) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_source).getCode();
 
   }
 }
