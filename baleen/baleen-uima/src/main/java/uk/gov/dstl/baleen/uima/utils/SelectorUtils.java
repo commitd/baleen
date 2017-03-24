@@ -218,16 +218,16 @@ public class SelectorUtils {
 	 *
 	 * @param jCas
 	 *            the jcas
-	 * @param templateField
-	 *            the template field
+	 * @param annotation
+	 *            the annotation
 	 * @param structuralClasses
 	 *            the structural classes
 	 * @return the string
 	 */
-	public static String generatePath(final JCas jCas, final BaleenAnnotation templateField,
+	public static String generatePath(final JCas jCas, final BaleenAnnotation annotation,
 			Set<Class<? extends Structure>> structuralClasses) {
 		StringBuilder sb = new StringBuilder();
-		List<Structure> covering = JCasUtil.selectCovering(Structure.class, templateField);
+		List<Structure> covering = JCasUtil.selectCovering(Structure.class, annotation);
 		ListIterator<Structure> iterator = covering.listIterator();
 		Structure previous = null;
 		while (iterator.hasNext()) {
@@ -263,18 +263,19 @@ public class SelectorUtils {
 				for (Structure child : children) {
 					if (child.getDepth() == previous.getDepth() + 1) {
 						count++;
-						if (child.getCoveredText().contains(templateField.getCoveredText())) {
-							sb.append(" > ");
-							sb.append(next.getType().getShortName());
-							if (children.size() > 1) {
-								sb.append(":nth-of-type(");
-								sb.append(count);
-								sb.append(")");
-							}
+						if (covering.contains(child)) {
 							break;
 						}
 					}
 				}
+				sb.append(" > ");
+				sb.append(next.getType().getShortName());
+				if (children.size() > 1) {
+					sb.append(":nth-of-type(");
+					sb.append(count);
+					sb.append(")");
+				}
+
 				previous = next;
 			}
 		}
