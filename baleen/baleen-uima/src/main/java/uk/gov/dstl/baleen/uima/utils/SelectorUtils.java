@@ -20,14 +20,15 @@ import java.util.stream.Collectors;
 /**
  * Some utility functions for working with a CSS selector-like syntax for
  * selecting structural annotations.
- * 
+ * <p>
  * Currently only the contains (<code>&gt;</code> operator) is supported, and
  * the optional <code>nth-of-type(n)</code> pseudo selector. It is required that
  * structural annotations have a <code>depth</code> feature such that nesting
  * can be approximated.
- * 
+ * </p>
+ * <p>
  * Example selectors:
- * 
+ * </p>
  * <ul>
  * <li><code>Section > Heading</code>
  * <li><code>Heading:nth-of-type(2)</code>

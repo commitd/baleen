@@ -108,7 +108,7 @@ public class TemplateSelectorAnnotator extends BaleenAnnotator {
 	 * the whole enclosing structural element as the content.
 	 *
 	 * @param jCas
-	 *            the j cas
+	 *            the JCas
 	 * @param name
 	 *            the name
 	 * @param enclosingElement
