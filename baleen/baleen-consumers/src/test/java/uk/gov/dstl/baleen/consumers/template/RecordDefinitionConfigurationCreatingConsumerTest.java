@@ -2,6 +2,7 @@ package uk.gov.dstl.baleen.consumers.template;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,19 +11,22 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.jcas.tcas.DocumentAnnotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import uk.gov.dstl.baleen.annotators.templates.FieldDefinitionConfiguration;
 import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionConfiguration;
-import uk.gov.dstl.baleen.annotators.testing.AbstractAnnotatorTest;
 import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionConfiguration.Kind;
+import uk.gov.dstl.baleen.annotators.testing.AbstractAnnotatorTest;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.types.templates.RecordDefinition;
 import uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition;
@@ -162,17 +166,27 @@ public class RecordDefinitionConfigurationCreatingConsumerTest extends AbstractA
 				.filter(p -> p.getKind().equals(Kind.NAMED) && p.getName().equals("record1"))
 				.collect(Collectors.toList()).get(0);
 		assertEquals(Kind.NAMED, record1.getKind());
-		assertEquals(2, record1.getFieldPaths().size());
-		assertEquals("Paragraph:nth-of-type(2)", record1.getFieldPaths().get("field1"));
-		assertEquals("Paragraph:nth-of-type(3)", record1.getFieldPaths().get("field2"));
+		assertEquals(2, record1.getFields().size());
+		for (FieldDefinitionConfiguration field : record1.getFields()) {
+			String name = field.getName();
+			if (name.equals("field1")) {
+				assertEquals("Paragraph:nth-of-type(2)", field.getPath());
+			} else if (field.getName().equals("field2")) {
+				assertEquals("Paragraph:nth-of-type(3)", field.getPath());
+			} else {
+				fail("field not expected: " + name);
+			}
+		}
 		assertEquals("Paragraph:nth-of-type(1)", record1.getPrecedingPath());
 		assertEquals("Paragraph:nth-of-type(4)", record1.getFollowingPath());
 
 		RecordDefinitionConfiguration defaultRecord = definitions.stream().filter(p -> p.getKind().equals(Kind.DEFAULT))
 				.collect(Collectors.toList()).get(0);
 		assertEquals(null, defaultRecord.getName());
-		assertEquals(1, defaultRecord.getFieldPaths().size());
-		assertEquals("Paragraph:nth-of-type(1)", defaultRecord.getFieldPaths().get("noRecordField"));
+		assertEquals(1, defaultRecord.getFields().size());
+		FieldDefinitionConfiguration field = defaultRecord.getFields().get(0);
+		assertEquals("noRecordField", field.getName());
+		assertEquals("Paragraph:nth-of-type(1)", field.getPath());
 
 		Files.delete(yamlFile);
 	}

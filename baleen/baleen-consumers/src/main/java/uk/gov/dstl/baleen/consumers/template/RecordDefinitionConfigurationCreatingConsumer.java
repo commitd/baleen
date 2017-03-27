@@ -8,15 +8,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -25,6 +20,12 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.reflections.Reflections;
+
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+import uk.gov.dstl.baleen.annotators.templates.FieldDefinitionConfiguration;
 import uk.gov.dstl.baleen.annotators.templates.RecordAnnotator;
 import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionAnnotator;
 import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionConfiguration;
@@ -44,7 +45,7 @@ import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
  * <p>
  * See {@link RecordAnnotator} for a description of the format.
  * </p>
- * 
+ *
  * <p>
  * This consumer should be used with {@link RecordDefinitionAnnotator} and
  * {@link TemplateFieldDefinitionAnnotator}.
@@ -108,7 +109,7 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 
 	@Override
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
-		Collection<RecordDefinitionConfiguration> definitions = new ArrayList<>();
+		Collection<RecordDefinitionConfiguration> recordConfigurations = new ArrayList<>();
 
 		Collection<RecordDefinition> recordDefinitions = JCasUtil.select(jCas, RecordDefinition.class);
 		Set<TemplateFieldDefinition> allFieldDefinitions = new HashSet<>(
@@ -130,22 +131,22 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 			String followingPath = SelectorUtils.generatePath(jCas, followingStructure.iterator().next(),
 					structuralClasses);
 
-			List<TemplateFieldDefinition> fields = JCasUtil.selectCovered(TemplateFieldDefinition.class,
+			List<TemplateFieldDefinition> definitions = JCasUtil.selectCovered(TemplateFieldDefinition.class,
 					recordDefinition);
-			allFieldDefinitions.removeAll(fields);
+			allFieldDefinitions.removeAll(definitions);
 
-			Map<String, String> fieldPaths = makeFieldPaths(jCas, fields);
-			definitions.add(new RecordDefinitionConfiguration(recordDefinition.getName(), precedingPath, followingPath,
-					fieldPaths));
+			List<FieldDefinitionConfiguration> fields = makeFields(jCas, definitions);
+			recordConfigurations.add(new RecordDefinitionConfiguration(recordDefinition.getName(), precedingPath,
+					followingPath, fields));
 		}
 
 		if (!allFieldDefinitions.isEmpty()) {
-			definitions.add(new RecordDefinitionConfiguration(makeFieldPaths(jCas, allFieldDefinitions)));
+			recordConfigurations.add(new RecordDefinitionConfiguration(makeFields(jCas, allFieldDefinitions)));
 		}
 
 		String documentSourceName = SourceUtils.getDocumentSourceBaseName(jCas, getSupport());
 		try (Writer w = createOutputWriter(documentSourceName)) {
-			objectMapper.writeValue(w, definitions);
+			objectMapper.writeValue(w, recordConfigurations);
 		} catch (IOException e) {
 			throw new AnalysisEngineProcessException(e);
 		}
@@ -160,15 +161,18 @@ public class RecordDefinitionConfigurationCreatingConsumer extends BaleenConsume
 	 *            the fields
 	 * @return the map of name/path pairs
 	 */
-	private Map<String, String> makeFieldPaths(final JCas jCas, Collection<TemplateFieldDefinition> fields) {
-		Map<String, String> fieldPaths = new HashMap<>();
+	private List<FieldDefinitionConfiguration> makeFields(final JCas jCas,
+			Collection<TemplateFieldDefinition> definitions) {
+		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
 
-		for (TemplateFieldDefinition templateFieldDefinition : fields) {
+		for (TemplateFieldDefinition templateFieldDefinition : definitions) {
 			String fieldPath = SelectorUtils.generatePath(jCas, templateFieldDefinition, structuralClasses);
-
-			fieldPaths.put(templateFieldDefinition.getName(), fieldPath);
+			FieldDefinitionConfiguration field = new FieldDefinitionConfiguration(templateFieldDefinition.getName(),
+					fieldPath);
+			field.setRegex(templateFieldDefinition.getRegex());
+			fields.add(field);
 		}
-		return fieldPaths;
+		return fields;
 	}
 
 	/**

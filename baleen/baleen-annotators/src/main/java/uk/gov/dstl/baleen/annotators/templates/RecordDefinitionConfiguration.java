@@ -1,10 +1,10 @@
 package uk.gov.dstl.baleen.annotators.templates;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * A simple bean used to define Records and the fields contained within them.
- * 
+ *
  */
 public class RecordDefinitionConfiguration {
 
@@ -29,8 +29,8 @@ public class RecordDefinitionConfiguration {
 	/** The kind of record. */
 	private Kind kind;
 
-	/** The field paths. */
-	private Map<String, String> fieldPaths;
+	/** The fields. */
+	private List<FieldDefinitionConfiguration> fields;
 
 	/** The element preceding the record's path. */
 	private String precedingPath;
@@ -60,23 +60,23 @@ public class RecordDefinitionConfiguration {
 	 *            the field paths
 	 */
 	public RecordDefinitionConfiguration(String name, String precedingPath, String followingPath,
-			Map<String, String> fieldPaths) {
+			List<FieldDefinitionConfiguration> fields) {
 		this.name = name;
-		this.kind = Kind.NAMED;
+		kind = Kind.NAMED;
 		this.precedingPath = precedingPath;
 		this.followingPath = followingPath;
-		this.fieldPaths = fieldPaths;
+		this.fields = fields;
 	}
 
 	/**
 	 * Instantiates a new default record definition configuration.
 	 *
-	 * @param fieldPaths
-	 *            the field paths
+	 * @param fields
+	 *            the fields
 	 */
-	public RecordDefinitionConfiguration(Map<String, String> fieldPaths) {
-		this.kind = Kind.DEFAULT;
-		this.fieldPaths = fieldPaths;
+	public RecordDefinitionConfiguration(List<FieldDefinitionConfiguration> fields) {
+		kind = Kind.DEFAULT;
+		this.fields = fields;
 	}
 
 	/**
@@ -156,22 +156,22 @@ public class RecordDefinitionConfiguration {
 	}
 
 	/**
-	 * Gets the field paths.
+	 * Gets the fields.
 	 *
-	 * @return the field paths
+	 * @return the field configurations
 	 */
-	public Map<String, String> getFieldPaths() {
-		return fieldPaths;
+	public List<FieldDefinitionConfiguration> getFields() {
+		return fields;
 	}
 
 	/**
-	 * Sets the field paths.
+	 * Sets the fields.
 	 *
-	 * @param fieldPaths
-	 *            the field paths
+	 * @param fields
+	 *            the field configurations
 	 */
-	public void setFieldPaths(Map<String, String> fieldPaths) {
-		this.fieldPaths = fieldPaths;
+	public void setFieldPaths(List<FieldDefinitionConfiguration> fields) {
+		this.fields = fields;
 	}
 
 }

@@ -1,16 +1,25 @@
 package uk.gov.dstl.baleen.annotators.templates;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map.Entry;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
 import uk.gov.dstl.baleen.annotators.templates.RecordDefinitionConfiguration.Kind;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.structure.Structure;
@@ -19,19 +28,10 @@ import uk.gov.dstl.baleen.types.templates.TemplateField;
 import uk.gov.dstl.baleen.uima.BaleenConsumer;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 /**
  * Using previously created record definitions, creates annotations for records
  * and the the fields contained within them.
- * 
+ *
  * <p>
  * Each YAML configuration file contains multiple definitions in an array/list,
  * with each definition being an object with following fields:
@@ -41,7 +41,7 @@ import java.util.Map.Entry;
  * <dd>a dictionary / map of name and structural selector path to extract the
  * field from the document. A TemplateField annotation is created for each
  * matched path.</dd>
- * 
+ *
  * <dt>kind</dt>
  * <dd>Whether the field selectors above should be used to create a
  * <code>NAMED</code> record, in which case a name field will also be supplied,
@@ -53,9 +53,9 @@ import java.util.Map.Entry;
  * with the name of the record.
  * <dd>
  * </dl>
- * 
+ *
  * An example YAML configuration could be:
- * 
+ *
  * <pre>
 ---
 - name: "NamedRecord"
@@ -138,7 +138,7 @@ public class RecordAnnotator extends BaleenConsumer {
 		for (Entry<String, RecordDefinitionConfiguration> entry : recordDefinitions.entries()) {
 			RecordDefinitionConfiguration recordDefinition = entry.getValue();
 			String source = entry.getKey();
-			createTemplateFields(source, recordDefinition.getFieldPaths(), jCas);
+			createTemplateFields(source, recordDefinition.getFields(), jCas);
 			if (recordDefinition.getKind() == Kind.NAMED) {
 				createRecord(source, recordDefinition, jCas);
 			}
@@ -147,9 +147,9 @@ public class RecordAnnotator extends BaleenConsumer {
 
 	/**
 	 * Creates the record based on the paths in the record definition.
-	 * 
+	 *
 	 * If errors occur during selection these are logged.
-	 * 
+	 *
 	 * @param source
 	 *
 	 * @param recordDefinition
@@ -200,10 +200,10 @@ public class RecordAnnotator extends BaleenConsumer {
 	 * @param fieldPaths
 	 *            the field paths
 	 */
-	private void createTemplateFields(String source, Map<String, String> fieldPaths, JCas jCas) {
-		for (Entry<String, String> entry : fieldPaths.entrySet()) {
-			String path = entry.getValue();
-			String fieldName = entry.getKey();
+	private void createTemplateFields(String source, List<FieldDefinitionConfiguration> fields, JCas jCas) {
+		for (FieldDefinitionConfiguration field : fields) {
+			String path = field.getPath();
+			String fieldName = field.getName();
 			try {
 				List<? extends Structure> pathStructures = SelectorUtils.select(jCas, path, DEFAULT_STRUCTURAL_PACKAGE);
 				if (pathStructures.size() == 1) {

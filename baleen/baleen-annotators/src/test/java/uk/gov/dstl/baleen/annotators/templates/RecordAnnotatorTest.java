@@ -5,25 +5,26 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
 import uk.gov.dstl.baleen.annotators.testing.AbstractAnnotatorTest;
 import uk.gov.dstl.baleen.types.structure.Paragraph;
 import uk.gov.dstl.baleen.types.templates.Record;
 import uk.gov.dstl.baleen.types.templates.TemplateField;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 	private static final String PARA1 = "The quick brown fox jumped over the lazy dog's back.";
@@ -162,8 +163,8 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
 		String precedingPath = "Paragraph:nth-of-type(1)";
 		String followingPath = "Paragraph:nth-of-type(5)";
-		Map<String, String> fields = new HashMap<>();
-		fields.put("field", "Paragraph:nth-of-type(2)");
+		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
+		fields.add(new FieldDefinitionConfiguration("field", "Paragraph:nth-of-type(2)"));
 		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
 				followingPath, fields);
 		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));
@@ -174,8 +175,8 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
 		String precedingPath = "Paragraph:nth-of-type(1)";
 		String followingPath = "Paragraph:nth-of-type(5)";
-		Map<String, String> fields = new HashMap<>();
-		fields.put("field", "Paragraph");
+		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
+		fields.add(new FieldDefinitionConfiguration("field", "Paragraph"));
 		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
 				followingPath, fields);
 		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));
@@ -186,8 +187,8 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
 		String precedingPath = "Paragraph:nth-of-type(3)";
 		String followingPath = "Paragraph:nth-of-type(5)";
-		Map<String, String> fields = new HashMap<>();
-		fields.put("field", "Paragraph:nth-of-type(2)");
+		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
+		fields.add(new FieldDefinitionConfiguration("field", "Paragraph:nth-of-type(2)"));
 		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
 				followingPath, fields);
 		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));
