@@ -107,6 +107,29 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 	}
 
 	@Test
+	public void testCreateFieldAnnotationsFromSelectorFileWithRegEx()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createGoodRecordDefinitionWithRegEx();
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
+
+			Record record = JCasUtil.selectByIndex(jCas, Record.class, 0);
+			assertEquals(52, record.getBegin());
+			assertEquals(212, record.getEnd());
+			assertEquals(String.join("\n", "", PARA2, PARA3, PARA4, ""), record.getCoveredText());
+
+			TemplateField field1 = JCasUtil.selectByIndex(jCas, TemplateField.class, 0);
+			assertEquals(69, field1.getBegin());
+			assertEquals(72, field1.getEnd());
+			assertEquals("cat", field1.getCoveredText());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
 	public void testMultipleElementsSelectedForField()
 			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
 
@@ -165,6 +188,21 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		String followingPath = "Paragraph:nth-of-type(5)";
 		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
 		fields.add(new FieldDefinitionConfiguration("field", "Paragraph:nth-of-type(2)"));
+		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
+				followingPath, fields);
+		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));
+		return definitionFile;
+	}
+
+	private Path createGoodRecordDefinitionWithRegEx() throws IOException {
+		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
+		String precedingPath = "Paragraph:nth-of-type(1)";
+		String followingPath = "Paragraph:nth-of-type(5)";
+		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
+		FieldDefinitionConfiguration fieldDefinitionConfiguration = new FieldDefinitionConfiguration("field",
+				"Paragraph:nth-of-type(2)");
+		fieldDefinitionConfiguration.setRegex("(?<=brown )(.*)(?= jumped)");
+		fields.add(fieldDefinitionConfiguration);
 		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
 				followingPath, fields);
 		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));

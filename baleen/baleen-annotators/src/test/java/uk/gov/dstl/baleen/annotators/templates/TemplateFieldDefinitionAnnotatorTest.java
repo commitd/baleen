@@ -19,6 +19,8 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 	private static final String FIELD_HTML_REGEX = "HTML: <<field:html regex=\"/^&lt;([a-z]+)([^&lt;]+)*(?:&gt;(.*)&lt;\\/\\1&gt;|\\s+\\/&gt;)$/\">>   More text >>\n";
 	private static final String FIELD_NEIGHBOURS = "<<field:one>><<field:two>>";
 
+	private static final String FIELD_ILLEGAL_REGEX = "Error: <<field:error regex=\"(\">>";
+
 	public TemplateFieldDefinitionAnnotatorTest() {
 		super(TemplateFieldDefinitionAnnotator.class);
 	}
@@ -91,5 +93,11 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 				field.getCoveredText());
 		assertEquals("html", field.getName());
 		assertEquals("/^<([a-z]+)([^<]+)*(?:>(.*)<\\/\\1>|\\s+\\/>)$/", field.getRegex());
+	}
+
+	@Test(expected = AnalysisEngineProcessException.class)
+	public void annotateFieldWithIllegalRegex() throws AnalysisEngineProcessException, ResourceInitializationException {
+		jCas.setDocumentText(FIELD_ILLEGAL_REGEX);
+		processJCas();
 	}
 }

@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
@@ -208,7 +210,7 @@ public class RecordAnnotator extends BaleenConsumer {
 				List<? extends Structure> pathStructures = SelectorUtils.select(jCas, path, DEFAULT_STRUCTURAL_PACKAGE);
 				if (pathStructures.size() == 1) {
 					Structure structure = pathStructures.get(0);
-					createFieldAnnotation(jCas, source, fieldName, structure.getBegin(), structure.getEnd());
+					createFieldAnnotation(jCas, source, field, structure);
 				} else {
 					getMonitor().warn("Expected single structure element for field {} but got {} - ignoring", fieldName,
 							pathStructures.size());
@@ -217,6 +219,25 @@ public class RecordAnnotator extends BaleenConsumer {
 				getMonitor().warn("Failed to match structure for field " + fieldName, e);
 			}
 		}
+	}
+
+	private void createFieldAnnotation(JCas jCas, String source, FieldDefinitionConfiguration field,
+			Structure structure) {
+		String regex = field.getRegex();
+		if (regex == null) {
+			createFieldAnnotation(jCas, source, field.getName(), structure.getBegin(), structure.getEnd());
+		} else {
+			Pattern pattern = Pattern.compile(regex);
+			String coveredText = structure.getCoveredText();
+			Matcher matcher = pattern.matcher(coveredText);
+			if (matcher.find()) {
+				createFieldAnnotation(jCas, source, field.getName(), structure.getBegin() + matcher.start(),
+						structure.getBegin() + matcher.end());
+			} else {
+				getMonitor().warn("Failed to match pattern {} in {} - ignoring", regex, coveredText);
+			}
+		}
+
 	}
 
 	/**

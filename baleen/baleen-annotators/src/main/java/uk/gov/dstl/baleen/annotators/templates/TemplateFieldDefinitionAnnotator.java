@@ -68,11 +68,17 @@ public class TemplateFieldDefinitionAnnotator extends AbstractRegexAnnotator<Tem
 			NamedNodeMap attributes = doc.getFirstChild().getAttributes();
 			Node namedItem = attributes.getNamedItem(REGEX_ATTRIBUTE);
 			if (namedItem != null) {
-				field.setRegex(namedItem.getTextContent());
+				String regex = namedItem.getTextContent();
+				checkRegexCompiles(regex);
+				field.setRegex(regex);
 			}
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			getMonitor().warn("Failed to read field defintion " + coveredText, e);
 		}
+	}
+
+	private void checkRegexCompiles(String regex) {
+		Pattern.compile(regex);
 	}
 
 }
