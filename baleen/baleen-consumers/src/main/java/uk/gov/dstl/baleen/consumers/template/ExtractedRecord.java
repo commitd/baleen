@@ -1,5 +1,6 @@
 package uk.gov.dstl.baleen.consumers.template;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -29,7 +30,7 @@ public class ExtractedRecord {
 	private Kind kind;
 
 	/** The fields as {@link Map} of field name to extracted field value. */
-	private Map<String, String> fields;
+	private Collection<ExtractedField> fields;
 
 	/**
 	 * Instantiates a new extracted record for (reflective construction using
@@ -48,7 +49,7 @@ public class ExtractedRecord {
 	 * @param fields
 	 *            the field name/value pairs
 	 */
-	public ExtractedRecord(String name, Map<String, String> fields) {
+	public ExtractedRecord(String name, Collection<ExtractedField> fields) {
 		this.name = name;
 		this.kind = Kind.NAMED;
 		this.fields = fields;
@@ -60,7 +61,7 @@ public class ExtractedRecord {
 	 * @param fields
 	 *            the field name/value pairs
 	 */
-	public ExtractedRecord(Map<String, String> fields) {
+	public ExtractedRecord(Collection<ExtractedField> fields) {
 		this.kind = Kind.DEFAULT;
 		this.fields = fields;
 	}
@@ -108,7 +109,7 @@ public class ExtractedRecord {
 	 *
 	 * @return the field name/value pairs
 	 */
-	public Map<String, String> getFields() {
+	public Collection<ExtractedField> getFields() {
 		return fields;
 	}
 
@@ -118,7 +119,7 @@ public class ExtractedRecord {
 	 * @param fields
 	 *            the field name/value pairs
 	 */
-	public void setFields(Map<String, String> fields) {
+	public void setFields(Collection<ExtractedField> fields) {
 		this.fields = fields;
 	}
 

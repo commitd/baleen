@@ -110,23 +110,31 @@ public abstract class AbstractRecordConsumerTest extends AbstractAnnotatorTest {
 		ExtractedRecord record1 = collect.get(0);
 		assertEquals(Kind.NAMED, record1.getKind());
 		assertEquals(2, record1.getFields().size());
-		assertEquals("The quick brown", record1.getFields().get("record1Field1"));
-		assertEquals("fox jumped over", record1.getFields().get("record1Field2"));
+		assertEquals("The quick brown", findFieldValue("record1Field1", record1.getFields()));
+		assertEquals("fox jumped over", findFieldValue("record1Field2", record1.getFields()));
 
 		ExtractedRecord record2 = records.stream()
 				.filter(p -> p.getKind().equals(Kind.NAMED) && p.getName().equals("record2"))
 				.collect(Collectors.toList()).get(0);
 		assertEquals(Kind.NAMED, record1.getKind());
 		assertEquals(2, record2.getFields().size());
-		assertEquals("The quick brown", record2.getFields().get("record2Field1"));
-		assertEquals("cat jumped over", record2.getFields().get("record2Field2"));
+		assertEquals("The quick brown", findFieldValue("record2Field1", record2.getFields()));
+		assertEquals("cat jumped over", findFieldValue("record2Field2", record2.getFields()));
 
 		ExtractedRecord defaultRecord = records.stream().filter(p -> p.getKind().equals(Kind.DEFAULT))
 				.collect(Collectors.toList()).get(0);
 		assertEquals(null, defaultRecord.getName());
 		assertEquals(2, defaultRecord.getFields().size());
-		assertEquals("The quick brown", defaultRecord.getFields().get("noRecordField1"));
-		assertEquals("rat jumped over", defaultRecord.getFields().get("noRecordField2"));
+		assertEquals("The quick brown", findFieldValue("noRecordField1", defaultRecord.getFields()));
+		assertEquals("rat jumped over", findFieldValue("noRecordField2", defaultRecord.getFields()));
 	}
 
+	protected String findFieldValue(String fieldName, Collection<ExtractedField> fields) {
+		for (ExtractedField extractedField : fields) {
+			if (extractedField.getName().equals(fieldName)) {
+				return extractedField.getValue();
+			}
+		}
+		return null;
+	}
 }

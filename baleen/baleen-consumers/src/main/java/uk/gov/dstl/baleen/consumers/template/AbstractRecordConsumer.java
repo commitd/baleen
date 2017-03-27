@@ -3,8 +3,8 @@ package uk.gov.dstl.baleen.consumers.template;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -45,7 +45,7 @@ public abstract class AbstractRecordConsumer extends BaleenConsumer {
 		for (Record recordAnnotation : recordAnnotations) {
 			Collection<TemplateField> fieldAnnotations = JCasUtil.selectCovered(TemplateField.class, recordAnnotation);
 			allFields.removeAll(fieldAnnotations);
-			Map<String, String> fieldValues = makeFieldValues(fieldAnnotations);
+			Collection<ExtractedField> fieldValues = makeFieldValues(fieldAnnotations);
 			records.put(recordAnnotation.getSource(), new ExtractedRecord(recordAnnotation.getName(), fieldValues));
 		}
 
@@ -69,15 +69,15 @@ public abstract class AbstractRecordConsumer extends BaleenConsumer {
 	 *            the field annotations
 	 * @return the field value name/value pairs
 	 */
-	private static Map<String, String> makeFieldValues(Collection<TemplateField> fieldAnnotations) {
-		Map<String, String> fieldValues = new HashMap<>();
+	private static Collection<ExtractedField> makeFieldValues(Collection<TemplateField> fieldAnnotations) {
+		Collection<ExtractedField> fieldValues = new ArrayList<>();
 		for (TemplateField templateField : fieldAnnotations) {
-			fieldValues.put(templateField.getName(), templateField.getCoveredText());
+			fieldValues.add(new ExtractedField(templateField.getName(), templateField.getCoveredText()));
 		}
 		return fieldValues;
 	}
 
-	protected abstract void writeRecords(JCas jCas, String documentSourceName, Map<String, Collection<ExtractedRecord>> asMap)
-			throws AnalysisEngineProcessException;
+	protected abstract void writeRecords(JCas jCas, String documentSourceName,
+			Map<String, Collection<ExtractedRecord>> asMap) throws AnalysisEngineProcessException;
 
 }
