@@ -8,10 +8,14 @@ import java.util.List;
 
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+
 import uk.gov.dstl.baleen.types.structure.Structure;
 
 /**
- * Print out all structure.
+ * Create the Hierarchy within the document of all the Structure annotations.
+ *
+ * The structure is built by first using the offset of the Structure annotation and then using the
+ * depth.
  */
 public class StructureHierarchy {
 
