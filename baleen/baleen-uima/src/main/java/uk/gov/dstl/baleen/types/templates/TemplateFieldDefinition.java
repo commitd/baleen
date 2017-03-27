@@ -11,8 +11,8 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** A field definition in a template document.
- * Updated by JCasGen Thu Feb 02 11:58:46 GMT 2017
- * XML source: /Users/jrfry/dev/dstl/private/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
+ * Updated by JCasGen Mon Mar 27 14:36:17 BST 2017
+ * XML source: /Users/stuarthendren/git/tenode/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
 public class TemplateFieldDefinition extends Base {
   /** @generated
@@ -96,6 +96,28 @@ public class TemplateFieldDefinition extends Base {
     if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_name == null)
       jcasType.jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
     jcasType.ll_cas.ll_setStringValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_name, v);}    
+   
+    
+  //*--------------*
+  //* Feature: regex
+
+  /** getter for regex - gets An optional regular expresison to extract the field from the structural element.
+   * @generated
+   * @return value of the feature 
+   */
+  public String getRegex() {
+    if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_regex == null)
+      jcasType.jcas.throwFeatMissing("regex", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_regex);}
+    
+  /** setter for regex - sets An optional regular expresison to extract the field from the structural element. 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setRegex(String v) {
+    if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_regex == null)
+      jcasType.jcas.throwFeatMissing("regex", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    jcasType.ll_cas.ll_setStringValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_regex, v);}    
   }
 
     

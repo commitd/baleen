@@ -20,6 +20,11 @@
           <description>The name of the identified template field.</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
+        <featureDescription>
+          <name>regex</name>
+          <description>An optional regular expresison to extract the field from the structural element.</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>       
       </features>
     </typeDescription>
     <typeDescription>
@@ -32,7 +37,7 @@
           <description>The name of the identified template field.</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
-      <featureDescription>
+        <featureDescription>
           <name>source</name>
           <description/>
           <rangeTypeName>uima.cas.String</rangeTypeName>
