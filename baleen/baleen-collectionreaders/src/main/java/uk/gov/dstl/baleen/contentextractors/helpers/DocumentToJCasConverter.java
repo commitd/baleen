@@ -17,10 +17,10 @@ import uk.gov.dstl.baleen.contentmappers.helpers.JCasBuilder;
 
 /**
  * Converts the HTML Document to a JCas document.
- * 
+ *
  * This involves extraction of text from the HTML and then creation of annotations.
- * 
- * The creation fo annotations is controlled by the {@link ContentMapper}s.
+ *
+ * The creation of annotations is controlled by the {@link ContentMapper}s.
  */
 public class DocumentToJCasConverter {
 
@@ -112,8 +112,7 @@ public class DocumentToJCasConverter {
    * @param element the element
    * @return the list
    */
-  private List<Annotation> mapElementToAnnotations(final JCas jCas,
-      final Element element) {
+  private List<Annotation> mapElementToAnnotations(final JCas jCas, final Element element) {
     final AnnotationCollector collector = new AnnotationCollector();
     for (final ContentMapper mapper : mappers) {
       mapper.map(jCas, element, collector);
