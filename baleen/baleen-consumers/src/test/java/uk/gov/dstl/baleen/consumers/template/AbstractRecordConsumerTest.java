@@ -3,62 +3,48 @@ package uk.gov.dstl.baleen.consumers.template;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.jcas.tcas.DocumentAnnotation;
-import org.apache.uima.resource.ResourceInitializationException;
-import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import uk.gov.dstl.baleen.annotators.testing.AbstractAnnotatorTest;
 import uk.gov.dstl.baleen.consumers.template.ExtractedRecord.Kind;
 import uk.gov.dstl.baleen.types.templates.Record;
 import uk.gov.dstl.baleen.types.templates.TemplateField;
 
-public class RecordConsumerTest extends AbstractAnnotatorTest {
+public abstract class AbstractRecordConsumerTest extends AbstractAnnotatorTest {
 
-	private static final String SOURCEURI = RecordConsumerTest.class.getSimpleName() + ".txt";
+	protected static final String PARA1 = "The quick brown fox jumped over the lazy dog's back.";
 
-	private static final String PARA1 = "The quick brown fox jumped over the lazy dog's back.";
+	protected static final String PARA2 = "The quick brown cat jumped over the lazy dog's back.";
 
-	private static final String PARA2 = "The quick brown cat jumped over the lazy dog's back.";
+	protected static final String PARA3 = "The quick brown rat jumped over the lazy dog's back.";
 
-	private static final String PARA3 = "The quick brown rat jumped over the lazy dog's back.";
+	protected static final String TEXT = String.join("\n", PARA1, PARA2, PARA3);
 
-	private static final String TEXT = String.join("\n", PARA1, PARA2, PARA3);
+	protected final Class<? extends AbstractRecordConsumer> annotatorClass;
 
-	private static final ObjectMapper YAMLMAPPER = new ObjectMapper(new YAMLFactory());
+	protected final String sourceUri;
 
-	private static final ObjectMapper JSONMAPPER = new ObjectMapper(new JsonFactory());
+	protected final String sourceName;
 
-	private Path tempDirectory;
-
-	public RecordConsumerTest() {
-		super(RecordConsumer.class);
+	public AbstractRecordConsumerTest(Class<? extends AbstractRecordConsumer> clazz) {
+		super(clazz);
+		this.annotatorClass = clazz;
+		this.sourceUri = annotatorClass.getSimpleName() + ".txt";
+		this.sourceName = annotatorClass.getSimpleName();
 	}
 
 	@Before
-	public void setup() throws IOException {
+	public void beforeAbstractRecordConsumerTest() throws IOException {
 		jCas.setDocumentText(TEXT);
-		String sourceName = RecordConsumerTest.class.getSimpleName();
-		tempDirectory = Files.createTempDirectory(sourceName);
-		tempDirectory.toFile().deleteOnExit();
 
 		DocumentAnnotation documentAnnotation = (DocumentAnnotation) jCas.getDocumentAnnotationFs();
-		documentAnnotation.setSourceUri(SOURCEURI);
+		documentAnnotation.setSourceUri(sourceUri);
 
 		Record record1 = new Record(jCas);
 		record1.setBegin(0);
@@ -116,43 +102,8 @@ public class RecordConsumerTest extends AbstractAnnotatorTest {
 		noRecordField2.addToIndexes();
 	}
 
-	@Test
-	public void testWriteRecordsYaml() throws AnalysisEngineProcessException, ResourceInitializationException,
-			JsonParseException, JsonMappingException, IOException {
-		processJCas(RecordConsumer.PARAM_OUTPUT_DIRECTORY, tempDirectory.toString());
-
-		Path yamlFile = Paths.get(tempDirectory.toString(), RecordConsumerTest.class.getSimpleName() + ".yaml");
-		yamlFile.toFile().deleteOnExit();
-
-		Map<String, List<ExtractedRecord>> records = YAMLMAPPER.readValue(yamlFile.toFile(),
-				new TypeReference<Map<String, List<ExtractedRecord>>>() {
-				});
-
-		checkRecords(records);
-
-		Files.delete(yamlFile);
-	}
-
-	@Test
-	public void testWriteRecordsJson() throws AnalysisEngineProcessException, ResourceInitializationException,
-			JsonParseException, JsonMappingException, IOException {
-		processJCas(RecordConsumer.PARAM_OUTPUT_DIRECTORY, tempDirectory.toString(), RecordConsumer.PARAM_OUTPUT_FORMAT,
-				"json");
-
-		Path jsonFile = Paths.get(tempDirectory.toString(), RecordConsumerTest.class.getSimpleName() + ".json");
-		jsonFile.toFile().deleteOnExit();
-
-		Map<String, List<ExtractedRecord>> records = JSONMAPPER.readValue(jsonFile.toFile(),
-				new TypeReference<Map<String, List<ExtractedRecord>>>() {
-				});
-
-		checkRecords(records);
-
-		Files.delete(jsonFile);
-	}
-
-	private void checkRecords(Map<String, List<ExtractedRecord>> recordMap) {
-		List<ExtractedRecord> records = recordMap.get(RecordConsumerTest.class.getSimpleName());
+	protected void checkRecords(Map<String, Collection<ExtractedRecord>> recordMap) {
+		Collection<ExtractedRecord> records = recordMap.get(annotatorClass.getSimpleName());
 		Stream<ExtractedRecord> recordStream = records.stream()
 				.filter(p -> p.getKind().equals(Kind.NAMED) && p.getName().equals("record1"));
 		List<ExtractedRecord> collect = recordStream.collect(Collectors.toList());
@@ -176,11 +127,6 @@ public class RecordConsumerTest extends AbstractAnnotatorTest {
 		assertEquals(2, defaultRecord.getFields().size());
 		assertEquals("The quick brown", defaultRecord.getFields().get("noRecordField1"));
 		assertEquals("rat jumped over", defaultRecord.getFields().get("noRecordField2"));
-	}
-
-	@After
-	public void tearDown() throws IOException {
-		Files.delete(tempDirectory);
 	}
 
 }
