@@ -41,6 +41,15 @@ public class ExtractedRecord {
 	}
 
 	/**
+	 * Copy constructor
+	 */
+	public ExtractedRecord(ExtractedRecord record) {
+		this.name = record.getName();
+		this.kind = record.getKind();
+		this.fields = record.getFields();
+	}
+
+	/**
 	 * Instantiates a new named extracted record with the given field name/value
 	 * pairs.
 	 *
