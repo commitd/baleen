@@ -30,6 +30,7 @@ import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,6 +46,8 @@ public class ElasticsearchRecordConsumerTest extends AbstractRecordConsumerTest 
 
 	private static Client client;
 
+	private static Node node;
+
 	private AnalysisEngine analysisEngine;
 
 	@BeforeClass
@@ -57,11 +60,11 @@ public class ElasticsearchRecordConsumerTest extends AbstractRecordConsumerTest 
 		}
 
 		// Don't use the default ports for testing purposes
-		Settings settings = Settings.builder().put("path.home", tmpDir.toString()).put("http.port", "19200")
-				.put("transport.tcp.port", "19300").build();
+		Settings settings = Settings.builder().put("path.home", tmpDir.toString()).put("http.port", "29200")
+				.put("transport.tcp.port", "29300").build();
 
-		Node node = NodeBuilder.nodeBuilder().settings(settings).data(true).local(true).clusterName("test_cluster")
-				.node();
+		node = NodeBuilder.nodeBuilder().settings(settings).data(true).local(true).clusterName("test_cluster").node();
+
 		client = node.client();
 	}
 
@@ -72,7 +75,7 @@ public class ElasticsearchRecordConsumerTest extends AbstractRecordConsumerTest 
 	@Before
 	public void beforeElasticsearchRecordConsumerTest() throws ResourceInitializationException {
 		ExternalResourceDescription erd = ExternalResourceFactory.createExternalResourceDescription(ELASTICSEARCH,
-				SharedElasticsearchRestResource.class, "elasticsearchrest.url", "http://localhost:19200");
+				SharedElasticsearchRestResource.class, "elasticsearchrest.url", "http://localhost:29200");
 		analysisEngine = getAnalysisEngine(ELASTICSEARCH, erd);
 		client.admin().indices().refresh(new RefreshRequest("baleen_record_index")).actionGet();
 	}
@@ -90,7 +93,7 @@ public class ElasticsearchRecordConsumerTest extends AbstractRecordConsumerTest 
 		assertEquals(new Long(0), getCount());
 		process();
 
-		SearchHits hits = client.search(new SearchRequest()).actionGet().getHits();
+		SearchHits hits = client.search(new SearchRequest().indices("baleen_record_index")).actionGet().getHits();
 		assertEquals(3, hits.getTotalHits());
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -120,5 +123,11 @@ public class ElasticsearchRecordConsumerTest extends AbstractRecordConsumerTest 
 	public void afterElasticsearchRecordConsumerTest() {
 		analysisEngine.destroy();
 		client.admin().indices().delete(new DeleteIndexRequest("baleen_record_index")).actionGet();
+	}
+
+	@AfterClass
+	public static void destroyLocalElasticSearch() {
+		client.close();
+		node.close();
 	}
 }
