@@ -90,6 +90,21 @@ public class FlatteningMustacheHtmlTemplateRecordConsumerTest extends AbstractRe
 		Files.delete(templateFile);
 	}
 
+	@Test
+	public void testContent() throws IOException, AnalysisEngineProcessException, ResourceInitializationException {
+		Path templateFile = process("template-content.html", false, false);
+		String generatedContent = new String(Files.readAllBytes(outputDirectory.resolve(OUTPUT_FILENAME)),
+				StandardCharsets.UTF_8);
+
+		assertEquals("<html>\n" + "<body>\n" + "	<div>\n" + "		<pre>\n"
+				+ "The quick brown fox jumped over the lazy dog&#39;s back.\n"
+				+ "The quick brown cat jumped over the lazy dog&#39;s back.\n"
+				+ "The quick brown rat jumped over the lazy dog&#39;s back.\n" + "		</pre>\n" + "	</div>\n"
+				+ "</body>\n" + "</html>", generatedContent);
+
+		Files.delete(templateFile);
+	}
+
 	private Path process(String templateName, boolean flattenSources, boolean flattenRecords)
 			throws IOException, ResourceInitializationException, AnalysisEngineProcessException {
 		Path templateFile = createTemporaryTemplatefile(templateName);

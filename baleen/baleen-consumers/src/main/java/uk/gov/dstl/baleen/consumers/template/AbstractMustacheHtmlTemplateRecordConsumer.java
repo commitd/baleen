@@ -87,6 +87,7 @@ public abstract class AbstractMustacheHtmlTemplateRecordConsumer extends Abstrac
 
 		Map<String, Object> fieldMap = new HashMap<>(fields);
 		fieldMap.put("metadata", metadataMap);
+		fieldMap.put("content", jCas.getDocumentText());
 
 		try (Writer writer = createOutputWriter(documentSourceName)) {
 			template.execute(fieldMap, writer);
