@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.samskivert.mustache.Mustache;
@@ -82,9 +83,13 @@ public abstract class AbstractMustacheHtmlTemplateRecordConsumer extends Abstrac
 			throws AnalysisEngineProcessException {
 		Collection<Metadata> metadata = JCasUtil.select(jCas, Metadata.class);
 		Map<String, Object> metadataMap = SingleDocumentConsumerFormat.createMetadataMap(metadata);
-		Map<String, ?> fields = mapFields(jCas, metadataMap, records);
+		Map<String, ?> fields = mapFields(jCas, records);
+
+		Map<String, Object> fieldMap = new HashMap<>(fields);
+		fieldMap.put("metadata", metadataMap);
+
 		try (Writer writer = createOutputWriter(documentSourceName)) {
-			template.execute(fields, writer);
+			template.execute(fieldMap, writer);
 		} catch (IOException e) {
 			getMonitor().warn("Failed to process template " + templateFilename + " for " + documentSourceName, e);
 		}
@@ -104,8 +109,7 @@ public abstract class AbstractMustacheHtmlTemplateRecordConsumer extends Abstrac
 	 *            the records
 	 * @return the map of field name to value
 	 */
-	protected abstract Map<String, ?> mapFields(JCas jCas, Map<String, Object> metadataMap,
-			Map<String, Collection<ExtractedRecord>> records);
+	protected abstract Map<String, ?> mapFields(JCas jCas, Map<String, Collection<ExtractedRecord>> records);
 
 	/**
 	 * Creates an output writer for a new file in the configured output

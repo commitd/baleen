@@ -74,6 +74,22 @@ public class FlatteningMustacheHtmlTemplateRecordConsumerTest extends AbstractRe
 		Files.delete(templateFile);
 	}
 
+	@Test
+	public void testMetadata() throws IOException, AnalysisEngineProcessException, ResourceInitializationException {
+		Path templateFile = process("template-metadata.html", false, false);
+		String generatedContent = new String(Files.readAllBytes(outputDirectory.resolve(OUTPUT_FILENAME)),
+				StandardCharsets.UTF_8);
+
+		assertEquals("<html>\n" + "<body>\n" + "	<h1>The Author</h1>\n" + "	<div>\n" + "		<table>\n"
+				+ "			<tbody>\n" + "				<tr>\n" + "					<th>creator</th>\n"
+				+ "					<td>The Creator</td>\n" + "				</tr>\n" + "				<tr>\n"
+				+ "					<th>author</th>\n" + "					<td>The Author</td>\n"
+				+ "				</tr>\n" + "			</tbody>\n" + "		</table>\n" + "	</div>\n" + "</body>\n"
+				+ "</html>", generatedContent);
+
+		Files.delete(templateFile);
+	}
+
 	private Path process(String templateName, boolean flattenSources, boolean flattenRecords)
 			throws IOException, ResourceInitializationException, AnalysisEngineProcessException {
 		Path templateFile = createTemporaryTemplatefile(templateName);

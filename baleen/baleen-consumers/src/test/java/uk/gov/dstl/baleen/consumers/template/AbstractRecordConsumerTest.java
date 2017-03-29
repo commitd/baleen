@@ -13,6 +13,7 @@ import org.apache.uima.jcas.tcas.DocumentAnnotation;
 import org.junit.Before;
 import uk.gov.dstl.baleen.annotators.testing.AbstractAnnotatorTest;
 import uk.gov.dstl.baleen.consumers.template.ExtractedRecord.Kind;
+import uk.gov.dstl.baleen.types.metadata.Metadata;
 import uk.gov.dstl.baleen.types.templates.Record;
 import uk.gov.dstl.baleen.types.templates.TemplateField;
 
@@ -45,6 +46,27 @@ public abstract class AbstractRecordConsumerTest extends AbstractAnnotatorTest {
 
 		DocumentAnnotation documentAnnotation = (DocumentAnnotation) jCas.getDocumentAnnotationFs();
 		documentAnnotation.setSourceUri(sourceUri);
+
+		Metadata author = new Metadata(jCas);
+		author.setBegin(0);
+		author.setEnd(0);
+		author.setKey("author");
+		author.setValue("The Author");
+		author.addToIndexes();
+
+		Metadata creator1 = new Metadata(jCas);
+		creator1.setBegin(0);
+		creator1.setEnd(0);
+		creator1.setKey("creator");
+		creator1.setValue("The Creator");
+		creator1.addToIndexes();
+
+		Metadata creator2 = new Metadata(jCas);
+		creator2.setBegin(0);
+		creator2.setEnd(0);
+		creator2.setKey("creator");
+		creator2.setValue("Baleen");
+		creator2.addToIndexes();
 
 		Record record1 = new Record(jCas);
 		record1.setBegin(0);

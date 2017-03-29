@@ -20,8 +20,7 @@ public class FlatteningMustacheHtmlTemplateRecordConsumer extends AbstractMustac
 	public static final String PARAM_FLATTEN_RECORDS = "flattenRecords";
 
 	@Override
-	protected Map<String, ?> mapFields(JCas jCas, Map<String, Object> metadataMap,
-			Map<String, Collection<ExtractedRecord>> records) {
+	protected Map<String, ?> mapFields(JCas jCas, Map<String, Collection<ExtractedRecord>> records) {
 		Map<String, String> values = new HashMap<>();
 		for (Entry<String, Collection<ExtractedRecord>> entry : records.entrySet()) {
 			String sourceName = entry.getKey();
