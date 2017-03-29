@@ -30,9 +30,9 @@ public class FlatteningMustacheHtmlTemplateRecordConsumerTest extends AbstractRe
 	}
 
 	@Test
-	public void testSubstitutedContentFullyQualified()
+	public void testSubstitutedFlattenSources()
 			throws IOException, AnalysisEngineProcessException, ResourceInitializationException {
-		Path templateFile = process("template-fully-qualified.html");
+		Path templateFile = process("template-flatten-sources.html", true, false);
 		String generatedContent = new String(Files.readAllBytes(outputDirectory.resolve(OUTPUT_FILENAME)),
 				StandardCharsets.UTF_8);
 
@@ -44,13 +44,45 @@ public class FlatteningMustacheHtmlTemplateRecordConsumerTest extends AbstractRe
 		Files.delete(templateFile);
 	}
 
-	private Path process(String templateName)
+	@Test
+	public void testSubstitutedContentFlattenAll()
+			throws IOException, AnalysisEngineProcessException, ResourceInitializationException {
+		Path templateFile = process("template-flatten-all.html", true, true);
+		String generatedContent = new String(Files.readAllBytes(outputDirectory.resolve(OUTPUT_FILENAME)),
+				StandardCharsets.UTF_8);
+
+		assertEquals("<html>\n" + "<body>\n" + "	<div>\n" + "		<p>The quick brown</p>\n"
+				+ "		<p>rat jumped over</p>\n" + "		<p>The quick brown</p>\n"
+				+ "		<p>fox jumped over</p>\n" + "		<p>The quick brown</p>\n"
+				+ "		<p>cat jumped over</p>\n" + "	</div>\n" + "</body>\n" + "</html>", generatedContent);
+
+		Files.delete(templateFile);
+	}
+
+	@Test
+	public void testSubstitutedContentFullyQualified()
+			throws IOException, AnalysisEngineProcessException, ResourceInitializationException {
+		Path templateFile = process("template-fully-qualified.html", false, false);
+		String generatedContent = new String(Files.readAllBytes(outputDirectory.resolve(OUTPUT_FILENAME)),
+				StandardCharsets.UTF_8);
+
+		assertEquals("<html>\n" + "<body>\n" + "	<div>\n" + "		<p>The quick brown</p>\n"
+				+ "		<p>rat jumped over</p>\n" + "		<p>The quick brown</p>\n"
+				+ "		<p>fox jumped over</p>\n" + "		<p>The quick brown</p>\n"
+				+ "		<p>cat jumped over</p>\n" + "	</div>\n" + "</body>\n" + "</html>", generatedContent);
+
+		Files.delete(templateFile);
+	}
+
+	private Path process(String templateName, boolean flattenSources, boolean flattenRecords)
 			throws IOException, ResourceInitializationException, AnalysisEngineProcessException {
 		Path templateFile = createTemporaryTemplatefile(templateName);
 		String templateFilename = templateFile.toAbsolutePath().toString();
 		String outputDirectoryString = outputDirectory.toAbsolutePath().toString();
 		processJCas(FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_OUTPUT_DIRECTORY, outputDirectoryString,
-				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FILENAME, templateFilename);
+				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FILENAME, templateFilename,
+				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FLATTEN_SOURCES, flattenSources,
+				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FLATTEN_RECORDS, flattenRecords);
 		return templateFile;
 	}
 
