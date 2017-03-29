@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import org.apache.uima.jcas.JCas;
 import uk.gov.dstl.baleen.consumers.template.ExtractedRecord.Kind;
 
-public class FlatteningMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
+public class DefaultMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
 
 	@Override
 	protected Map<String, ?> mapFields(JCas jCas, Map<String, Collection<ExtractedRecord>> records) {
