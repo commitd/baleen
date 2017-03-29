@@ -5,53 +5,81 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import uk.gov.dstl.baleen.consumers.template.ExtractedRecord.Kind;
 
 public class FlatteningMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
 
-	@ConfigurationParameter(name = PARAM_FLATTEN_SOURCES, defaultValue = "false")
-	private boolean flattenSources;
-	public static final String PARAM_FLATTEN_SOURCES = "flattenSources";
-
-	@ConfigurationParameter(name = PARAM_FLATTEN_RECORDS, defaultValue = "false")
-	private boolean flattenRecords;
-	public static final String PARAM_FLATTEN_RECORDS = "flattenRecords";
-
 	@Override
 	protected Map<String, ?> mapFields(JCas jCas, Map<String, Collection<ExtractedRecord>> records) {
-		Map<String, String> values = new HashMap<>();
+		Map<String, Object> context = new HashMap<>();
+
+		Map<String, String> flattenedFields = getFlattenedFields(records);
+		context.put("fields", flattenedFields);
+
+		Map<String, Map<String, String>> flattenedRecords = getFlattenedRecords(records);
+		context.put("records", flattenedRecords);
+
+		Map<String, Map<String, Map<String, String>>> sourceRecords = getSourceRecords(records);
+		context.put("sources", sourceRecords);
+
+		return context;
+	}
+
+	private static Map<String, String> getFlattenedFields(Map<String, Collection<ExtractedRecord>> records) {
+		Map<String, String> fieldMap = new HashMap<>();
 		for (Entry<String, Collection<ExtractedRecord>> entry : records.entrySet()) {
-			String sourceName = entry.getKey();
 			Collection<ExtractedRecord> sourceRecords = entry.getValue();
 			for (ExtractedRecord extractedRecord : sourceRecords) {
 				Collection<ExtractedField> fields = extractedRecord.getFields();
-				for (ExtractedField extractedField : fields) {
-					String key = makeKey(sourceName, extractedRecord, extractedField);
-					String value = extractedField.getValue();
-					values.put(key, value);
+				fields.forEach(field -> fieldMap.put(field.getName(), field.getValue()));
+			}
+		}
+		return fieldMap;
+	}
+
+	private static Map<String, Map<String, String>> getFlattenedRecords(
+			Map<String, Collection<ExtractedRecord>> records) {
+		Map<String, Map<String, String>> recordMap = new HashMap<>();
+		for (Entry<String, Collection<ExtractedRecord>> entry : records.entrySet()) {
+			Collection<ExtractedRecord> sourceRecords = entry.getValue();
+			for (ExtractedRecord extractedRecord : sourceRecords) {
+				if (extractedRecord.getKind() == Kind.DEFAULT) {
+					continue;
+				}
+				Collection<ExtractedField> fields = extractedRecord.getFields();
+				Map<String, String> fieldMap = new HashMap<>();
+				String name = extractedRecord.getName();
+				fields.forEach(field -> fieldMap.put(field.getName(), field.getValue()));
+				if (fieldMap.size() > 0) {
+					recordMap.put(name, fieldMap);
 				}
 			}
 		}
-		return values;
+		return recordMap;
 	}
 
-	private String makeKey(String sourceName, ExtractedRecord extractedRecord, ExtractedField extractedField) {
-		StringBuilder keyBuilder = new StringBuilder();
-
-		if (!flattenSources) {
-			keyBuilder.append(sourceName);
-			keyBuilder.append('.');
+	private static Map<String, Map<String, Map<String, String>>> getSourceRecords(
+			Map<String, Collection<ExtractedRecord>> records) {
+		Map<String, Map<String, Map<String, String>>> sourceMap = new HashMap<>();
+		for (Entry<String, Collection<ExtractedRecord>> entry : records.entrySet()) {
+			String sourceName = entry.getKey();
+			Map<String, Map<String, String>> recordsMap = new HashMap<>();
+			Collection<ExtractedRecord> sourceRecords = entry.getValue();
+			for (ExtractedRecord extractedRecord : sourceRecords) {
+				if (extractedRecord.getKind() == Kind.DEFAULT) {
+					continue;
+				}
+				Collection<ExtractedField> fields = extractedRecord.getFields();
+				Map<String, String> recordFields = new HashMap<>();
+				recordsMap.put(extractedRecord.getName(), recordFields);
+				fields.forEach(field -> recordFields.put(field.getName(), field.getValue()));
+			}
+			if (recordsMap.size() > 0) {
+				sourceMap.put(sourceName, recordsMap);
+			}
 		}
-
-		if (!flattenRecords && (Kind.DEFAULT != extractedRecord.getKind())) {
-			keyBuilder.append(extractedRecord.getName());
-			keyBuilder.append('.');
-		}
-
-		keyBuilder.append(extractedField.getName());
-
-		return keyBuilder.toString();
+		return sourceMap;
 	}
+
 }

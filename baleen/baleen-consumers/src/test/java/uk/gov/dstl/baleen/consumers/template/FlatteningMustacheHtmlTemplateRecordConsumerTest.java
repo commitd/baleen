@@ -37,7 +37,6 @@ public class FlatteningMustacheHtmlTemplateRecordConsumerTest extends AbstractRe
 				StandardCharsets.UTF_8);
 
 		assertEquals("<html>\n" + "<body>\n" + "	<div>\n" + "		<p>The quick brown</p>\n"
-				+ "		<p>rat jumped over</p>\n" + "		<p>The quick brown</p>\n"
 				+ "		<p>fox jumped over</p>\n" + "		<p>The quick brown</p>\n"
 				+ "		<p>cat jumped over</p>\n" + "	</div>\n" + "</body>\n" + "</html>", generatedContent);
 
@@ -67,7 +66,6 @@ public class FlatteningMustacheHtmlTemplateRecordConsumerTest extends AbstractRe
 				StandardCharsets.UTF_8);
 
 		assertEquals("<html>\n" + "<body>\n" + "	<div>\n" + "		<p>The quick brown</p>\n"
-				+ "		<p>rat jumped over</p>\n" + "		<p>The quick brown</p>\n"
 				+ "		<p>fox jumped over</p>\n" + "		<p>The quick brown</p>\n"
 				+ "		<p>cat jumped over</p>\n" + "	</div>\n" + "</body>\n" + "</html>", generatedContent);
 
@@ -105,15 +103,76 @@ public class FlatteningMustacheHtmlTemplateRecordConsumerTest extends AbstractRe
 		Files.delete(templateFile);
 	}
 
+	@Test
+	public void testAll() throws IOException, AnalysisEngineProcessException, ResourceInitializationException {
+		Path templateFile = process("template-all.html", false, false);
+		String generatedContent = new String(Files.readAllBytes(outputDirectory.resolve(OUTPUT_FILENAME)),
+				StandardCharsets.UTF_8);
+
+		assertEquals("<html>\n" + "<body>\n" + "	<h1>All metadata</h1>\n" + "	<div>\n" + "		<table>\n"
+				+ "			<tbody>\n" + "				<tr>\n" + "					<th>creator</th>\n"
+				+ "					<td>The Creator</td>\n" + "				</tr>\n" + "				<tr>\n"
+				+ "					<th>author</th>\n" + "					<td>The Author</td>\n"
+				+ "				</tr>\n" + "			</tbody>\n" + "		</table>\n" + "	</div>\n"
+				+ "	<h1>Single metadata field</h1>\n" + "	<table>\n" + "		<tbody>\n" + "			<tr>\n"
+				+ "				<th>Author</th>\n" + "				<td>The Author</td>\n" + "			</tr>\n"
+				+ "		</tbody>\n" + "	</table>\n" + "	<div>\n" + "		<h1>Content</h1>\n" + "		<pre>\n"
+				+ "The quick brown fox jumped over the lazy dog&#39;s back.\n"
+				+ "The quick brown cat jumped over the lazy dog&#39;s back.\n"
+				+ "The quick brown rat jumped over the lazy dog&#39;s back.\n" + "		</pre>\n" + "	</div>\n"
+				+ "	<div>\n" + "		<h1>Sources</h1>\n" + "		<div>\n"
+				+ "			<h2>FlatteningMustacheHtmlTemplateRecordConsumer</h2>\n"
+				+ "			<h3>Record record2</h3>\n" + "			<h4>Fields</h4>\n" + "			<table>\n"
+				+ "				<tbody>\n" + "					<tr>\n"
+				+ "						<th>record2Field2</th>\n" + "						<td>cat jumped over</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>record2Field1</th>\n" + "						<td>The quick brown</td>\n"
+				+ "					</tr>\n" + "				</tbody>\n" + "			</table>\n"
+				+ "			<h3>Record record1</h3>\n" + "			<h4>Fields</h4>\n" + "			<table>\n"
+				+ "				<tbody>\n" + "					<tr>\n"
+				+ "						<th>record1Field1</th>\n" + "						<td>The quick brown</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>record1Field2</th>\n" + "						<td>fox jumped over</td>\n"
+				+ "					</tr>\n" + "				</tbody>\n" + "			</table>\n" + "		</div>\n"
+				+ "	</div>\n" + "\n" + "	<div>\n" + "		<h1>Flattened Records</h1>\n" + "		<div>\n"
+				+ "			<h2>Record record2</h2>\n" + "			<h3>Fields</h3>\n" + "			<table>\n"
+				+ "				<tbody>\n" + "					<tr>\n"
+				+ "						<th>record2Field2</th>\n" + "						<td>cat jumped over</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>record2Field1</th>\n" + "						<td>The quick brown</td>\n"
+				+ "					</tr>\n" + "				</tbody>\n" + "			</table>\n" + "		</div>\n"
+				+ "		<div>\n" + "			<h2>Record record1</h2>\n" + "			<h3>Fields</h3>\n"
+				+ "			<table>\n" + "				<tbody>\n" + "					<tr>\n"
+				+ "						<th>record1Field1</th>\n" + "						<td>The quick brown</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>record1Field2</th>\n" + "						<td>fox jumped over</td>\n"
+				+ "					</tr>\n" + "				</tbody>\n" + "			</table>\n" + "		</div>\n"
+				+ "	</div>\n" + "\n" + "\n" + "	<div>\n" + "		<h1>Fields</h1>\n" + "		<div>\n"
+				+ "			<table>\n" + "				<tbody>\n" + "					<tr>\n"
+				+ "						<th>record2Field2</th>\n" + "						<td>cat jumped over</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>record2Field1</th>\n" + "						<td>The quick brown</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>record1Field1</th>\n" + "						<td>The quick brown</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>noRecordField1</th>\n" + "						<td>The quick brown</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>noRecordField2</th>\n" + "						<td>rat jumped over</td>\n"
+				+ "					</tr>\n" + "					<tr>\n"
+				+ "						<th>record1Field2</th>\n" + "						<td>fox jumped over</td>\n"
+				+ "					</tr>\n" + "				</tbody>\n" + "			</table>\n" + "		</div>\n"
+				+ "	</div>\n" + "\n" + "</body>\n" + "</html>", generatedContent);
+
+		Files.delete(templateFile);
+	}
+
 	private Path process(String templateName, boolean flattenSources, boolean flattenRecords)
 			throws IOException, ResourceInitializationException, AnalysisEngineProcessException {
 		Path templateFile = createTemporaryTemplatefile(templateName);
 		String templateFilename = templateFile.toAbsolutePath().toString();
 		String outputDirectoryString = outputDirectory.toAbsolutePath().toString();
 		processJCas(FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_OUTPUT_DIRECTORY, outputDirectoryString,
-				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FILENAME, templateFilename,
-				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FLATTEN_SOURCES, flattenSources,
-				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FLATTEN_RECORDS, flattenRecords);
+				FlatteningMustacheHtmlTemplateRecordConsumer.PARAM_FILENAME, templateFilename);
 		return templateFile;
 	}
 
