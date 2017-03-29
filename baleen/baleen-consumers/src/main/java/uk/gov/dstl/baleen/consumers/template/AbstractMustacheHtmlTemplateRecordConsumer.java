@@ -16,8 +16,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import uk.gov.dstl.baleen.consumers.utils.SingleDocumentConsumerFormat;
+import uk.gov.dstl.baleen.types.metadata.Metadata;
 
 /**
  * Abstract base implementation of the Mustache HTML template record consumer.
@@ -77,7 +80,9 @@ public abstract class AbstractMustacheHtmlTemplateRecordConsumer extends Abstrac
 	@Override
 	protected void writeRecords(JCas jCas, String documentSourceName, Map<String, Collection<ExtractedRecord>> records)
 			throws AnalysisEngineProcessException {
-		Map<String, ?> fields = mapFields(jCas, records);
+		Collection<Metadata> metadata = JCasUtil.select(jCas, Metadata.class);
+		Map<String, Object> metadataMap = SingleDocumentConsumerFormat.createMetadataMap(metadata);
+		Map<String, ?> fields = mapFields(jCas, metadataMap, records);
 		try (Writer writer = createOutputWriter(documentSourceName)) {
 			template.execute(fields, writer);
 		} catch (IOException e) {
@@ -91,11 +96,16 @@ public abstract class AbstractMustacheHtmlTemplateRecordConsumer extends Abstrac
 	 * In trivial cases the field value may be a String, but in others it could
 	 * be a list so the template can iterate the values.
 	 *
+	 * @param metadataMap
+	 *            the map of metadata key/value pairs (values can be a String,
+	 *            or a list of Strings if there are multiple values - see
+	 *            {@link SingleDocumentConsumerFormat#createMetadataMap(Collection)}
 	 * @param records
 	 *            the records
 	 * @return the map of field name to value
 	 */
-	protected abstract Map<String, ?> mapFields(JCas jCas, Map<String, Collection<ExtractedRecord>> records);
+	protected abstract Map<String, ?> mapFields(JCas jCas, Map<String, Object> metadataMap,
+			Map<String, Collection<ExtractedRecord>> records);
 
 	/**
 	 * Creates an output writer for a new file in the configured output
