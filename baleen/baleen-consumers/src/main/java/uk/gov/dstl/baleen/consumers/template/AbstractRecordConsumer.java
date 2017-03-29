@@ -78,6 +78,6 @@ public abstract class AbstractRecordConsumer extends BaleenConsumer {
 	}
 
 	protected abstract void writeRecords(JCas jCas, String documentSourceName,
-			Map<String, Collection<ExtractedRecord>> asMap) throws AnalysisEngineProcessException;
+			Map<String, Collection<ExtractedRecord>> records) throws AnalysisEngineProcessException;
 
 }

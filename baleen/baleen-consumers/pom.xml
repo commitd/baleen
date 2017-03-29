@@ -46,6 +46,11 @@
 			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.samskivert</groupId>
+			<artifactId>jmustache</artifactId>
+			<version>${jmustache.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>uk.gov.dstl.baleen</groupId>
 			<artifactId>baleen-annotators</artifactId>
 			<version>${baleen.version}</version>
