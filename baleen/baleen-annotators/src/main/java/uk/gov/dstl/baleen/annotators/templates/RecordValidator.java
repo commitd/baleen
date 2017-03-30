@@ -7,7 +7,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 
@@ -29,18 +32,82 @@ import uk.gov.dstl.baleen.types.templates.TemplateField;
  * </p>
  *
  * <p>
- * This can be configured to only remove invalid records of specified types by
- * supplying a list of record definition names.
+ * This can be configured to only remove invalid records of a specified source
+ * and/or from a list of specified records.
  * </p>
+ *
+ * 
+ * Example configuration:
+ *
+ * <pre>
+...
+annotators:
+- class templates.RecordAnnotator:
+  ...
+- class templates.RecordValidator:
+  source: athleteReportDefinitions
+  records:
+    - atheleteDetails
+    - atheletePerformance
+ * 
+ * </pre>
+ *
  */
 public class RecordValidator extends AbstractRecordAnnotator {
+
+	/**
+	 * A specific source file that the records should be from.
+	 *
+	 * If not specified all sources are used
+	 *
+	 * @baleen.config myRecords.yaml
+	 */
+	public static final String PARAM_SOURCE = "source";
+
+	/**
+	 * A specific list of records to be validated.
+	 *
+	 * If not specified all records are validated
+	 *
+	 * @baleen.config myRecords.yaml
+	 */
+	public static final String PARAM_RECORDS = "records";
+
+	/** The source names. */
+	@ConfigurationParameter(name = PARAM_SOURCE, mandatory = false)
+	private String source;
+
+	/** The records names. */
+	@ConfigurationParameter(name = PARAM_RECORDS, mandatory = false)
+	private String[] records;
 
 	@Override
 	protected void doProcess(final JCas jCas) throws AnalysisEngineProcessException {
 		Collection<Record> recordAnnotations = JCasUtil.select(jCas, Record.class);
 		for (Entry<String, RecordDefinitionConfiguration> entry : recordDefinitions.entries()) {
-			doProcessRecordDefinition(entry.getKey(), entry.getValue(), recordAnnotations);
+			if (shouldProcessDefinition(entry.getKey(), entry.getValue())) {
+				doProcessRecordDefinition(entry.getKey(), entry.getValue(), recordAnnotations);
+			}
 		}
+	}
+
+	/**
+	 * Check if this definition should be processed based on configuration
+	 *
+	 * @param source
+	 *            the source
+	 * @param recordDefinition
+	 *            the record definition
+	 * @return
+	 */
+	private boolean shouldProcessDefinition(String recordSource, RecordDefinitionConfiguration recordDefinition) {
+		if (StringUtils.isNotBlank(source) && !source.equals(recordSource)) {
+			return false;
+		}
+		if (ArrayUtils.isNotEmpty(records) && !ArrayUtils.contains(records, recordDefinition.getName())) {
+			return false;
+		}
+		return true;
 	}
 
 	/**

@@ -93,7 +93,7 @@ public class RecordValidatorTest extends AbstractRecordAnnotatorTest {
 	}
 
 	@Test
-	public void testRecordWithMissingRequiredFieldFRemoved()
+	public void testRecordWithMissingRequiredFieldIsRemoved()
 			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
 
 		Path definitionFile = createRecordDefinitionWithRequiredField();
@@ -108,6 +108,123 @@ public class RecordValidatorTest extends AbstractRecordAnnotatorTest {
 
 			Collection<TemplateField> fields = removeOtherField(JCasUtil.select(jCas, TemplateField.class));
 			assertEquals(0, fields.size());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testRecordWithMissingRequiredFieldIsRemovedWhenSourceSpecified()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createRecordDefinitionWithRequiredField();
+		String source = definitionFile.toFile().getName();
+		addRecord(source);
+
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString(),
+					RecordValidator.PARAM_SOURCE, source);
+
+			Collection<Record> records = removeOtherRecord(JCasUtil.select(jCas, Record.class));
+			assertEquals(0, records.size());
+
+			Collection<TemplateField> fields = removeOtherField(JCasUtil.select(jCas, TemplateField.class));
+			assertEquals(0, fields.size());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testRecordWithMissingRequiredFieldIsRemovedWhenRecordSpecified()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createRecordDefinitionWithRequiredField();
+		String source = definitionFile.toFile().getName();
+		addRecord(source);
+
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString(),
+					RecordValidator.PARAM_RECORDS, new String[] { "record" });
+
+			Collection<Record> records = removeOtherRecord(JCasUtil.select(jCas, Record.class));
+			assertEquals(0, records.size());
+
+			Collection<TemplateField> fields = removeOtherField(JCasUtil.select(jCas, TemplateField.class));
+			assertEquals(0, fields.size());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testRecordWithMissingRequiredFieldIsRemovedWhenSourceAndRecordSpecified()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createRecordDefinitionWithRequiredField();
+		String source = definitionFile.toFile().getName();
+		addRecord(source);
+
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString(),
+					RecordValidator.PARAM_SOURCE, source, RecordValidator.PARAM_RECORDS, new String[] { "record" });
+
+			Collection<Record> records = removeOtherRecord(JCasUtil.select(jCas, Record.class));
+			assertEquals(0, records.size());
+
+			Collection<TemplateField> fields = removeOtherField(JCasUtil.select(jCas, TemplateField.class));
+			assertEquals(0, fields.size());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testRecordWithMissingRequiredFieldIsNotRemovedWhenOtherSourceSpecified()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createRecordDefinitionWithRequiredField();
+		String source = definitionFile.toFile().getName();
+		addRecord(source);
+		addOptionalField(source);
+
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString(),
+					RecordValidator.PARAM_SOURCE, "other", RecordValidator.PARAM_RECORDS, new String[] { "record" });
+
+			Collection<Record> records = removeOtherRecord(JCasUtil.select(jCas, Record.class));
+			assertEquals(1, records.size());
+
+			Collection<TemplateField> fields = removeOtherField(JCasUtil.select(jCas, TemplateField.class));
+			assertEquals(1, fields.size());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testRecordWithMissingRequiredFieldIsNotRemovedWhenOtherRecordSpecified()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createRecordDefinitionWithRequiredField();
+		String source = definitionFile.toFile().getName();
+		addRecord(source);
+		addOptionalField(source);
+
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString(),
+					RecordValidator.PARAM_SOURCE, source, RecordValidator.PARAM_RECORDS, new String[] { "other" });
+
+			Collection<Record> records = removeOtherRecord(JCasUtil.select(jCas, Record.class));
+			assertEquals(1, records.size());
+
+			Collection<TemplateField> fields = removeOtherField(JCasUtil.select(jCas, TemplateField.class));
+			assertEquals(1, fields.size());
 
 		} finally {
 			Files.delete(definitionFile);
