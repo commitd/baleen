@@ -50,9 +50,9 @@ public abstract class AbstractMustacheHtmlTemplateRecordConsumer extends Abstrac
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	protected static Template compileTemplate(String templateFilename) throws IOException {
+	protected static Template compileTemplate(Path templateFilepath) throws IOException {
 		Compiler compiler = Mustache.compiler();
-		String templateHtml = new String(Files.readAllBytes(Paths.get(templateFilename)), StandardCharsets.UTF_8);
+		String templateHtml = new String(Files.readAllBytes(templateFilepath), StandardCharsets.UTF_8);
 		return compiler.compile(templateHtml);
 	}
 
@@ -171,13 +171,15 @@ public abstract class AbstractMustacheHtmlTemplateRecordConsumer extends Abstrac
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	protected Writer createOutputWriter(final String documentSourceName) throws IOException {
+	protected Writer createOutputWriter(final String documentSourceName, String... parts) throws IOException {
 		Path directoryPath = Paths.get(outputDirectory);
 		if (!directoryPath.toFile().exists()) {
 			Files.createDirectories(directoryPath);
 		}
 		String baseName = FilenameUtils.getBaseName(documentSourceName);
-		Path outputFilePath = directoryPath.resolve(baseName + ".html");
+		String filename = baseName + ((parts != null && parts.length > 0) ? "-" + String.join("-", parts) : "")
+				+ ".html";
+		Path outputFilePath = directoryPath.resolve(filename);
 
 		if (outputFilePath.toFile().exists()) {
 			getMonitor().warn("Overwriting existing output properties file {}", outputFilePath);

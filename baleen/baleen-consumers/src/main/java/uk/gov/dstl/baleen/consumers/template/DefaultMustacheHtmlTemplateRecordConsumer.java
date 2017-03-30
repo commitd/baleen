@@ -2,6 +2,7 @@ package uk.gov.dstl.baleen.consumers.template;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
@@ -30,7 +31,7 @@ public class DefaultMustacheHtmlTemplateRecordConsumer extends AbstractMustacheH
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		try {
-			template = compileTemplate(templateFilename);
+			template = compileTemplate(Paths.get(templateFilename));
 		} catch (IOException e) {
 			throw new ResourceInitializationException(e);
 		}
