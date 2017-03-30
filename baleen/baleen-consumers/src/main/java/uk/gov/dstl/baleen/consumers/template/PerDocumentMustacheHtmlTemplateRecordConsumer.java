@@ -9,8 +9,25 @@ import java.util.Map;
 import com.samskivert.mustache.Template;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
+/**
+ * A Mustache HTML template consumer for records that applies a single template
+ * to all documents.
+ * <p>
+ * For each document, a file will be created in the configured outputDirectory
+ * taking the basename of the source document URI with a ".html" extension.
+ * </p>
+ * <p>
+ * See {@link AbstractMustacheHtmlTemplateRecordConsumer} for examples of
+ * writing a mustache template for this consumer.
+ * </p>
+ * <p>
+ * For each document, a file will be created in the configured outputDirectory
+ * taking the basename of the source document URI with a ".html" extension.
+ * </p>
+ */
 public class PerDocumentMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
 
 	/** The Constant PARAM_FILENAME. */
@@ -38,7 +55,7 @@ public class PerDocumentMustacheHtmlTemplateRecordConsumer extends AbstractMusta
 	}
 
 	@Override
-	protected void writeRecords(String documentSourceName, Map<String, Collection<ExtractedRecord>> records,
+	protected void writeRecords(String documentSourceName, JCas jCas, Map<String, Collection<ExtractedRecord>> records,
 			Map<String, Object> fieldMap) {
 		try (Writer writer = createOutputWriter(documentSourceName)) {
 			template.execute(fieldMap, writer);

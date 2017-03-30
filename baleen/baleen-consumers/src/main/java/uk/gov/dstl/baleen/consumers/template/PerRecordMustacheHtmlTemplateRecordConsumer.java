@@ -14,8 +14,28 @@ import com.samskivert.mustache.Template;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
+/**
+ * A Mustache HTML template consumer for records that applies a template per
+ * record per document.
+ * <p>
+ * Templates should be placed in the recordTemplateDirectory, and have the same
+ * basename as the name of the record they are to match, with a ".html"
+ * extension.
+ * </p>
+ * <p>
+ * See {@link AbstractMustacheHtmlTemplateRecordConsumer} for examples of
+ * writing a mustache template for this consumer.
+ * </p>
+ * <p>
+ * For each document a file per record will be created in the configured
+ * outputDirectory. The generated output files take the basename of the source
+ * document URI, followed by a "-" followed by the name of the record, with a
+ * ".html" extension, eg <code>MyDocument-recordName.html</code>.
+ * </p>
+ */
 public class PerRecordMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
 
 	/** The Constant PARAM_RECORD_TEMPLATE_DIRECTORY. */
@@ -44,6 +64,16 @@ public class PerRecordMustacheHtmlTemplateRecordConsumer extends AbstractMustach
 		}
 	}
 
+	/**
+	 * Compiles and stores the template based on its filename in the template
+	 * map for later lookup.
+	 * 
+	 * Template filenames should end in ".html" and have a basename that
+	 * corresponds to the record name they are for.
+	 *
+	 * @param templatePath
+	 *            the template path
+	 */
 	private void compileAndStoreTemplate(Path templatePath) {
 		try {
 			Template template = compileTemplate(templatePath);
@@ -55,7 +85,7 @@ public class PerRecordMustacheHtmlTemplateRecordConsumer extends AbstractMustach
 	}
 
 	@Override
-	protected void writeRecords(String documentSourceName, Map<String, Collection<ExtractedRecord>> records,
+	protected void writeRecords(String documentSourceName, JCas jCas, Map<String, Collection<ExtractedRecord>> records,
 			Map<String, Object> fieldMap) {
 		for (Collection<ExtractedRecord> extractedRecords : records.values()) {
 			for (ExtractedRecord extractedRecord : extractedRecords) {
