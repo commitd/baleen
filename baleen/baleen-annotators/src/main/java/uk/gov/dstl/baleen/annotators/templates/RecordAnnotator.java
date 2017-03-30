@@ -40,9 +40,11 @@ import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
  * <p>
  * <dl>
  * <dt>fields</dt>
- * <dd>a dictionary / map of name and structural selector path to extract the
- * field from the document. A TemplateField annotation is created for each
- * matched path.</dd>
+ * <dd>A list of field definitions. Fields must have a <code>name</code> and
+ * <code>path</code>, and can optionally have a regular expression
+ * (<code>regex</code>) a <code>defaultValue</code> and declare if they are
+ * <code>required</code>. A TemplateField annotation is created for each matched
+ * path and restrictions.</dd>
  *
  * <dt>kind</dt>
  * <dd>Whether the field selectors above should be used to create a
