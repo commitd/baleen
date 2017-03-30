@@ -23,10 +23,6 @@ import org.apache.uima.resource.ResourceInitializationException;
  * See {@link AbstractMustacheHtmlTemplateRecordConsumer} for examples of
  * writing a mustache template for this consumer.
  * </p>
- * <p>
- * For each document, a file will be created in the configured outputDirectory
- * taking the basename of the source document URI with a ".html" extension.
- * </p>
  */
 public class PerDocumentMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
 

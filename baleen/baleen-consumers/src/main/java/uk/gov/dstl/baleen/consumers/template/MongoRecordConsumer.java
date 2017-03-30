@@ -20,6 +20,13 @@ import uk.gov.dstl.baleen.resources.SharedMongoResource;
 
 /**
  * A RecordConsumer that writes RecordsDocuments to MongoDB.
+ * 
+ * This stores the extracted records in a MongoDB collection, specified using
+ * the records configuration parameter, using a shared Mongo resource as
+ * supplied through the mongo configuration parameter. Document IDs are, by
+ * default, a hash of the document content but can be optionally configured to
+ * use the document source URI by setting the contentHashAsId parameter to
+ * false.
  */
 public class MongoRecordConsumer extends AbstractRecordConsumer {
 

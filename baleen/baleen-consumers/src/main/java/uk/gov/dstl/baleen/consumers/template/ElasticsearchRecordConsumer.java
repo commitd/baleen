@@ -26,11 +26,19 @@ import uk.gov.dstl.baleen.consumers.utils.ConsumerUtils;
 import uk.gov.dstl.baleen.resources.SharedElasticsearchRestResource;
 
 /**
- * A RecordConsumer that writes extracted records documents to ElasticSearch.
+ * A RecordConsumer that writes extracted records documents to Elasticsearch.
  * <p>
  * Unlike the MongoDB consumer that writes all of the records for a source
  * document as a single database document (with a records array), each record is
  * written as a separate document.
+ * </p>
+ * <p>
+ * This stores the extracted records in an Elasticsearch index, specified using
+ * the index parameter, as the Elasticsearch type specified in the type
+ * parameter, into a shared Elasticsearch resource as supplied through the
+ * elasticsearchRest parameter. Document IDs are, by default, a hash of the
+ * document content but can be optionally configured to use the document source
+ * URI by setting the contentHashAsId parameter to false.
  * </p>
  */
 public class ElasticsearchRecordConsumer extends AbstractRecordConsumer {

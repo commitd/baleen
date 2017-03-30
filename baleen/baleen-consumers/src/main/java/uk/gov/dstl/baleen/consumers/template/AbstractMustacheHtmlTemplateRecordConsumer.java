@@ -104,7 +104,6 @@ import uk.gov.dstl.baleen.types.metadata.Metadata;
 		&lt;/div&gt;
 		{{/sources.entrySet}}
 	&lt;/div&gt;
-
 	&lt;div&gt;
 		&lt;h1&gt;Flattened Records&lt;/h1&gt;
 		{{#records.entrySet}}
@@ -124,8 +123,6 @@ import uk.gov.dstl.baleen.types.metadata.Metadata;
 		&lt;/div&gt;
 		{{/records.entrySet}}
 	&lt;/div&gt;
-
-
 	&lt;div&gt;
 		&lt;h1&gt;Fields&lt;/h1&gt;
 		&lt;div&gt;
@@ -141,7 +138,6 @@ import uk.gov.dstl.baleen.types.metadata.Metadata;
 			&lt;/table&gt;
 		&lt;/div&gt;
 	&lt;/div&gt;
-
 &lt;/body&gt;
 &lt;/html&gt;
  * </pre>

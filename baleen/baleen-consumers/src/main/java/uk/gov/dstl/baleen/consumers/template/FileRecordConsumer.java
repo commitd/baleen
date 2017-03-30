@@ -21,8 +21,11 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
 /**
- * /** Writes Records, and the TemplateFields covered by them, to YAML or JSON
- * files. *
+ * Writes Records, and the TemplateFields covered by them, to YAML or JSON
+ * files.
+ * 
+ * This consumer takes extracted records and writes them to YAML or JSON in the
+ * configured <code>outputDirectory</code>.
  * <p>
  * The output format defaults to YAML, but can be changed to JSON by setting the
  * configuration parameter <code>outputFormat</code> to <code>json</code> (all
