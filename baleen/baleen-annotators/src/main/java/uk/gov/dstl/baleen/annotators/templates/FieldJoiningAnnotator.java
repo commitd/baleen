@@ -1,0 +1,147 @@
+package uk.gov.dstl.baleen.annotators.templates;
+
+import com.samskivert.mustache.DefaultCollector;
+import com.samskivert.mustache.Mustache;
+import com.samskivert.mustache.Mustache.Collector;
+import com.samskivert.mustache.Mustache.Compiler;
+import com.samskivert.mustache.Mustache.VariableFetcher;
+import com.samskivert.mustache.Template;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.util.JCasUtil;
+import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
+import uk.gov.dstl.baleen.types.templates.Record;
+import uk.gov.dstl.baleen.types.templates.TemplateField;
+import uk.gov.dstl.baleen.uima.BaleenAnnotator;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Creates a new TemplateField with the given fieldName, based on fields in the
+ * Record of the given recordName, using the supplied template.
+ * <p>
+ * The template is a simple mustache template, where the fields of the given
+ * record are exposed as root level properties in the mustache context ready for
+ * direct binding.
+ * </p>
+ * <p>
+ * Example configuration:
+ * </p>
+ * 
+ * <pre>
+... 
+annotators:
+- class templates.RecordAnnotator:
+  ...
+- class templates.FieldJoiningAnnotator:
+  fieldName: fullName
+  record: report
+  template: {{surname}}, {{firstName}}
+ * </pre>
+ * 
+ */
+public class FieldJoiningAnnotator extends BaleenAnnotator {
+
+	/** The Constant PARAM_TEMPLATE. */
+	public static final String PARAM_TEMPLATE = "template";
+
+	/**
+	 * The template to use to create the new value.
+	 */
+	@ConfigurationParameter(name = PARAM_TEMPLATE)
+	private String mustacheTemplate;
+
+	/** The Constant PARAM_RECORD. */
+	public static final String PARAM_RECORD = "record";
+
+	/**
+	 * The record to use when matching field names.
+	 */
+	@ConfigurationParameter(name = PARAM_RECORD)
+	private String recordName;
+
+	/** The Constant PARAM_FIELD_NAME. */
+	public static final String PARAM_FIELD_NAME = "fieldName";
+
+	/**
+	 * The field name to create.
+	 * 
+	 * @baleen.config field
+	 */
+	@ConfigurationParameter(name = PARAM_FIELD_NAME, defaultValue = "field")
+	private String fieldName;
+
+	/** The compiled template. */
+	private Template compiledTemplate;
+
+	/** The touched fields. */
+	private Collection<String> touchedFields;
+
+	@Override
+	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
+		super.doInitialize(aContext);
+		touchedFields = gatherReferencedFields();
+		compiledTemplate = Mustache.compiler().compile(mustacheTemplate);
+	}
+
+	/**
+	 * Gather fields that are referenced in the mustache template.
+	 *
+	 * @return the collection
+	 */
+	private Collection<String> gatherReferencedFields() {
+		Collection<String> fields = new ArrayList<>();
+		Collector collector = new DefaultCollector() {
+
+			@Override
+			public VariableFetcher createFetcher(Object ctx, String name) {
+				fields.add(name);
+				return super.createFetcher(ctx, name);
+			}
+		};
+
+		Compiler compiler = Mustache.compiler().defaultValue("").withCollector(collector);
+		Template mockTemplate = compiler.compile(mustacheTemplate);
+		mockTemplate.execute(new HashMap<>());
+		return fields;
+	}
+
+	@Override
+	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
+		Map<String, String> recordFieldValues = new HashMap<>();
+		Map<String, TemplateField> recordFields = new HashMap<>();
+		Collection<Record> records = JCasUtil.select(jCas, Record.class);
+		for (Record record : records) {
+			if (!StringUtils.equals(recordName, record.getName())) {
+				continue;
+			}
+			List<TemplateField> fields = JCasUtil.selectCovered(TemplateField.class, record);
+			for (TemplateField field : fields) {
+				// only keep fields used in the template - simplifies later
+				// begin/end calculation
+				if (!touchedFields.contains(field.getName())) {
+					continue;
+				}
+				recordFieldValues.put(field.getName(), field.getCoveredText());
+				recordFields.put(field.getName(), field);
+			}
+		}
+
+		int begin = recordFields.values().stream().mapToInt(TemplateField::getBegin).min().getAsInt();
+		int end = recordFields.values().stream().mapToInt(TemplateField::getEnd).max().getAsInt();
+
+		TemplateField newField = new TemplateField(jCas);
+		newField.setName(fieldName);
+		newField.setBegin(begin);
+		newField.setEnd(end);
+		newField.setValue(compiledTemplate.execute(recordFieldValues));
+		addToJCasIndex(newField);
+	}
+}
