@@ -22,10 +22,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 
 /**
  * Creates a new TemplateField with the given fieldName, based on fields in the
  * Record of the given recordName, using the supplied template.
+ * <p>
+ * Optionally, a source can be provided to disambiguate records/fields created
+ * from multiple definition configurations.
+ * </p>
  * <p>
  * The template is a simple mustache template, where the fields of the given
  * record are exposed as root level properties in the mustache context ready for
@@ -44,6 +49,7 @@ annotators:
   fieldName: fullName
   record: report
   template: {{surname}}, {{firstName}}
+  source: peopleReportDefinitions
  * </pre>
  * 
  */
@@ -77,6 +83,15 @@ public class FieldJoiningAnnotator extends BaleenAnnotator {
 	 */
 	@ConfigurationParameter(name = PARAM_FIELD_NAME, defaultValue = "field")
 	private String fieldName;
+
+	/** The Constant PARAM_SOURCE. */
+	public static final String PARAM_SOURCE = "source";
+
+	/**
+	 * The source type to search for the record.
+	 */
+	@ConfigurationParameter(name = PARAM_SOURCE, mandatory = false)
+	private String source;
 
 	/** The compiled template. */
 	private Template compiledTemplate;
@@ -119,7 +134,8 @@ public class FieldJoiningAnnotator extends BaleenAnnotator {
 		Map<String, TemplateField> recordFields = new HashMap<>();
 		Collection<Record> records = JCasUtil.select(jCas, Record.class);
 		for (Record record : records) {
-			if (!StringUtils.equals(recordName, record.getName())) {
+			if (!StringUtils.equals(recordName, record.getName())
+					|| (!StringUtils.isEmpty(source) && !source.equalsIgnoreCase(record.getSource()))) {
 				continue;
 			}
 			List<TemplateField> fields = JCasUtil.selectCovered(TemplateField.class, record);
@@ -134,14 +150,20 @@ public class FieldJoiningAnnotator extends BaleenAnnotator {
 			}
 		}
 
-		int begin = recordFields.values().stream().mapToInt(TemplateField::getBegin).min().getAsInt();
-		int end = recordFields.values().stream().mapToInt(TemplateField::getEnd).max().getAsInt();
+		OptionalInt min = recordFields.values().stream().mapToInt(TemplateField::getBegin).min();
+		OptionalInt max = recordFields.values().stream().mapToInt(TemplateField::getEnd).max();
 
-		TemplateField newField = new TemplateField(jCas);
-		newField.setName(fieldName);
-		newField.setBegin(begin);
-		newField.setEnd(end);
-		newField.setValue(compiledTemplate.execute(recordFieldValues));
-		addToJCasIndex(newField);
+		if (min.isPresent() && max.isPresent()) {
+			int begin = min.getAsInt();
+			int end = max.getAsInt();
+
+			TemplateField newField = new TemplateField(jCas);
+			newField.setName(fieldName);
+			newField.setBegin(begin);
+			newField.setEnd(end);
+			newField.setValue(compiledTemplate.execute(recordFieldValues));
+			addToJCasIndex(newField);
+		}
+
 	}
 }

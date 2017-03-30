@@ -30,6 +30,7 @@ public class FieldJoiningAnnotatorTest extends AbstractAnnotatorTest {
 
 		Record record = new Record(jCas);
 		record.setName("report");
+		record.setSource("brown");
 		record.setBegin(0);
 		record.setEnd(52);
 		record.addToIndexes();
@@ -48,20 +49,47 @@ public class FieldJoiningAnnotatorTest extends AbstractAnnotatorTest {
 	}
 
 	@Test
-	public void testAthleteIsMadePerson() throws AnalysisEngineProcessException, ResourceInitializationException {
+	public void testAthleteIsMadePersonNoSource()
+			throws AnalysisEngineProcessException, ResourceInitializationException {
 		processJCas(FieldJoiningAnnotator.PARAM_RECORD, "report", FieldJoiningAnnotator.PARAM_FIELD_NAME, "fullName",
 				FieldJoiningAnnotator.PARAM_TEMPLATE, "{{athlete}}, {{spectator}}");
 		Collection<TemplateField> fields = JCasUtil.select(jCas, TemplateField.class);
 		assertEquals(3, fields.size());
 
-		List<TemplateField> fullNameFields = fields.stream().filter(f -> extracted(f))
-				.collect(Collectors.toList());
+		List<TemplateField> fullNameFields = fields.stream().filter(f -> extracted(f)).collect(Collectors.toList());
 		assertEquals(1, fullNameFields.size());
 
 		TemplateField fullName = fullNameFields.iterator().next();
 		assertEquals("fox, dog", fullName.getValue());
 		assertEquals(16, fullName.getBegin());
 		assertEquals(44, fullName.getEnd());
+	}
+
+	@Test
+	public void testAthleteIsMadePersonSource() throws AnalysisEngineProcessException, ResourceInitializationException {
+		processJCas(FieldJoiningAnnotator.PARAM_RECORD, "report", FieldJoiningAnnotator.PARAM_FIELD_NAME, "fullName",
+				FieldJoiningAnnotator.PARAM_TEMPLATE, "{{athlete}}, {{spectator}}", FieldJoiningAnnotator.PARAM_SOURCE,
+				"brown");
+		Collection<TemplateField> fields = JCasUtil.select(jCas, TemplateField.class);
+		assertEquals(3, fields.size());
+
+		List<TemplateField> fullNameFields = fields.stream().filter(f -> extracted(f)).collect(Collectors.toList());
+		assertEquals(1, fullNameFields.size());
+
+		TemplateField fullName = fullNameFields.iterator().next();
+		assertEquals("fox, dog", fullName.getValue());
+		assertEquals(16, fullName.getBegin());
+		assertEquals(44, fullName.getEnd());
+	}
+
+	@Test
+	public void testAthleteIsMadePersonOtherSource()
+			throws AnalysisEngineProcessException, ResourceInitializationException {
+		processJCas(FieldJoiningAnnotator.PARAM_RECORD, "report", FieldJoiningAnnotator.PARAM_FIELD_NAME, "fullName",
+				FieldJoiningAnnotator.PARAM_TEMPLATE, "{{athlete}}, {{spectator}}", FieldJoiningAnnotator.PARAM_SOURCE,
+				"ketchup");
+		Collection<TemplateField> fields = JCasUtil.select(jCas, TemplateField.class);
+		assertEquals(2, fields.size());
 	}
 
 	private boolean extracted(TemplateField f) {
