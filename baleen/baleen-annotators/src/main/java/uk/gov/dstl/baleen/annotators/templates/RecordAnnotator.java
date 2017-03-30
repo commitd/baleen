@@ -27,7 +27,7 @@ import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.structure.Structure;
 import uk.gov.dstl.baleen.types.templates.Record;
 import uk.gov.dstl.baleen.types.templates.TemplateField;
-import uk.gov.dstl.baleen.uima.BaleenConsumer;
+import uk.gov.dstl.baleen.uima.BaleenAnnotator;
 import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 
 /**
@@ -86,7 +86,7 @@ import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
  * over template documents.
  * </p>
  */
-public class RecordAnnotator extends BaleenConsumer {
+public class RecordAnnotator extends BaleenAnnotator {
 
 	public static final String PARAM_RECORD_DEFINITIONS_DIRECTORY = "recordDefinitionsDirectory";
 
