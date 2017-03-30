@@ -76,7 +76,7 @@ public class PerRecordMustacheHtmlTemplateRecordConsumerTest extends AbstractRec
 	private Path process() throws IOException, ResourceInitializationException, AnalysisEngineProcessException {
 		Path templateFilesDirectory = createTemporaryTemplateFiles();
 		String outputDirectoryString = outputDirectory.toAbsolutePath().toString();
-		processJCas(DefaultMustacheHtmlTemplateRecordConsumer.PARAM_OUTPUT_DIRECTORY, outputDirectoryString,
+		processJCas(PerRecordMustacheHtmlTemplateRecordConsumer.PARAM_OUTPUT_DIRECTORY, outputDirectoryString,
 				PerRecordMustacheHtmlTemplateRecordConsumer.PARAM_RECORD_TEMPLATE_DIRECTORY,
 				templateFilesDirectory.toAbsolutePath().toString());
 		return templateFilesDirectory;

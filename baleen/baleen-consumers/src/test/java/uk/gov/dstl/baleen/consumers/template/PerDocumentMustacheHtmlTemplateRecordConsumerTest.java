@@ -14,14 +14,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class DefaultMustacheHtmlTemplateRecordConsumerTest extends AbstractRecordConsumerTest {
+public class PerDocumentMustacheHtmlTemplateRecordConsumerTest extends AbstractRecordConsumerTest {
 
-	private static final String OUTPUT_FILENAME = DefaultMustacheHtmlTemplateRecordConsumer.class.getSimpleName()
+	private static final String OUTPUT_FILENAME = PerDocumentMustacheHtmlTemplateRecordConsumer.class.getSimpleName()
 			+ ".html";
 	private Path outputDirectory;
 
-	public DefaultMustacheHtmlTemplateRecordConsumerTest() {
-		super(DefaultMustacheHtmlTemplateRecordConsumer.class);
+	public PerDocumentMustacheHtmlTemplateRecordConsumerTest() {
+		super(PerDocumentMustacheHtmlTemplateRecordConsumer.class);
 	}
 
 	@Before
@@ -121,7 +121,7 @@ public class DefaultMustacheHtmlTemplateRecordConsumerTest extends AbstractRecor
 				+ "The quick brown cat jumped over the lazy dog&#39;s back.\n"
 				+ "The quick brown rat jumped over the lazy dog&#39;s back.\n" + "		</pre>\n" + "	</div>\n"
 				+ "	<div>\n" + "		<h1>Sources</h1>\n" + "		<div>\n"
-				+ "			<h2>DefaultMustacheHtmlTemplateRecordConsumer</h2>\n"
+				+ "			<h2>PerDocumentMustacheHtmlTemplateRecordConsumer</h2>\n"
 				+ "			<h3>Record record2</h3>\n" + "			<h4>Fields</h4>\n" + "			<table>\n"
 				+ "				<tbody>\n" + "					<tr>\n"
 				+ "						<th>record2Field2</th>\n" + "						<td>cat jumped over</td>\n"
@@ -171,20 +171,20 @@ public class DefaultMustacheHtmlTemplateRecordConsumerTest extends AbstractRecor
 		Path templateFile = createTemporaryTemplatefile(templateName);
 		String templateFilename = templateFile.toAbsolutePath().toString();
 		String outputDirectoryString = outputDirectory.toAbsolutePath().toString();
-		processJCas(DefaultMustacheHtmlTemplateRecordConsumer.PARAM_OUTPUT_DIRECTORY, outputDirectoryString,
-				DefaultMustacheHtmlTemplateRecordConsumer.PARAM_FILENAME, templateFilename);
+		processJCas(PerDocumentMustacheHtmlTemplateRecordConsumer.PARAM_OUTPUT_DIRECTORY, outputDirectoryString,
+				PerDocumentMustacheHtmlTemplateRecordConsumer.PARAM_FILENAME, templateFilename);
 		return templateFile;
 	}
 
 	private Path createTemporaryOutputDirectory() throws IOException {
-		Class<DefaultMustacheHtmlTemplateRecordConsumerTest> clazz = DefaultMustacheHtmlTemplateRecordConsumerTest.class;
+		Class<PerDocumentMustacheHtmlTemplateRecordConsumerTest> clazz = PerDocumentMustacheHtmlTemplateRecordConsumerTest.class;
 		Path outputDirectory = Files.createTempDirectory(clazz.getSimpleName() + "-generatedDocuments");
 		outputDirectory.toFile().deleteOnExit();
 		return outputDirectory;
 	}
 
 	private Path createTemporaryTemplatefile(String templateName) throws IOException {
-		Class<DefaultMustacheHtmlTemplateRecordConsumerTest> clazz = DefaultMustacheHtmlTemplateRecordConsumerTest.class;
+		Class<PerDocumentMustacheHtmlTemplateRecordConsumerTest> clazz = PerDocumentMustacheHtmlTemplateRecordConsumerTest.class;
 		Path templateFile = Files.createTempFile(clazz.getSimpleName() + "-template", ".html");
 		templateFile.toFile().deleteOnExit();
 		Files.copy(clazz.getResourceAsStream(templateName), templateFile, StandardCopyOption.REPLACE_EXISTING);

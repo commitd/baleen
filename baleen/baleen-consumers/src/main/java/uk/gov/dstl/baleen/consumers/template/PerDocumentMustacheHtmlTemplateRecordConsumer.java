@@ -11,7 +11,7 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.resource.ResourceInitializationException;
 
-public class DefaultMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
+public class PerDocumentMustacheHtmlTemplateRecordConsumer extends AbstractMustacheHtmlTemplateRecordConsumer {
 
 	/** The Constant PARAM_FILENAME. */
 	public static final String PARAM_FILENAME = "templateFilename";
