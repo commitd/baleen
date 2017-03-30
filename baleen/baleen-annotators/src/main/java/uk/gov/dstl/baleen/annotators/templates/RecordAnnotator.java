@@ -223,16 +223,36 @@ public class RecordAnnotator extends BaleenConsumer {
 
 	private void createFieldAnnotation(JCas jCas, String source, FieldDefinitionConfiguration field,
 			Structure structure) {
+
+		String defaultValue = field.getDefaultValue();
+
+		if (structure.getCoveredText().isEmpty()) {
+			if (field.isRequired() && defaultValue == null) {
+				getMonitor().info("Required field missing {} in {}", field.getName(), source);
+				return;
+			} else {
+				createFieldAnnotation(jCas, source, field.getName(), structure.getBegin(), structure.getEnd(),
+						defaultValue);
+			}
+		}
+
 		String regex = field.getRegex();
+
 		if (regex == null) {
-			createFieldAnnotation(jCas, source, field.getName(), structure.getBegin(), structure.getEnd());
+			createFieldAnnotation(jCas, source, field.getName(), structure.getBegin(), structure.getEnd(),
+					structure.getCoveredText());
 		} else {
 			Pattern pattern = Pattern.compile(regex);
 			String coveredText = structure.getCoveredText();
 			Matcher matcher = pattern.matcher(coveredText);
 			if (matcher.find()) {
 				createFieldAnnotation(jCas, source, field.getName(), structure.getBegin() + matcher.start(),
-						structure.getBegin() + matcher.end());
+						structure.getBegin() + matcher.end(), matcher.group());
+			} else if (defaultValue != null) {
+				getMonitor().info("Failed to match pattern {} in {} - using default value {}", regex, coveredText,
+						defaultValue);
+				createFieldAnnotation(jCas, source, field.getName(), structure.getBegin(), structure.getBegin(),
+						defaultValue);
 			} else {
 				getMonitor().warn("Failed to match pattern {} in {} - ignoring", regex, coveredText);
 			}
@@ -253,12 +273,13 @@ public class RecordAnnotator extends BaleenConsumer {
 	 * @param end
 	 *            the end
 	 */
-	private void createFieldAnnotation(JCas jCas, String source, String name, int begin, int end) {
+	private void createFieldAnnotation(JCas jCas, String source, String name, int begin, int end, String value) {
 		TemplateField field = new TemplateField(jCas);
 		field.setBegin(begin);
 		field.setEnd(end);
 		field.setName(name);
 		field.setSource(source);
+		field.setValue(value);
 		addToJCasIndex(field);
 	}
 

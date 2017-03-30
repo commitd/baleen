@@ -11,8 +11,8 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** Beginning / end marker of a record (multiple fields) in a template document, used to create record definitions for subsequent annotation of real documents.
- * Updated by JCasGen Mon Mar 20 15:20:44 GMT 2017
- * XML source: /Users/jrfry/dev/dstl/private/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
+ * XML source: /Users/stuarthendren/git/tenode/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
 public class RecordDefinition extends Base {
   /** @generated

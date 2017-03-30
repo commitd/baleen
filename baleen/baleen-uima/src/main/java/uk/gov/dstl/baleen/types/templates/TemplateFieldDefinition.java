@@ -11,7 +11,7 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** A field definition in a template document.
- * Updated by JCasGen Mon Mar 27 14:36:17 BST 2017
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
  * XML source: /Users/stuarthendren/git/tenode/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
 public class TemplateFieldDefinition extends Base {
@@ -118,6 +118,50 @@ public class TemplateFieldDefinition extends Base {
     if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_regex == null)
       jcasType.jcas.throwFeatMissing("regex", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
     jcasType.ll_cas.ll_setStringValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_regex, v);}    
+   
+    
+  //*--------------*
+  //* Feature: defaultValue
+
+  /** getter for defaultValue - gets An optional default value to be used if the field is not matched for the record.
+   * @generated
+   * @return value of the feature 
+   */
+  public String getDefaultValue() {
+    if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_defaultValue == null)
+      jcasType.jcas.throwFeatMissing("defaultValue", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_defaultValue);}
+    
+  /** setter for defaultValue - sets An optional default value to be used if the field is not matched for the record. 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setDefaultValue(String v) {
+    if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_defaultValue == null)
+      jcasType.jcas.throwFeatMissing("defaultValue", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    jcasType.ll_cas.ll_setStringValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_defaultValue, v);}    
+   
+    
+  //*--------------*
+  //* Feature: required
+
+  /** getter for required - gets Set true to declare that the field is required. If a default is set, this is redundant as it will always exist
+   * @generated
+   * @return value of the feature 
+   */
+  public boolean getRequired() {
+    if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_required == null)
+      jcasType.jcas.throwFeatMissing("required", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    return jcasType.ll_cas.ll_getBooleanValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_required);}
+    
+  /** setter for required - sets Set true to declare that the field is required. If a default is set, this is redundant as it will always exist 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setRequired(boolean v) {
+    if (TemplateFieldDefinition_Type.featOkTst && ((TemplateFieldDefinition_Type)jcasType).casFeat_required == null)
+      jcasType.jcas.throwFeatMissing("required", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    jcasType.ll_cas.ll_setBooleanValue(addr, ((TemplateFieldDefinition_Type)jcasType).casFeatCode_required, v);}    
   }
 
     

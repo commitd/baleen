@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
 /** An field identified from a template
- * Updated by JCasGen Thu Mar 23 16:25:28 GMT 2017
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
  * @generated */
 public class TemplateField_Type extends Base_Type {
   /** @generated */
@@ -43,6 +43,30 @@ public class TemplateField_Type extends Base_Type {
         if (featOkTst && casFeat_name == null)
       jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.TemplateField");
     ll_cas.ll_setStringValue(addr, casFeatCode_name, v);}
+    
+  
+ 
+  /** @generated */
+  final Feature casFeat_value;
+  /** @generated */
+  final int     casFeatCode_value;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getValue(int addr) {
+        if (featOkTst && casFeat_value == null)
+      jcas.throwFeatMissing("value", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_value);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setValue(int addr, String v) {
+        if (featOkTst && casFeat_value == null)
+      jcas.throwFeatMissing("value", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    ll_cas.ll_setStringValue(addr, casFeatCode_value, v);}
     
   
  
@@ -84,6 +108,10 @@ public class TemplateField_Type extends Base_Type {
  
     casFeat_name = jcas.getRequiredFeatureDE(casType, "name", "uima.cas.String", featOkTst);
     casFeatCode_name  = (null == casFeat_name) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_name).getCode();
+
+ 
+    casFeat_value = jcas.getRequiredFeatureDE(casType, "value", "uima.cas.String", featOkTst);
+    casFeatCode_value  = (null == casFeat_value) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_value).getCode();
 
  
     casFeat_source = jcas.getRequiredFeatureDE(casType, "source", "uima.cas.String", featOkTst);

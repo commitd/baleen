@@ -11,8 +11,8 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** An field identified from a template
- * Updated by JCasGen Thu Mar 23 16:25:28 GMT 2017
- * XML source: /Users/jrfry/dev/dstl/private/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
+ * XML source: /Users/stuarthendren/git/tenode/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
 public class TemplateField extends Base {
   /** @generated
@@ -96,6 +96,28 @@ public class TemplateField extends Base {
     if (TemplateField_Type.featOkTst && ((TemplateField_Type)jcasType).casFeat_name == null)
       jcasType.jcas.throwFeatMissing("name", "uk.gov.dstl.baleen.types.templates.TemplateField");
     jcasType.ll_cas.ll_setStringValue(addr, ((TemplateField_Type)jcasType).casFeatCode_name, v);}    
+   
+    
+  //*--------------*
+  //* Feature: value
+
+  /** getter for value - gets An value assigned to this field. Typically taken from the text, but can be assigned using default value.
+   * @generated
+   * @return value of the feature 
+   */
+  public String getValue() {
+    if (TemplateField_Type.featOkTst && ((TemplateField_Type)jcasType).casFeat_value == null)
+      jcasType.jcas.throwFeatMissing("value", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((TemplateField_Type)jcasType).casFeatCode_value);}
+    
+  /** setter for value - sets An value assigned to this field. Typically taken from the text, but can be assigned using default value. 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setValue(String v) {
+    if (TemplateField_Type.featOkTst && ((TemplateField_Type)jcasType).casFeat_value == null)
+      jcasType.jcas.throwFeatMissing("value", "uk.gov.dstl.baleen.types.templates.TemplateField");
+    jcasType.ll_cas.ll_setStringValue(addr, ((TemplateField_Type)jcasType).casFeatCode_value, v);}    
    
     
   //*--------------*

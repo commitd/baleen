@@ -41,6 +41,12 @@ public class TemplateFieldDefinitionAnnotator extends AbstractRegexAnnotator<Tem
 	/** The Constant REGEX_ATTRIBUTE */
 	private static final String REGEX_ATTRIBUTE = "regex";
 
+	/** The Constant DEFAULT_VALUE_ATTRIBUTE */
+	private static final String DEFAULT_VALUE_ATTRIBUTE = "defaultValue";
+
+	/** The Constant REQUIRED_ATTRIBUTE */
+	private static final String REQUIRED_ATTRIBUTE = "required";
+
 	/**
 	 * Instantiates a new template field definition annotator which will
 	 * assigning confidence 1.0 to all matched field definitions.
@@ -66,11 +72,19 @@ public class TemplateFieldDefinitionAnnotator extends AbstractRegexAnnotator<Tem
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(is);
 			NamedNodeMap attributes = doc.getFirstChild().getAttributes();
-			Node namedItem = attributes.getNamedItem(REGEX_ATTRIBUTE);
-			if (namedItem != null) {
-				String regex = namedItem.getTextContent();
+			Node regexItem = attributes.getNamedItem(REGEX_ATTRIBUTE);
+			if (regexItem != null) {
+				String regex = regexItem.getTextContent();
 				checkRegexCompiles(regex);
 				field.setRegex(regex);
+			}
+			Node defaultValueItem = attributes.getNamedItem(DEFAULT_VALUE_ATTRIBUTE);
+			if (defaultValueItem != null) {
+				field.setDefaultValue(defaultValueItem.getTextContent());
+			}
+			Node requiredItem = attributes.getNamedItem(REQUIRED_ATTRIBUTE);
+			if (requiredItem != null) {
+				field.setRequired(Boolean.valueOf(requiredItem.getTextContent()));
 			}
 		} catch (ParserConfigurationException | SAXException | IOException e) {
 			getMonitor().warn("Failed to read field defintion " + coveredText, e);

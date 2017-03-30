@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
 /** A field definition in a template document.
- * Updated by JCasGen Mon Mar 27 14:36:17 BST 2017
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
  * @generated */
 public class TemplateFieldDefinition_Type extends Base_Type {
   /** @generated */
@@ -69,6 +69,54 @@ public class TemplateFieldDefinition_Type extends Base_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_regex, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_defaultValue;
+  /** @generated */
+  final int     casFeatCode_defaultValue;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getDefaultValue(int addr) {
+        if (featOkTst && casFeat_defaultValue == null)
+      jcas.throwFeatMissing("defaultValue", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_defaultValue);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setDefaultValue(int addr, String v) {
+        if (featOkTst && casFeat_defaultValue == null)
+      jcas.throwFeatMissing("defaultValue", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    ll_cas.ll_setStringValue(addr, casFeatCode_defaultValue, v);}
+    
+  
+ 
+  /** @generated */
+  final Feature casFeat_required;
+  /** @generated */
+  final int     casFeatCode_required;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public boolean getRequired(int addr) {
+        if (featOkTst && casFeat_required == null)
+      jcas.throwFeatMissing("required", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    return ll_cas.ll_getBooleanValue(addr, casFeatCode_required);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setRequired(int addr, boolean v) {
+        if (featOkTst && casFeat_required == null)
+      jcas.throwFeatMissing("required", "uk.gov.dstl.baleen.types.templates.TemplateFieldDefinition");
+    ll_cas.ll_setBooleanValue(addr, casFeatCode_required, v);}
+    
+  
 
 
 
@@ -88,6 +136,14 @@ public class TemplateFieldDefinition_Type extends Base_Type {
  
     casFeat_regex = jcas.getRequiredFeatureDE(casType, "regex", "uima.cas.String", featOkTst);
     casFeatCode_regex  = (null == casFeat_regex) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_regex).getCode();
+
+ 
+    casFeat_defaultValue = jcas.getRequiredFeatureDE(casType, "defaultValue", "uima.cas.String", featOkTst);
+    casFeatCode_defaultValue  = (null == casFeat_defaultValue) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_defaultValue).getCode();
+
+ 
+    casFeat_required = jcas.getRequiredFeatureDE(casType, "required", "uima.cas.Boolean", featOkTst);
+    casFeatCode_required  = (null == casFeat_required) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_required).getCode();
 
   }
 }

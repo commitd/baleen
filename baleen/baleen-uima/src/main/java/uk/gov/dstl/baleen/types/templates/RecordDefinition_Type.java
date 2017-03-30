@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
 /** Beginning / end marker of a record (multiple fields) in a template document, used to create record definitions for subsequent annotation of real documents.
- * Updated by JCasGen Mon Mar 20 15:20:44 GMT 2017
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
  * @generated */
 public class RecordDefinition_Type extends Base_Type {
   /** @generated */

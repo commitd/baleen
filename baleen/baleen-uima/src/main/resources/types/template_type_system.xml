@@ -24,7 +24,17 @@
           <name>regex</name>
           <description>An optional regular expresison to extract the field from the structural element.</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
-        </featureDescription>       
+        </featureDescription>
+        <featureDescription>
+          <name>defaultValue</name>
+          <description>An optional default value to be used if the field is not matched for the record.</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription> 
+        <featureDescription>
+          <name>required</name>
+          <description>Set true to declare that the field is required. If a default is set, this is redundant as it will always exist</description>
+          <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+        </featureDescription>     
       </features>
     </typeDescription>
     <typeDescription>
@@ -37,6 +47,11 @@
           <description>The name of the identified template field.</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
+        <featureDescription>
+          <name>value</name>
+          <description>An value assigned to this field. Typically taken from the text, but can be assigned using default value.</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription> 
         <featureDescription>
           <name>source</name>
           <description/>

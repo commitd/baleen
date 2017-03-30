@@ -2,13 +2,14 @@ package uk.gov.dstl.baleen.annotators.templates;
 
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -18,6 +19,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
@@ -83,6 +86,14 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		paragraph5.addToIndexes();
 	}
 
+	private Record assertRecord() {
+		Record record = JCasUtil.selectSingle(jCas, Record.class);
+		assertEquals(52, record.getBegin());
+		assertEquals(212, record.getEnd());
+		assertEquals(String.join("\n", "", PARA2, PARA3, PARA4, ""), record.getCoveredText());
+		return record;
+	}
+
 	@Test
 	public void testCreateFieldAnnotationsFromSelectorFile()
 			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
@@ -91,15 +102,13 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		try {
 			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
 
-			Record record = JCasUtil.selectByIndex(jCas, Record.class, 0);
-			assertEquals(52, record.getBegin());
-			assertEquals(212, record.getEnd());
-			assertEquals(String.join("\n", "", PARA2, PARA3, PARA4, ""), record.getCoveredText());
+			assertRecord();
 
-			TemplateField field1 = JCasUtil.selectByIndex(jCas, TemplateField.class, 0);
+			TemplateField field1 = JCasUtil.selectSingle(jCas, TemplateField.class);
 			assertEquals(53, field1.getBegin());
 			assertEquals(105, field1.getEnd());
 			assertEquals(PARA2, field1.getCoveredText());
+			assertEquals(PARA2, field1.getValue());
 
 		} finally {
 			Files.delete(definitionFile);
@@ -107,23 +116,98 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 	}
 
 	@Test
-	public void testCreateFieldAnnotationsFromSelectorFileWithRegEx()
+	public void testCreateFieldAnnotationsFromSelectorFileWithRegex()
 			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
 
-		Path definitionFile = createGoodRecordDefinitionWithRegEx();
+		Path definitionFile = createGoodRecordDefinitionWithRegex();
 		try {
 			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
 
-			Record record = JCasUtil.selectByIndex(jCas, Record.class, 0);
-			assertEquals(52, record.getBegin());
-			assertEquals(212, record.getEnd());
-			assertEquals(String.join("\n", "", PARA2, PARA3, PARA4, ""), record.getCoveredText());
+			assertRecord();
 
-			TemplateField field1 = JCasUtil.selectByIndex(jCas, TemplateField.class, 0);
+			TemplateField field1 = JCasUtil.selectSingle(jCas, TemplateField.class);
 			assertEquals(69, field1.getBegin());
 			assertEquals(72, field1.getEnd());
 			assertEquals("cat", field1.getCoveredText());
+			assertEquals("cat", field1.getValue());
 
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testCreateFieldAnnotationsFromSelectorFileWithRegexRequired()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createGoodRecordDefinitionWithRegexRequired();
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
+
+			assertRecord();
+
+			TemplateField field1 = JCasUtil.selectSingle(jCas, TemplateField.class);
+			assertEquals(122, field1.getBegin());
+			assertEquals(125, field1.getEnd());
+			assertEquals("rat", field1.getCoveredText());
+			assertEquals("rat", field1.getValue());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testCreateFieldAnnotationsFromSelectorFileWithRegexDefaultNotNeeded()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createGoodRecordDefinitionWithRegexDefaultNotNeeded();
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
+
+			assertRecord();
+
+			TemplateField field1 = JCasUtil.selectSingle(jCas, TemplateField.class);
+			assertEquals(179, field1.getBegin());
+			assertEquals(185, field1.getEnd());
+			assertEquals("jumped", field1.getCoveredText());
+			assertEquals("jumped", field1.getValue());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testCreateFieldAnnotationsFromSelectorFileWithRegexDefaultUsed()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createGoodRecordDefinitionWithRegexDefaultNeeded();
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
+
+			assertRecord();
+
+			TemplateField field1 = JCasUtil.selectSingle(jCas, TemplateField.class);
+			assertEquals(159, field1.getBegin());
+			assertEquals(159, field1.getEnd());
+			assertEquals("", field1.getCoveredText());
+			assertEquals("horse", field1.getValue());
+
+		} finally {
+			Files.delete(definitionFile);
+		}
+	}
+
+	@Test
+	public void testCreateFieldAnnotationsFromSelectorFileWithRegexMissingRequired()
+			throws AnalysisEngineProcessException, ResourceInitializationException, IOException {
+
+		Path definitionFile = createGoodRecordDefinitionWithRegexRequiredAndMissing();
+		try {
+			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
+			assertFalse(JCasUtil.exists(jCas, TemplateField.class));
+			assertTrue(JCasUtil.exists(jCas, Record.class));
 		} finally {
 			Files.delete(definitionFile);
 		}
@@ -137,14 +221,8 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 
 		try {
 			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
-
-			Record record = JCasUtil.selectByIndex(jCas, Record.class, 0);
-			assertEquals(52, record.getBegin());
-			assertEquals(212, record.getEnd());
-			assertEquals(String.join("\n", "", PARA2, PARA3, PARA4, ""), record.getCoveredText());
-
-			TemplateField field1 = JCasUtil.selectByIndex(jCas, TemplateField.class, 0);
-			assertNull(field1);
+			assertRecord();
+			assertFalse(JCasUtil.exists(jCas, TemplateField.class));
 		} finally {
 			Files.delete(definitionFile);
 		}
@@ -159,18 +237,18 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		try {
 			processJCas(RecordAnnotator.PARAM_RECORD_DEFINITIONS_DIRECTORY, tempDirectory.toString());
 
-			Record record = JCasUtil.selectByIndex(jCas, Record.class, 0);
+			Record record = JCasUtil.selectSingle(jCas, Record.class);
 			assertEquals(158, record.getBegin());
 			assertEquals(212, record.getEnd());
 			assertEquals(String.join("\n", "", PARA4, ""), record.getCoveredText());
 
-			TemplateField field1 = JCasUtil.selectByIndex(jCas, TemplateField.class, 0);
+			TemplateField field1 = JCasUtil.selectSingle(jCas, TemplateField.class);
 			assertEquals(53, field1.getBegin());
 			assertEquals(105, field1.getEnd());
 			assertEquals(PARA2, field1.getCoveredText());
+			assertEquals(PARA2, field1.getValue());
 
-			List<TemplateField> selectCovered = JCasUtil.selectCovered(jCas, TemplateField.class, record);
-			assertTrue(selectCovered.isEmpty());
+			assertFalse(JCasUtil.contains(jCas, record, TemplateField.class));
 
 		} finally {
 			Files.delete(definitionFile);
@@ -182,51 +260,70 @@ public class RecordAnnotatorTest extends AbstractAnnotatorTest {
 		Files.delete(tempDirectory);
 	}
 
-	private Path createGoodRecordDefinition() throws IOException {
+	private Path createRecord(FieldDefinitionConfiguration... fields)
+			throws IOException, JsonGenerationException, JsonMappingException {
 		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
 		String precedingPath = "Paragraph:nth-of-type(1)";
 		String followingPath = "Paragraph:nth-of-type(5)";
-		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
-		fields.add(new FieldDefinitionConfiguration("field", "Paragraph:nth-of-type(2)"));
 		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
-				followingPath, fields);
+				followingPath, Arrays.asList(fields));
 		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));
 		return definitionFile;
 	}
 
-	private Path createGoodRecordDefinitionWithRegEx() throws IOException {
-		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
-		String precedingPath = "Paragraph:nth-of-type(1)";
-		String followingPath = "Paragraph:nth-of-type(5)";
-		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
+	private Path createGoodRecordDefinition() throws IOException {
+		return createRecord(new FieldDefinitionConfiguration("field", "Paragraph:nth-of-type(2)"));
+	}
+
+	private Path createGoodRecordDefinitionWithRegex() throws IOException {
 		FieldDefinitionConfiguration fieldDefinitionConfiguration = new FieldDefinitionConfiguration("field",
 				"Paragraph:nth-of-type(2)");
 		fieldDefinitionConfiguration.setRegex("(?<=brown )(.*)(?= jumped)");
-		fields.add(fieldDefinitionConfiguration);
-		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
-				followingPath, fields);
-		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));
-		return definitionFile;
+		return createRecord(fieldDefinitionConfiguration);
+	}
+
+	private Path createGoodRecordDefinitionWithRegexRequired() throws IOException {
+		FieldDefinitionConfiguration fieldDefinitionConfiguration = new FieldDefinitionConfiguration("field",
+				"Paragraph:nth-of-type(3)");
+		fieldDefinitionConfiguration.setRegex("(?<=brown )(.*)(?= jumped)");
+		fieldDefinitionConfiguration.setRequired(true);
+		return createRecord(fieldDefinitionConfiguration);
+	}
+
+	private Path createGoodRecordDefinitionWithRegexRequiredAndMissing() throws IOException {
+		FieldDefinitionConfiguration fieldDefinitionConfiguration = new FieldDefinitionConfiguration("field",
+				"Paragraph:nth-of-type(3)");
+		fieldDefinitionConfiguration.setRegex("(?<=white )(.*)(?= jumped)");
+		fieldDefinitionConfiguration.setRequired(true);
+		return createRecord(fieldDefinitionConfiguration);
+	}
+
+	private Path createGoodRecordDefinitionWithRegexDefaultNotNeeded() throws IOException {
+		FieldDefinitionConfiguration fieldDefinitionConfiguration = new FieldDefinitionConfiguration("field",
+				"Paragraph:nth-of-type(4)");
+		fieldDefinitionConfiguration.setRegex("(?<=ant )(.*)(?= over)");
+		fieldDefinitionConfiguration.setDefaultValue("crawled");
+		return createRecord(fieldDefinitionConfiguration);
+	}
+
+	private Path createGoodRecordDefinitionWithRegexDefaultNeeded() throws IOException {
+		FieldDefinitionConfiguration fieldDefinitionConfiguration = new FieldDefinitionConfiguration("field",
+				"Paragraph:nth-of-type(4)");
+		fieldDefinitionConfiguration.setRegex("(?<=white )(.*)(?= jumped)");
+		fieldDefinitionConfiguration.setDefaultValue("horse");
+		return createRecord(fieldDefinitionConfiguration);
 	}
 
 	private Path createBadRecordDefinition() throws IOException {
-		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
-		String precedingPath = "Paragraph:nth-of-type(1)";
-		String followingPath = "Paragraph:nth-of-type(5)";
-		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
-		fields.add(new FieldDefinitionConfiguration("field", "Paragraph"));
-		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
-				followingPath, fields);
-		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));
-		return definitionFile;
+		return createRecord(new FieldDefinitionConfiguration("field", "Paragraph"));
 	}
 
 	private Path createNoFieldsRecordDefinition() throws IOException {
+		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
+		fields.add(new FieldDefinitionConfiguration("field", "Paragraph:nth-of-type(2)"));
 		Path definitionFile = Files.createTempFile(tempDirectory, RecordAnnotatorTest.class.getSimpleName(), ".yml");
 		String precedingPath = "Paragraph:nth-of-type(3)";
 		String followingPath = "Paragraph:nth-of-type(5)";
-		List<FieldDefinitionConfiguration> fields = new ArrayList<>();
-		fields.add(new FieldDefinitionConfiguration("field", "Paragraph:nth-of-type(2)"));
 		RecordDefinitionConfiguration recordDefinition = new RecordDefinitionConfiguration("Test", precedingPath,
 				followingPath, fields);
 		YAMLMAPPER.writeValue(definitionFile.toFile(), singleton(recordDefinition));

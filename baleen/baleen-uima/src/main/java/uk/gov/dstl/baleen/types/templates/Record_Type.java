@@ -11,7 +11,7 @@ import org.apache.uima.cas.Feature;
 import uk.gov.dstl.baleen.types.Base_Type;
 
 /** A covering annotation that marks the extent of a record within an annotated document.
- * Updated by JCasGen Thu Mar 23 16:25:28 GMT 2017
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
  * @generated */
 public class Record_Type extends Base_Type {
   /** @generated */

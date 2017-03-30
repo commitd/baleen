@@ -1,6 +1,9 @@
 package uk.gov.dstl.baleen.annotators.templates;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.util.JCasUtil;
@@ -14,12 +17,16 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 
 	private static final String FIELD_TEXT = "Full Name <<field:PersonFullName>>  \n";
 	private static final String FIELD2_TEXT = FIELD_TEXT + " Description: \n" + " <<field:Description>>   More text\n";
+
 	private static final String FIELD_REGEX_TEXT = "Email address: \n"
 			+ " <<field:email regex=\"\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b\">>   More text\n";
 	private static final String FIELD_HTML_REGEX = "HTML: <<field:html regex=\"/^&lt;([a-z]+)([^&lt;]+)*(?:&gt;(.*)&lt;\\/\\1&gt;|\\s+\\/&gt;)$/\">>   More text >>\n";
 	private static final String FIELD_NEIGHBOURS = "<<field:one>><<field:two>>";
-
 	private static final String FIELD_ILLEGAL_REGEX = "Error: <<field:error regex=\"(\">>";
+
+	private static final String FIELD_DEFAULT_TEXT = "<<field:ten defaultValue=\"10\">>";
+	private static final String FIELD_REQUIRED_TEXT = "<<field:required required=\"true\">>";
+	private static final String FIELD_REGEX_DEFAULT_REQUIRED_TEXT = "<<field:all regex=\"\\d?:\\s\\d?\" defaultValue=\"not found\" required=\"true\">>";
 
 	public TemplateFieldDefinitionAnnotatorTest() {
 		super(TemplateFieldDefinitionAnnotator.class);
@@ -34,6 +41,8 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 		assertEquals(34, field.getEnd());
 		assertEquals("PersonFullName", field.getName());
 		assertEquals("<<field:PersonFullName>>", field.getCoveredText());
+		assertNull(field.getDefaultValue());
+		assertFalse(field.getRequired());
 	}
 
 	@Test
@@ -45,12 +54,16 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 		assertEquals(34, field1.getEnd());
 		assertEquals("PersonFullName", field1.getName());
 		assertEquals("<<field:PersonFullName>>", field1.getCoveredText());
+		assertNull(field1.getDefaultValue());
+		assertFalse(field1.getRequired());
 
 		TemplateFieldDefinition field2 = JCasUtil.selectByIndex(jCas, TemplateFieldDefinition.class, 1);
 		assertEquals(53, field2.getBegin());
 		assertEquals(74, field2.getEnd());
 		assertEquals("Description", field2.getName());
 		assertEquals("<<field:Description>>", field2.getCoveredText());
+		assertNull(field2.getDefaultValue());
+		assertFalse(field2.getRequired());
 	}
 
 	@Test
@@ -62,12 +75,16 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 		assertEquals(13, field1.getEnd());
 		assertEquals("one", field1.getName());
 		assertEquals("<<field:one>>", field1.getCoveredText());
+		assertNull(field1.getDefaultValue());
+		assertFalse(field1.getRequired());
 
 		TemplateFieldDefinition field2 = JCasUtil.selectByIndex(jCas, TemplateFieldDefinition.class, 1);
 		assertEquals(13, field2.getBegin());
 		assertEquals(26, field2.getEnd());
 		assertEquals("two", field2.getName());
 		assertEquals("<<field:two>>", field2.getCoveredText());
+		assertNull(field2.getDefaultValue());
+		assertFalse(field2.getRequired());
 	}
 
 	@Test
@@ -80,6 +97,7 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 		assertEquals("<<field:email regex=\"\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b\">>", field.getCoveredText());
 		assertEquals("email", field.getName());
 		assertEquals("\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}\\b", field.getRegex());
+		assertNull(field.getDefaultValue());
 	}
 
 	@Test
@@ -93,11 +111,52 @@ public class TemplateFieldDefinitionAnnotatorTest extends AbstractAnnotatorTest 
 				field.getCoveredText());
 		assertEquals("html", field.getName());
 		assertEquals("/^<([a-z]+)([^<]+)*(?:>(.*)<\\/\\1>|\\s+\\/>)$/", field.getRegex());
+		assertNull(field.getDefaultValue());
 	}
 
 	@Test(expected = AnalysisEngineProcessException.class)
 	public void annotateFieldWithIllegalRegex() throws AnalysisEngineProcessException, ResourceInitializationException {
 		jCas.setDocumentText(FIELD_ILLEGAL_REGEX);
 		processJCas();
+	}
+
+	@Test
+	public void annotateFieldWithDefaultValue() throws AnalysisEngineProcessException, ResourceInitializationException {
+		jCas.setDocumentText(FIELD_DEFAULT_TEXT);
+		processJCas();
+		TemplateFieldDefinition field = JCasUtil.selectByIndex(jCas, TemplateFieldDefinition.class, 0);
+		assertEquals(0, field.getBegin());
+		assertEquals(FIELD_DEFAULT_TEXT.length(), field.getEnd());
+		assertEquals("ten", field.getName());
+		assertEquals(FIELD_DEFAULT_TEXT, field.getCoveredText());
+		assertEquals("10", field.getDefaultValue());
+		assertFalse(field.getRequired());
+	}
+
+	@Test
+	public void annotateFieldRequired() throws AnalysisEngineProcessException, ResourceInitializationException {
+		jCas.setDocumentText(FIELD_REQUIRED_TEXT);
+		processJCas();
+		TemplateFieldDefinition field = JCasUtil.selectByIndex(jCas, TemplateFieldDefinition.class, 0);
+		assertEquals(0, field.getBegin());
+		assertEquals(FIELD_REQUIRED_TEXT.length(), field.getEnd());
+		assertEquals("required", field.getName());
+		assertEquals(FIELD_REQUIRED_TEXT, field.getCoveredText());
+		assertTrue(field.getRequired());
+		assertNull(field.getDefaultValue());
+	}
+
+	@Test
+	public void annotateFieldAllAttributes() throws AnalysisEngineProcessException, ResourceInitializationException {
+		jCas.setDocumentText(FIELD_REGEX_DEFAULT_REQUIRED_TEXT);
+		processJCas();
+		TemplateFieldDefinition field = JCasUtil.selectByIndex(jCas, TemplateFieldDefinition.class, 0);
+		assertEquals(0, field.getBegin());
+		assertEquals(FIELD_REGEX_DEFAULT_REQUIRED_TEXT.length(), field.getEnd());
+		assertEquals("all", field.getName());
+		assertEquals(FIELD_REGEX_DEFAULT_REQUIRED_TEXT, field.getCoveredText());
+		assertTrue(field.getRequired());
+		assertEquals("\\d?:\\s\\d?", field.getRegex());
+		assertEquals("not found", field.getDefaultValue());
 	}
 }

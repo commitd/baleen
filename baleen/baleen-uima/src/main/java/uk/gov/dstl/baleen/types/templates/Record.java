@@ -11,8 +11,8 @@ import uk.gov.dstl.baleen.types.Base;
 
 
 /** A covering annotation that marks the extent of a record within an annotated document.
- * Updated by JCasGen Thu Mar 23 16:25:28 GMT 2017
- * XML source: /Users/jrfry/dev/dstl/private/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
+ * Updated by JCasGen Thu Mar 30 11:02:15 BST 2017
+ * XML source: /Users/stuarthendren/git/tenode/baleen/baleen/baleen-uima/src/main/resources/types/template_type_system.xml
  * @generated */
 public class Record extends Base {
   /** @generated
