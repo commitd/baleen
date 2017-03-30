@@ -50,9 +50,7 @@ public class FieldToEntityAnnnotatorTest extends AbstractAnnotatorTest {
 	public void testAthleteIsMadePerson() throws AnalysisEngineProcessException, ResourceInitializationException {
 		processJCas(FieldToEntityAnnotator.PARAM_ENTITY_TYPE, "common.Person", FieldToEntityAnnotator.PARAM_FIELD_NAME,
 				"athlete", FieldToEntityAnnotator.PARAM_RECORD_NAME, "report");
-		Collection<Person> people = JCasUtil.select(jCas, Person.class);
-		assertEquals(1, people.size());
-		Person person = people.iterator().next();
+		Person person = JCasUtil.selectSingle(jCas, Person.class);
 		assertEquals("fox", person.getValue());
 		assertEquals(16, person.getBegin());
 		assertEquals(19, person.getEnd());
