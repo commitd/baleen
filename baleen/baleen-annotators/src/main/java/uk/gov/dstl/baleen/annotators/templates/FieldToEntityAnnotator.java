@@ -21,6 +21,9 @@ import java.util.List;
  * Creates a new Entity of the configured type for each field of a given name in
  * each record with a given name.
  * 
+ * Optionally, a source can be provided to disambiguate records/fields created
+ * from multiple definition configurations.
+ * 
  * Example configuration:
  * 
  * <pre>
@@ -32,6 +35,7 @@ annotators:
   entityType: Person
   recordName: report
   fieldName: athlete
+  source: athleteReportDefinitions
  * </pre>
  * 
  */
@@ -45,10 +49,10 @@ public class FieldToEntityAnnotator extends BaleenAnnotator {
 	 * 
 	 * @baleen.config semantic.Entity
 	 */
-	@ConfigurationParameter(name = PARAM_ENTITY_TYPE, defaultValue = "Entity")
+	@ConfigurationParameter(name = PARAM_ENTITY_TYPE, mandatory = true)
 	private String entityType;
 
-	/** The Constant PARAM_ENTITY_TYPE. */
+	/** The Constant PARAM_RECORD_NAME. */
 	public static final String PARAM_RECORD_NAME = "recordName";
 
 	/**
@@ -56,7 +60,7 @@ public class FieldToEntityAnnotator extends BaleenAnnotator {
 	 * 
 	 * @baleen.config record
 	 */
-	@ConfigurationParameter(name = PARAM_RECORD_NAME, defaultValue = "record")
+	@ConfigurationParameter(name = PARAM_RECORD_NAME, mandatory = true)
 	private String recordName;
 
 	/** The Constant PARAM_FIELD_NAME. */
@@ -67,14 +71,24 @@ public class FieldToEntityAnnotator extends BaleenAnnotator {
 	 * 
 	 * @baleen.config field
 	 */
-	@ConfigurationParameter(name = PARAM_FIELD_NAME, defaultValue = "field")
+	@ConfigurationParameter(name = PARAM_FIELD_NAME, mandatory = true)
 	private String fieldName;
+
+	/** The Constant PARAM_SOURCE. */
+	public static final String PARAM_SOURCE = "source";
+
+	/**
+	 * The source type to search for the record.
+	 */
+	@ConfigurationParameter(name = PARAM_SOURCE, mandatory = false)
+	private String source;
 
 	@Override
 	protected void doProcess(JCas jCas) throws AnalysisEngineProcessException {
 		Collection<Record> records = JCasUtil.select(jCas, Record.class);
 		for (Record record : records) {
-			if (!StringUtils.equals(recordName, record.getName())) {
+			if (!StringUtils.equals(recordName, record.getName())
+					|| (!StringUtils.isEmpty(source) && !source.equalsIgnoreCase(record.getSource()))) {
 				continue;
 			}
 
