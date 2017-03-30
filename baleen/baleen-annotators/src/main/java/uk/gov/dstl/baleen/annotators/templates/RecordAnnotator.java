@@ -62,16 +62,22 @@ import uk.gov.dstl.baleen.uima.utils.SelectorUtils;
 ---
 - name: "NamedRecord"
   kind: "NAMED"
-  fieldPaths:
-    Description: "Paragraph:nth-of-type(8)"
-    FullName: "Table:nth-of-type(2) > TableBody > TableRow:nth-of-type(2) >\
+  fields:
+    - name: "Description"
+      path: "Paragraph:nth-of-type(8)"
+    - name: "FullName"
+      path: "Table:nth-of-type(2) > TableBody > TableRow:nth-of-type(2) >\
       \ TableCell:nth-of-type(2) > Paragraph"
+      required: "true"
   precedingPath: "Paragraph:nth-of-type(6)"
   followingPath: "Paragraph:nth-of-type(10)"
 - kind: "DEFAULT"
-  fieldPaths:
-    DocumentTitle: "Heading:nth-of-type(2)"
-    DocumentDate: "Paragraph:nth-of-type(3)"
+  fields:
+    - name: "DocumentTitle"
+      path: "Heading:nth-of-type(2)"
+    - name: "DocumentDate"
+      path: "Paragraph:nth-of-type(3)"
+      regex: "\d{1,2}\/\d{1,2}\/\d{4}"
  * </pre>
  * <p>
  * Configurations are typically created by running a pipeline with the
@@ -221,6 +227,19 @@ public class RecordAnnotator extends BaleenConsumer {
 		}
 	}
 
+	/**
+	 * Create field annotation for the given field definition and matched
+	 * structural element.
+	 *
+	 * @param jCas
+	 *            the jCas
+	 * @param source
+	 *            the source template definition file name
+	 * @param field
+	 *            the field
+	 * @param structure
+	 *            the structure
+	 */
 	private void createFieldAnnotation(JCas jCas, String source, FieldDefinitionConfiguration field,
 			Structure structure) {
 
@@ -265,13 +284,16 @@ public class RecordAnnotator extends BaleenConsumer {
 	 *
 	 * @param jCas
 	 *            the JCas
+	 * @param source
+	 *            the source
 	 * @param name
 	 *            the name
-	 * @param
 	 * @param begin
 	 *            the begin
 	 * @param end
 	 *            the end
+	 * @param value
+	 *            the value
 	 */
 	private void createFieldAnnotation(JCas jCas, String source, String name, int begin, int end, String value) {
 		TemplateField field = new TemplateField(jCas);
@@ -288,9 +310,10 @@ public class RecordAnnotator extends BaleenConsumer {
 	 *
 	 * @param jCas
 	 *            the JCas
+	 * @param source
+	 *            the source
 	 * @param name
 	 *            the name
-	 * @param string
 	 * @param begin
 	 *            the begin
 	 * @param end

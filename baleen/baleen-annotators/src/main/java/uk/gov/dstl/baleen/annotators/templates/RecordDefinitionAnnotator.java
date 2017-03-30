@@ -1,12 +1,13 @@
 package uk.gov.dstl.baleen.annotators.templates;
 
-import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.jcas.JCas;
-import uk.gov.dstl.baleen.types.templates.RecordDefinition;
-import uk.gov.dstl.baleen.uima.BaleenAnnotator;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.jcas.JCas;
+
+import uk.gov.dstl.baleen.types.templates.RecordDefinition;
+import uk.gov.dstl.baleen.uima.BaleenAnnotator;
 
 /**
  * Annotates record definitions found in documents using a regular expression.
@@ -18,7 +19,7 @@ import java.util.regex.Pattern;
  * annotations to be useful downstream.
  * </p>
  * <p>
- * This annotator should be used in conjuction with
+ * This annotator should be used in conjunction with
  * {@link TemplateFieldDefinitionAnnotator}.
  * </p>
  */
