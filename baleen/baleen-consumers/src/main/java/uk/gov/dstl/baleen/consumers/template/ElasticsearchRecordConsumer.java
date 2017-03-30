@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.searchbox.client.JestClient;
@@ -80,6 +81,11 @@ public class ElasticsearchRecordConsumer extends AbstractRecordConsumer {
 	@ConfigurationParameter(name = PARAM_CONTENT_HASH_AS_ID, defaultValue = "true")
 	private boolean contentHashAsId;
 
+	/**
+	 * The object mapper.
+	 */
+	private ObjectMapper mapper;
+
 	private static final String ES_PROPERTIES = "properties";
 	private static final String ES_TYPE = "type";
 	private static final String ES_TYPE_STRING = "string";
@@ -98,7 +104,6 @@ public class ElasticsearchRecordConsumer extends AbstractRecordConsumer {
 				}).collect(Collectors.toList());
 
 		for (ElasticsearchExtractedRecord elasticsearchExtractedRecord : elasticSearchRecords) {
-			ObjectMapper mapper = new ObjectMapper();
 			String json;
 			try {
 				json = mapper.writeValueAsString(elasticsearchExtractedRecord);
@@ -106,6 +111,7 @@ public class ElasticsearchRecordConsumer extends AbstractRecordConsumer {
 				getMonitor().warn("Failed to serialise record for Elasticsearch - skipping", e);
 				continue;
 			}
+
 			Index doc = new Index.Builder(json)
 					.id(String.format("%s-%s", externalId, elasticsearchExtractedRecord.getName())).index(index)
 					.type(type).build();
@@ -120,6 +126,9 @@ public class ElasticsearchRecordConsumer extends AbstractRecordConsumer {
 	@Override
 	public void doInitialize(UimaContext aContext) throws ResourceInitializationException {
 		super.doInitialize(aContext);
+		mapper = new ObjectMapper();
+		mapper.setSerializationInclusion(Include.NON_NULL);
+
 		boolean indexCreated = createIndex();
 		if (indexCreated) {
 			try {
