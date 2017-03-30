@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import com.samskivert.mustache.Template;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
@@ -78,7 +79,7 @@ public class PerRecordMustacheHtmlTemplateRecordConsumer extends AbstractMustach
 		try {
 			Template template = compileTemplate(templatePath);
 			String baseName = FilenameUtils.getBaseName(templatePath.toString());
-			templates.put(baseName, template);
+			templates.put(StringUtils.lowerCase(baseName), template);
 		} catch (IOException e) {
 			getMonitor().warn("Failed to compile template " + templatePath.toAbsolutePath().toString(), e);
 		}
@@ -90,7 +91,7 @@ public class PerRecordMustacheHtmlTemplateRecordConsumer extends AbstractMustach
 		for (Collection<ExtractedRecord> extractedRecords : records.values()) {
 			for (ExtractedRecord extractedRecord : extractedRecords) {
 				String name = extractedRecord.getName();
-				Template template = templates.get(name);
+				Template template = templates.get(StringUtils.lowerCase(name));
 				if (template == null) {
 					getMonitor().info("No template found for record {}", name);
 					continue;
