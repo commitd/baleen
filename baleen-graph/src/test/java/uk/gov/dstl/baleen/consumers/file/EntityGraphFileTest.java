@@ -11,6 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -57,9 +58,22 @@ public class EntityGraphFileTest extends AbstractAnnotatorTest {
     return null;
   }
 
+  private void assertPathsEqualExceptOrdering(Path expectedPath, Path actualPath)
+      throws IOException {
+    List<String> expected = Files.readAllLines(expectedPath);
+    List<String> actual = Files.readAllLines(actualPath);
+    expected.sort(Comparator.naturalOrder());
+    actual.sort(Comparator.naturalOrder());
+    assertListsEqual(expected, actual);
+  }
+
   private void assertPathsEqual(Path expectedPath, Path actualPath) throws IOException {
     List<String> expected = Files.readAllLines(expectedPath);
     List<String> actual = Files.readAllLines(actualPath);
+    assertListsEqual(expected, actual);
+  }
+
+  private void assertListsEqual(List<String> expected, List<String> actual) {
     for (int i = 0; i < expected.size(); i++) {
       assertEquals(expected.get(i), actual.get(i));
     }
@@ -96,7 +110,7 @@ public class EntityGraphFileTest extends AbstractAnnotatorTest {
     Path actual = tempDirectory.resolve(tempDirectory.toFile().list()[0]);
     Path expected = createAndFailIfMissing(actual, EXPECTED_GRAPHSON_FILE, GRAPHSON_NAME);
 
-    assertPathsEqual(expected, actual);
+    assertPathsEqualExceptOrdering(expected, actual);
 
     Files.delete(actual);
   }
