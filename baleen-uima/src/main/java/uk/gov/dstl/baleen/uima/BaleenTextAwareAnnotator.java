@@ -4,15 +4,20 @@ package uk.gov.dstl.baleen.uima;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.tcas.Annotation;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableSet;
 
+import uk.gov.dstl.baleen.common.structure.TextBlocks;
+import uk.gov.dstl.baleen.core.pipelines.orderers.AnalysisEngineAction;
 import uk.gov.dstl.baleen.types.language.Text;
 import uk.gov.dstl.baleen.uima.data.TextBlock;
 
@@ -150,7 +155,7 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
    * @param wholeDocument the new whole document as text
    */
   protected void setWholeDocumentAsText(final boolean wholeDocument) {
-    this.wholeDocumentAsText = wholeDocument;
+    wholeDocumentAsText = wholeDocument;
   }
 
   /**
@@ -160,5 +165,27 @@ public abstract class BaleenTextAwareAnnotator extends BaleenAnnotator {
    */
   protected boolean isWholeDocumentAsText() {
     return wholeDocumentAsText;
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * Override if different input requirements.
+   *
+   * @see uk.gov.dstl.baleen.uima.BaleenAnnotator#getAction()
+   */
+  @Override
+  public AnalysisEngineAction getAction() {
+    return new AnalysisEngineAction(
+        ImmutableSet.copyOf(TextBlocks.DEFAULT_STRUCTURAL_CLASSES), getOutputTypes());
+  }
+
+  /**
+   * Override to configure specific output types.
+   *
+   * @return the set of outputted annotation types
+   */
+  protected Set<Class<? extends Annotation>> getOutputTypes() {
+    return ImmutableSet.of();
   }
 }
