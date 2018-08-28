@@ -1,9 +1,9 @@
+// Copyright (c) Committed Software 2018, opensource@committed.io
 package uk.gov.dstl.baleen.translation;
 
 import org.junit.Test;
 
 public class TranslationExceptionTest {
-
 
   @Test(expected = TranslationException.class)
   public void canConstruct() throws TranslationException {

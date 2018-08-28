@@ -11,13 +11,20 @@
 
   <artifactId>baleen-translation</artifactId>
 
-  <name>baleen-translation</name>
+  <name>Baleen Translation</name>
 
   <dependencies>
     <dependency>
       <groupId>uk.gov.dstl.baleen</groupId>
       <artifactId>baleen-collectionreaders</artifactId>
       <version>${baleen.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>uk.gov.dstl.baleen</groupId>
+      <artifactId>baleen-collectionreaders</artifactId>
+      <version>${baleen.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>uk.gov.dstl.baleen</groupId>

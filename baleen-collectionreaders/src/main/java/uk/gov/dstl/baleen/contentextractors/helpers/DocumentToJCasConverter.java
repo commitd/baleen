@@ -100,7 +100,7 @@ public class DocumentToJCasConverter {
    * @param node the node
    * @return the string
    */
-  private String mapToText(final Node node) {
+  protected String mapToText(final Node node) {
     if (node instanceof TextNode) {
       final TextNode t = (TextNode) node;
       return t.getWholeText();

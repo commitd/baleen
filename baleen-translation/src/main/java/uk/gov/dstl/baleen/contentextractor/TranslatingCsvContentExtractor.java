@@ -7,16 +7,18 @@ import java.io.InputStream;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 
-import uk.gov.dstl.baleen.contentextractors.PlainTextContentExtractor;
+import uk.gov.dstl.baleen.contentextractors.CsvContentExtractor;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.resources.TranslatingJCas;
 
 /**
- * Extracts the content assuming it is plain text then translates it
+ * Takes a single line of CSV data, and splits it into 'columns' based on the specified separator
+ * character. The column designated as the main content is first translated then set as the JCas
+ * body, and other columns are added as Metadata annotations.
  *
  * @baleen.javadoc
  */
-public class TranslatingPlainTextContentExtractor extends PlainTextContentExtractor {
+public class TranslatingCsvContentExtractor extends CsvContentExtractor {
 
   /**
    * Translation service
@@ -29,12 +31,12 @@ public class TranslatingPlainTextContentExtractor extends PlainTextContentExtrac
   protected SharedTranslationResource translationService;
 
   /** Default constructor for UIMA */
-  public TranslatingPlainTextContentExtractor() {
+  public TranslatingCsvContentExtractor() {
     // DO NOTHING
   }
 
   /** Constructor for testing */
-  protected TranslatingPlainTextContentExtractor(SharedTranslationResource translationService) {
+  protected TranslatingCsvContentExtractor(SharedTranslationResource translationService) {
     this.translationService = translationService;
   }
 

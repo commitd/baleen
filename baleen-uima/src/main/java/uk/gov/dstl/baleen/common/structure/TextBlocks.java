@@ -59,7 +59,7 @@ import uk.gov.dstl.baleen.uima.utils.StructureUtil;
  */
 public class TextBlocks extends BaleenAnnotator {
 
-  private static final Set<Class<? extends Structure>> DEFAULT_STRUCTURAL_CLASSES =
+  public static final Set<Class<? extends Structure>> DEFAULT_STRUCTURAL_CLASSES =
       ImmutableSet.of(
           Paragraph.class,
           Aside.class,

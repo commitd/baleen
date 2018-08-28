@@ -7,16 +7,19 @@ import java.io.InputStream;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 
-import uk.gov.dstl.baleen.contentextractors.PlainTextContentExtractor;
+import uk.gov.dstl.baleen.contentextractors.TearlineContentExtractor;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.resources.TranslatingJCas;
 
 /**
- * Extracts the content assuming it is plain text then translates it
+ * Extracts metadata and content from an InputStream, and translates the first tearline of the
+ * document and sets as the content.
+ *
+ * <p>Uses the {@link SharedTranslationResource}.
  *
  * @baleen.javadoc
  */
-public class TranslatingPlainTextContentExtractor extends PlainTextContentExtractor {
+public class TranslatingTearlineContentExtractor extends TearlineContentExtractor {
 
   /**
    * Translation service
@@ -29,12 +32,12 @@ public class TranslatingPlainTextContentExtractor extends PlainTextContentExtrac
   protected SharedTranslationResource translationService;
 
   /** Default constructor for UIMA */
-  public TranslatingPlainTextContentExtractor() {
+  public TranslatingTearlineContentExtractor() {
     // DO NOTHING
   }
 
   /** Constructor for testing */
-  protected TranslatingPlainTextContentExtractor(SharedTranslationResource translationService) {
+  protected TranslatingTearlineContentExtractor(SharedTranslationResource translationService) {
     this.translationService = translationService;
   }
 

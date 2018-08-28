@@ -7,16 +7,17 @@ import java.io.InputStream;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 
-import uk.gov.dstl.baleen.contentextractors.PlainTextContentExtractor;
+import uk.gov.dstl.baleen.contentextractors.TikaContentExtractor;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.resources.TranslatingJCas;
 
 /**
- * Extracts the content assuming it is plain text then translates it
+ * Extracts metadata and text content from the supplied input, using Apache Tika then translates the
+ * text using the {@link SharedTranslationResource}.
  *
  * @baleen.javadoc
  */
-public class TranslatingPlainTextContentExtractor extends PlainTextContentExtractor {
+public class TranslatingTikaContentExtractor extends TikaContentExtractor {
 
   /**
    * Translation service
@@ -29,12 +30,12 @@ public class TranslatingPlainTextContentExtractor extends PlainTextContentExtrac
   protected SharedTranslationResource translationService;
 
   /** Default constructor for UIMA */
-  public TranslatingPlainTextContentExtractor() {
+  public TranslatingTikaContentExtractor() {
     // DO NOTHING
   }
 
   /** Constructor for testing */
-  protected TranslatingPlainTextContentExtractor(SharedTranslationResource translationService) {
+  protected TranslatingTikaContentExtractor(SharedTranslationResource translationService) {
     this.translationService = translationService;
   }
 

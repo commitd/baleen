@@ -1,10 +1,13 @@
+// Copyright (c) Committed Software 2018, opensource@committed.io
 package uk.gov.dstl.baleen.contentextractor;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collections;
+
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.factory.UimaContextFactory;
 import org.apache.uima.jcas.JCas;
@@ -12,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.translation.TranslationException;
 import uk.gov.dstl.baleen.uima.BaleenContentExtractor;
@@ -20,9 +24,7 @@ import uk.gov.dstl.baleen.uima.testing.JCasSingleton;
 @RunWith(MockitoJUnitRunner.class)
 public class TranslatingPlainTextContentExtractorTest {
 
-
-  @Mock
-  private SharedTranslationResource translationService;
+  @Mock private SharedTranslationResource translationService;
 
   @Test
   public void testTranslates() throws Exception {
@@ -39,7 +41,6 @@ public class TranslatingPlainTextContentExtractorTest {
         new TranslatingPlainTextContentExtractor(translationService);
 
     contentExtractor.initialize(context, Collections.emptyMap());
-
 
     try (InputStream is = new ByteArrayInputStream(toTranslate.getBytes())) {
       contentExtractor.processStream(is, "source", jCas);
@@ -66,7 +67,6 @@ public class TranslatingPlainTextContentExtractorTest {
         new TranslatingPlainTextContentExtractor(translationService);
 
     contentExtractor.initialize(context, Collections.emptyMap());
-
 
     try (InputStream is = new ByteArrayInputStream(toTranslate.getBytes())) {
       contentExtractor.processStream(is, "source", jCas);

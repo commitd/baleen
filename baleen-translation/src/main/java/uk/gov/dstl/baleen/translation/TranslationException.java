@@ -1,14 +1,10 @@
+// Copyright (c) Committed Software 2018, opensource@committed.io
 package uk.gov.dstl.baleen.translation;
 
-/**
- * General exception for errors during translation
- *
- */
+/** General exception for errors during translation */
 public class TranslationException extends Exception {
 
-  /**
-   * Generated
-   */
+  /** Generated */
   private static final long serialVersionUID = -6523697794008835216L;
 
   /**
@@ -48,6 +44,4 @@ public class TranslationException extends Exception {
   public TranslationException(String message, Throwable cause) {
     super(message, cause);
   }
-
-
 }
