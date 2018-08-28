@@ -26,6 +26,11 @@
     </dependency>
     <dependency>
       <groupId>uk.gov.dstl.baleen</groupId>
+      <artifactId>baleen-consumers</artifactId>
+      <version>${baleen.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>uk.gov.dstl.baleen</groupId>
       <artifactId>baleen-annotators</artifactId>
       <version>${baleen.version}</version>
       <type>test-jar</type>
@@ -45,5 +50,27 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>uk.gov.dstl.baleen</groupId>
+      <artifactId>baleen-consumers</artifactId>
+      <version>${baleen.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>uk.gov.dstl.baleen</groupId>
+      <artifactId>baleen-resources</artifactId>
+      <version>${baleen.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.github.fakemongo</groupId>
+      <artifactId>fongo</artifactId>
+      <version>${fongo.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+
+
 </project>
