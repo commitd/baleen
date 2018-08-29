@@ -273,5 +273,6 @@
     <module>baleen-kafka</module>
     <module>baleen-rabbitmq</module>
     <module>baleen-redis</module>
+    <module>baleen-translation</module>
   </modules>
 </project>
