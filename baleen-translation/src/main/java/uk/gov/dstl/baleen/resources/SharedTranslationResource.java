@@ -111,4 +111,14 @@ public class SharedTranslationResource extends BaleenResource implements Transla
   public String getTargetLanguage() {
     return delegate.getTargetLanguage();
   }
+
+  @Override
+  protected void doDestroy() {
+    try {
+      delegate.close();
+    } catch (TranslationException e) {
+      getMonitor().warn("Unable to close translation service", e);
+    }
+    super.doDestroy();
+  }
 }

@@ -2,7 +2,7 @@
 package uk.gov.dstl.baleen.translation;
 
 /** Interface for providing different translation services. */
-public interface TranslationService {
+public interface TranslationService extends AutoCloseable {
 
   /**
    * Translate the given text
@@ -17,4 +17,16 @@ public interface TranslationService {
 
   /** @return target language of the translation language */
   String getTargetLanguage();
+
+  /*
+   * (non-Javadoc)
+   *
+   * override if any resources need to be release
+   *
+   * @see java.lang.AutoCloseable#close()
+   */
+  @Override
+  default void close() throws TranslationException {
+    // DO NOTHING
+  }
 }
