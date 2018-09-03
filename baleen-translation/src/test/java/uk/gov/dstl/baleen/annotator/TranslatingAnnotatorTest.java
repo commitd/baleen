@@ -22,14 +22,12 @@ public class TranslatingAnnotatorTest extends AbstractAnnotatorTest {
     super(TranslatingAnnotator.class);
   }
 
-  public ExternalResourceDescription erd(String translation) {
+  public ExternalResourceDescription erd() {
     return ExternalResourceFactory.createExternalResourceDescription(
         SharedTranslationResource.RESOURCE_KEY,
         SharedTranslationResource.class,
         SharedTranslationResource.PARAM_SERVICE,
-        TestConfiguredTranslateService.class.getSimpleName(),
-        SharedTranslationResource.PARAM_CONFIG,
-        translation);
+        TestConfiguredTranslateService.class.getSimpleName());
   }
 
   @Test
@@ -39,7 +37,11 @@ public class TranslatingAnnotatorTest extends AbstractAnnotatorTest {
     String text = "Hello world, this is a test";
     jCas.setDocumentText(text);
 
-    processJCas(SharedTranslationResource.RESOURCE_KEY, erd(translation));
+    processJCas(
+        SharedTranslationResource.RESOURCE_KEY,
+        erd(),
+        TestConfiguredTranslateService.RESPONSE,
+        translation);
 
     assertEquals(1, JCasUtil.select(jCas, Translation.class).size());
     Translation t = JCasUtil.selectByIndex(jCas, Translation.class, 0);
@@ -64,7 +66,11 @@ public class TranslatingAnnotatorTest extends AbstractAnnotatorTest {
     text2.setEnd(26);
     text2.addToIndexes();
 
-    processJCas(SharedTranslationResource.RESOURCE_KEY, erd(translation));
+    processJCas(
+        SharedTranslationResource.RESOURCE_KEY,
+        erd(),
+        TestConfiguredTranslateService.RESPONSE,
+        translation);
 
     assertEquals(2, JCasUtil.select(jCas, Translation.class).size());
 
@@ -89,7 +95,9 @@ public class TranslatingAnnotatorTest extends AbstractAnnotatorTest {
 
     processJCas(
         SharedTranslationResource.RESOURCE_KEY,
-        erd(translation),
+        erd(),
+        TestConfiguredTranslateService.RESPONSE,
+        translation,
         TranslatingAnnotator.PARAM_CHECK_SOURCE_LANGUAGE,
         true);
 
@@ -112,7 +120,9 @@ public class TranslatingAnnotatorTest extends AbstractAnnotatorTest {
 
     processJCas(
         SharedTranslationResource.RESOURCE_KEY,
-        erd(translation),
+        erd(),
+        TestConfiguredTranslateService.RESPONSE,
+        translation,
         TranslatingAnnotator.PARAM_CHECK_SOURCE_LANGUAGE,
         true);
 
@@ -135,7 +145,9 @@ public class TranslatingAnnotatorTest extends AbstractAnnotatorTest {
 
     processJCas(
         SharedTranslationResource.RESOURCE_KEY,
-        erd(translation),
+        erd(),
+        TestConfiguredTranslateService.RESPONSE,
+        translation,
         TranslatingAnnotator.PARAM_CHECK_SOURCE_LANGUAGE,
         true);
 

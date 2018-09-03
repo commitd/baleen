@@ -1,5 +1,5 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
-package uk.gov.dstl.baleen.contentextractor;
+package uk.gov.dstl.baleen.contentextractors;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,7 +7,6 @@ import java.io.InputStream;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 
-import uk.gov.dstl.baleen.contentextractors.PlainTextContentExtractor;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.resources.TranslatingJCas;
 

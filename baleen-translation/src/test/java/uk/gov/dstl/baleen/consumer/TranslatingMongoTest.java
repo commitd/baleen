@@ -32,7 +32,7 @@ import uk.gov.dstl.baleen.resources.SharedIdGenerator;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.translation.TestConfiguredTranslateService;
 
-public class MongoTest {
+public class TranslatingMongoTest {
 
   private static final String MONGO = "mongo";
 
@@ -50,9 +50,7 @@ public class MongoTest {
             SharedTranslationResource.RESOURCE_KEY,
             SharedTranslationResource.class,
             SharedTranslationResource.PARAM_SERVICE,
-            TestConfiguredTranslateService.class.getSimpleName(),
-            SharedTranslationResource.PARAM_CONFIG,
-            TRANSLATION);
+            TestConfiguredTranslateService.class.getSimpleName());
 
     // Create a description of an external resource - a fongo instance, in the same way we would
     // have created a shared mongo resource
@@ -78,7 +76,9 @@ public class MongoTest {
             SharedIdGenerator.RESOURCE_KEY,
             idErd,
             SharedTranslationResource.RESOURCE_KEY,
-            terd);
+            terd,
+            TestConfiguredTranslateService.RESPONSE,
+            TRANSLATION);
     ae = AnalysisEngineFactory.createEngine(aed);
     ae.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 

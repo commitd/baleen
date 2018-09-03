@@ -1,5 +1,5 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
-package uk.gov.dstl.baleen.contentextractor;
+package uk.gov.dstl.baleen.contentextractors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -8,9 +8,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 
-import org.apache.uima.UimaContext;
-import org.apache.uima.fit.factory.UimaContextFactory;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.impl.CustomResourceSpecifier_impl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -34,13 +33,12 @@ public class TranslatingPlainTextContentExtractorTest {
 
     when(translationService.translate(toTranslate)).thenReturn(translation);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor =
         new TranslatingPlainTextContentExtractor(translationService);
 
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     try (InputStream is = new ByteArrayInputStream(toTranslate.getBytes())) {
       contentExtractor.processStream(is, "source", jCas);
@@ -60,13 +58,12 @@ public class TranslatingPlainTextContentExtractorTest {
 
     when(translationService.translate(toTranslate)).thenThrow(TranslationException.class);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor =
         new TranslatingPlainTextContentExtractor(translationService);
 
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     try (InputStream is = new ByteArrayInputStream(toTranslate.getBytes())) {
       contentExtractor.processStream(is, "source", jCas);

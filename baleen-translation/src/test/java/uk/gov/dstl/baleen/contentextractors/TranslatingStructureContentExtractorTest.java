@@ -1,5 +1,5 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
-package uk.gov.dstl.baleen.contentextractor;
+package uk.gov.dstl.baleen.contentextractors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -11,10 +11,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.uima.UimaContext;
-import org.apache.uima.fit.factory.UimaContextFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.impl.CustomResourceSpecifier_impl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -58,7 +57,6 @@ public class TranslatingStructureContentExtractorTest {
   @Test
   public void testTranslates() throws Exception {
 
-    String toTranslate = "Title\nExample";
     String firstTranslate = "Title";
     String secondTranslate = "Example";
     String firstTranslation = "De titre";
@@ -69,20 +67,19 @@ public class TranslatingStructureContentExtractorTest {
     when(translationService.translate(firstTranslate)).thenReturn(firstTranslation);
     when(translationService.translate(secondTranslate)).thenReturn(secondTranslation);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor = new TestContentExtractor(translationService);
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     contentExtractor.processStream(null, "source", jCas);
 
     assertEquals(translation, jCas.getDocumentText());
     Collection<Paragraph> select = JCasUtil.select(jCas, Paragraph.class);
-    assertEquals(select.size(), 1);
+    assertEquals(1, select.size());
     Paragraph p = select.iterator().next();
-    assertEquals(p.getBegin(), 9);
-    assertEquals(p.getEnd(), 16);
+    assertEquals(9, p.getBegin());
+    assertEquals(16, p.getEnd());
 
     List<Metadata> contentMeta =
         JCasUtil.select(jCas, Metadata.class)
@@ -99,11 +96,10 @@ public class TranslatingStructureContentExtractorTest {
 
     when(translationService.translate(anyString())).thenThrow(TranslationException.class);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor = new TestContentExtractor(translationService);
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     contentExtractor.processStream(null, "source", jCas);
 

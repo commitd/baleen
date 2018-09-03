@@ -1,19 +1,19 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
-package uk.gov.dstl.baleen.contentextractor;
+package uk.gov.dstl.baleen.contentextractors;
 
 import java.util.List;
 
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.jsoup.nodes.Node;
 
-import uk.gov.dstl.baleen.contentextractors.StructureContentExtractor;
 import uk.gov.dstl.baleen.contentextractors.helpers.DocumentToJCasConverter;
 import uk.gov.dstl.baleen.contentmappers.helpers.ContentMapper;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.translation.TranslationException;
 
 /**
- * Translates the output of the {@link StructureContentExtractor} using the {@link
+ * Translates the output of the {@link
+ * uk.gov.dstl.baleen.contentextractors.StructureContentExtractor} using the {@link
  * SharedTranslationResource}.
  *
  * <p>Attempts to preserve the extracted structure, however this may negatively affect the accuracy

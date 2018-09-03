@@ -1,5 +1,5 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
-package uk.gov.dstl.baleen.contentextractor;
+package uk.gov.dstl.baleen.contentextractors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
@@ -11,15 +11,13 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 
-import org.apache.uima.UimaContext;
-import org.apache.uima.fit.factory.UimaContextFactory;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.impl.CustomResourceSpecifier_impl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import uk.gov.dstl.baleen.contentextractors.TearlineContentExtractorTest;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.translation.TranslationException;
 import uk.gov.dstl.baleen.uima.BaleenContentExtractor;
@@ -38,13 +36,12 @@ public class TranslatingTearlineContentExtractorTest {
 
     when(translationService.translate(toTranslate)).thenReturn(translation);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor =
         new TranslatingTearlineContentExtractor(translationService);
 
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     try (InputStream is = new ByteArrayInputStream(toTranslate.getBytes())) {
       contentExtractor.processStream(is, "source", jCas);
@@ -64,13 +61,12 @@ public class TranslatingTearlineContentExtractorTest {
 
     when(translationService.translate(toTranslate)).thenThrow(TranslationException.class);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor =
         new TranslatingTearlineContentExtractor(translationService);
 
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     try (InputStream is = new ByteArrayInputStream(toTranslate.getBytes())) {
       contentExtractor.processStream(is, "source", jCas);
@@ -91,18 +87,16 @@ public class TranslatingTearlineContentExtractorTest {
 
     when(translationService.translate(eq(toTranslate))).thenReturn(translation);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor =
         new TranslatingTearlineContentExtractor(translationService);
 
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     String[] files = new String[] {"1.docx", "2.docx", "3.docx", "4.docx", "5.doc", "6.pdf"};
     for (String file : files) {
-      File f =
-          new File(TearlineContentExtractorTest.class.getResource("tearline/" + file).getPath());
+      File f = new File(getClass().getResource("tearline/" + file).getPath());
 
       try (InputStream is = new FileInputStream(f); ) {
         contentExtractor.processStream(is, f.getPath(), jCas);
@@ -121,18 +115,16 @@ public class TranslatingTearlineContentExtractorTest {
 
     when(translationService.translate(eq(toTranslate))).thenThrow(TranslationException.class);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor =
         new TranslatingTearlineContentExtractor(translationService);
 
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
     String[] files = new String[] {"1.docx", "2.docx", "3.docx", "4.docx", "5.doc", "6.pdf"};
     for (String file : files) {
-      File f =
-          new File(TearlineContentExtractorTest.class.getResource("tearline/" + file).getPath());
+      File f = new File(getClass().getResource("tearline/" + file).getPath());
 
       try (InputStream is = new FileInputStream(f); ) {
         contentExtractor.processStream(is, f.getPath(), jCas);
@@ -152,17 +144,14 @@ public class TranslatingTearlineContentExtractorTest {
 
     when(translationService.translate(eq(toTranslate))).thenReturn(translation);
 
-    UimaContext context = UimaContextFactory.createUimaContext();
     JCas jCas = JCasSingleton.getJCasInstance();
 
     BaleenContentExtractor contentExtractor =
         new TranslatingTearlineContentExtractor(translationService);
 
-    contentExtractor.initialize(context, Collections.emptyMap());
+    contentExtractor.initialize(new CustomResourceSpecifier_impl(), Collections.emptyMap());
 
-    File f =
-        new File(
-            TearlineContentExtractorTest.class.getResource("tearline/notearline.docx").getPath());
+    File f = new File(getClass().getResource("tearline/notearline.docx").getPath());
 
     try (InputStream is = new FileInputStream(f); ) {
       contentExtractor.processStream(is, f.getPath(), jCas);

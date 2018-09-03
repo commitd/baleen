@@ -14,6 +14,7 @@ import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.translation.TranslationException;
 import uk.gov.dstl.baleen.translation.TranslationService;
 import uk.gov.dstl.baleen.uima.BaleenResource;
+import uk.gov.dstl.baleen.uima.utils.UimaUtils;
 
 /**
  * <b>Shared resource for accessing TranslationServices</b>
@@ -33,29 +34,19 @@ public class SharedTranslationResource extends BaleenResource implements Transla
   private static final String DEFAULT_PACKAGE = "uk.gov.dstl.baleen.translation";
 
   /** default key for access to the translation resource */
-  public static final String RESOURCE_KEY = "translationResource";
+  public static final String RESOURCE_KEY = "translation";
 
-  public static final String DEFAULT_TRANSLATION_SERVICE = "JonahTranslationService";
+  public static final String DEFAULT_TRANSLATION_SERVICE = "joshua.JoshuaTranslationService";
 
   /**
    * The translation service class to use
    *
    * @baleen.config JonahTranslationService
    */
-  public static final String PARAM_SERVICE = "service";
+  public static final String PARAM_SERVICE = "translation.service";
 
   @ConfigurationParameter(name = PARAM_SERVICE, defaultValue = DEFAULT_TRANSLATION_SERVICE)
   private String service;
-
-  /**
-   * The translation service configuration
-   *
-   * @baleen.config []
-   */
-  public static final String PARAM_CONFIG = "config";
-
-  @ConfigurationParameter(name = PARAM_CONFIG, mandatory = false)
-  private String[] config;
 
   protected TranslationService delegate;
 
@@ -67,7 +58,8 @@ public class SharedTranslationResource extends BaleenResource implements Transla
       Class<? extends TranslationService> clazz =
           BuilderUtils.getClassFromString(service, DEFAULT_PACKAGE);
 
-      delegate = constructTranslationService(clazz);
+      delegate =
+          constructTranslationService(clazz, UimaUtils.getConfigParameters(getUimaContext()));
 
     } catch (NoSuchMethodException
         | SecurityException
@@ -83,12 +75,13 @@ public class SharedTranslationResource extends BaleenResource implements Transla
     return true;
   }
 
-  private TranslationService constructTranslationService(Class<? extends TranslationService> clazz)
+  private TranslationService constructTranslationService(
+      Class<? extends TranslationService> clazz, Map<String, Object> configuration)
       throws InstantiationException, IllegalAccessException, InvocationTargetException,
           NoSuchMethodException {
     try {
-      Constructor<? extends TranslationService> constructor = clazz.getConstructor(String[].class);
-      return constructor.newInstance((Object) config);
+      Constructor<? extends TranslationService> constructor = clazz.getConstructor(Map.class);
+      return constructor.newInstance(configuration);
     } catch (NoSuchMethodException e) {
       getMonitor().warn("No configuration based constructor for {} using default", service);
       Constructor<? extends TranslationService> constructor;

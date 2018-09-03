@@ -1,15 +1,19 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
 package uk.gov.dstl.baleen.translation;
 
+import java.util.Map;
+
 public class TestConfiguredTranslateService implements TranslationService {
+
+  public static final String RESPONSE = "response";
 
   public static final String SOURCE_LANGUAGE = "en";
   public static final String TARGET_LANGUAGE = "fr";
 
   private final String response;
 
-  public TestConfiguredTranslateService(String[] args) {
-    response = args[0];
+  public TestConfiguredTranslateService(Map<String, Object> args) {
+    response = (String) args.get(RESPONSE);
   }
 
   @Override

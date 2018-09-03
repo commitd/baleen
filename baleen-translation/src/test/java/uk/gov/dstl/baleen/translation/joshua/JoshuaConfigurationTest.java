@@ -6,7 +6,7 @@ import static org.junit.Assert.assertEquals;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class JoshuaConfigurationTest {
 
@@ -16,20 +16,20 @@ public class JoshuaConfigurationTest {
 
   @Test(expected = ResourceInitializationException.class)
   public void testRequiresConfig() throws ResourceInitializationException {
-    JoshuaConfiguration.create(ImmutableList.of());
+    JoshuaConfiguration.create(ImmutableMap.of());
   }
 
   @Test(expected = ResourceInitializationException.class)
   public void testRequiresSource() throws ResourceInitializationException {
     JoshuaConfiguration.create(
-        ImmutableList.of(
+        ImmutableMap.of(
             JoshuaTranslationService.TARGET, TARGET, JoshuaTranslationService.URL, URL));
   }
 
   @Test(expected = ResourceInitializationException.class)
   public void testRequiresTarget() throws ResourceInitializationException {
     JoshuaConfiguration.create(
-        ImmutableList.of(
+        ImmutableMap.of(
             JoshuaTranslationService.SOURCE, SOURCE, JoshuaTranslationService.URL, URL));
   }
 
@@ -37,7 +37,7 @@ public class JoshuaConfigurationTest {
   public void testRequiresOnlySourceAndTarget() throws ResourceInitializationException {
     JoshuaConfiguration configuration =
         JoshuaConfiguration.create(
-            ImmutableList.of(
+            ImmutableMap.of(
                 JoshuaTranslationService.SOURCE, SOURCE, JoshuaTranslationService.TARGET, TARGET));
 
     assertEquals(SOURCE, configuration.getSource());
@@ -49,7 +49,7 @@ public class JoshuaConfigurationTest {
   public void testCanConfigureJoshuaFromStringList() throws ResourceInitializationException {
     JoshuaConfiguration configuration =
         JoshuaConfiguration.create(
-            ImmutableList.of(
+            ImmutableMap.of(
                 JoshuaTranslationService.SOURCE,
                 SOURCE,
                 JoshuaTranslationService.TARGET,

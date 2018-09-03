@@ -1,5 +1,5 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
-package uk.gov.dstl.baleen.contentextractor;
+package uk.gov.dstl.baleen.contentextractors;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,17 +7,17 @@ import java.io.InputStream;
 import org.apache.uima.fit.descriptor.ExternalResource;
 import org.apache.uima.jcas.JCas;
 
-import uk.gov.dstl.baleen.contentextractors.TikaContentExtractor;
 import uk.gov.dstl.baleen.resources.SharedTranslationResource;
 import uk.gov.dstl.baleen.resources.TranslatingJCas;
 
 /**
- * Extracts metadata and text content from the supplied input, using Apache Tika then translates the
- * text using the {@link SharedTranslationResource}.
+ * Takes a single line of CSV data, and splits it into 'columns' based on the specified separator
+ * character. The column designated as the main content is first translated then set as the JCas
+ * body, and other columns are added as Metadata annotations.
  *
  * @baleen.javadoc
  */
-public class TranslatingTikaContentExtractor extends TikaContentExtractor {
+public class TranslatingCsvContentExtractor extends CsvContentExtractor {
 
   /**
    * Translation service
@@ -30,12 +30,12 @@ public class TranslatingTikaContentExtractor extends TikaContentExtractor {
   protected SharedTranslationResource translationService;
 
   /** Default constructor for UIMA */
-  public TranslatingTikaContentExtractor() {
+  public TranslatingCsvContentExtractor() {
     // DO NOTHING
   }
 
   /** Constructor for testing */
-  protected TranslatingTikaContentExtractor(SharedTranslationResource translationService) {
+  protected TranslatingCsvContentExtractor(SharedTranslationResource translationService) {
     this.translationService = translationService;
   }
 

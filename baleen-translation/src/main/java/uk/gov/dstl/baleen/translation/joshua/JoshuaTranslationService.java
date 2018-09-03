@@ -4,7 +4,7 @@ package uk.gov.dstl.baleen.translation.joshua;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.Arrays;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import org.apache.http.HttpEntity;
@@ -24,11 +24,11 @@ import uk.gov.dstl.baleen.translation.TranslationService;
 /** Implementation of {@link TranslationService} for connection to an Apache Joshua server. */
 public class JoshuaTranslationService implements TranslationService {
 
-  public static final String URL = "url";
-  public static final String SOURCE = "source";
-  public static final String TARGET = "target";
+  public static final String URL = "translation.url";
+  public static final String SOURCE = "translation.source";
+  public static final String TARGET = "translation.target";
 
-  public static final String DEFAULT_URL = "http://localhost:61616";
+  public static final String DEFAULT_URL = "http://localhost:5674";
 
   private final HttpClient httpClient;
   private final ObjectMapper objectMapper;
@@ -49,11 +49,9 @@ public class JoshuaTranslationService implements TranslationService {
    * @param configuration
    * @throws ResourceInitializationException if can not be correctly configured
    */
-  public JoshuaTranslationService(String[] configuration) throws ResourceInitializationException {
-    this(
-        JoshuaConfiguration.create(Arrays.asList(configuration)),
-        new ObjectMapper(),
-        DefaultHttpClient::new);
+  public JoshuaTranslationService(Map<String, Object> configuration)
+      throws ResourceInitializationException {
+    this(JoshuaConfiguration.create(configuration), new ObjectMapper(), DefaultHttpClient::new);
   }
 
   @VisibleForTesting

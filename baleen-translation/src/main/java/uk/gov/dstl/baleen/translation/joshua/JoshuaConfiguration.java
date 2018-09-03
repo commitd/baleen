@@ -1,7 +1,7 @@
 // Copyright (c) Committed Software 2018, opensource@committed.io
 package uk.gov.dstl.baleen.translation.joshua;
 
-import java.util.List;
+import java.util.Map;
 
 import org.apache.uima.resource.ResourceInitializationException;
 
@@ -47,13 +47,12 @@ public class JoshuaConfiguration {
    * @return JoshuaConfiguration
    * @throws ResourceInitializationException if unable to create configuration
    */
-  public static JoshuaConfiguration create(List<String> configuration)
+  public static JoshuaConfiguration create(Map<String, Object> configuration)
       throws ResourceInitializationException {
-    int indexOfSource = configuration.indexOf(JoshuaTranslationService.SOURCE);
-    int indexOfTarget = configuration.indexOf(JoshuaTranslationService.TARGET);
-    int indexOfUrl = configuration.indexOf(JoshuaTranslationService.URL);
+    boolean hasSource = configuration.containsKey(JoshuaTranslationService.SOURCE);
+    boolean hasTarget = configuration.containsKey(JoshuaTranslationService.TARGET);
 
-    if (indexOfSource < 0 || indexOfTarget < 0) {
+    if (!hasSource || !hasTarget) {
       throw new ResourceInitializationException();
     }
 
@@ -62,14 +61,13 @@ public class JoshuaConfiguration {
     String url;
 
     try {
-      source = configuration.get(indexOfSource + 1);
-      target = configuration.get(indexOfTarget + 1);
-      if (indexOfUrl < 0) {
-        url = JoshuaTranslationService.DEFAULT_URL;
-      } else {
-        url = configuration.get(indexOfUrl + 1);
-      }
-    } catch (ArrayIndexOutOfBoundsException e) {
+      source = (String) configuration.get(JoshuaTranslationService.SOURCE);
+      target = (String) configuration.get(JoshuaTranslationService.TARGET);
+      url =
+          (String)
+              configuration.getOrDefault(
+                  JoshuaTranslationService.URL, JoshuaTranslationService.DEFAULT_URL);
+    } catch (ClassCastException e) {
       throw new ResourceInitializationException(e);
     }
 

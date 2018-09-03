@@ -5,7 +5,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.uima.UIMAFramework;
+import org.apache.uima.UimaContext;
 import org.apache.uima.fit.factory.ExternalResourceFactory;
+import org.apache.uima.fit.factory.UimaContextFactory;
 import org.apache.uima.resource.ExternalResourceDescription;
 import org.apache.uima.resource.Resource;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -29,12 +31,14 @@ public class SharedTranslationResourceTest {
             TestTranslateService.class.getSimpleName());
 
     Resource resource =
-        UIMAFramework.produceResource(erd.getResourceSpecifier(), ImmutableMap.of());
+        UIMAFramework.produceResource(
+            erd.getResourceSpecifier(),
+            ImmutableMap.of(Resource.PARAM_UIMA_CONTEXT, UimaContextFactory.createUimaContext()));
 
     assertTrue(resource instanceof SharedTranslationResource);
-    SharedTranslationResource translationResource = (SharedTranslationResource) resource;
-
-    assertEquals(TestTranslateService.DEFAULT_RESPONSE, translationResource.translate(""));
+    try (SharedTranslationResource translationResource = (SharedTranslationResource) resource) {
+      assertEquals(TestTranslateService.DEFAULT_RESPONSE, translationResource.translate(""));
+    }
   }
 
   @Test
@@ -48,16 +52,18 @@ public class SharedTranslationResourceTest {
             SharedTranslationResource.RESOURCE_KEY,
             SharedTranslationResource.class,
             SharedTranslationResource.PARAM_SERVICE,
-            TestConfiguredTranslateService.class.getSimpleName(),
-            SharedTranslationResource.PARAM_CONFIG,
-            config);
+            TestConfiguredTranslateService.class.getSimpleName());
+
+    UimaContext context =
+        UimaContextFactory.createUimaContext(TestConfiguredTranslateService.RESPONSE, config);
 
     Resource resource =
-        UIMAFramework.produceResource(erd.getResourceSpecifier(), ImmutableMap.of());
+        UIMAFramework.produceResource(
+            erd.getResourceSpecifier(), ImmutableMap.of(Resource.PARAM_UIMA_CONTEXT, context));
 
     assertTrue(resource instanceof SharedTranslationResource);
-    SharedTranslationResource translationResource = (SharedTranslationResource) resource;
-
-    assertEquals(config, translationResource.translate(""));
+    try (SharedTranslationResource translationResource = (SharedTranslationResource) resource) {
+      assertEquals(config, translationResource.translate(""));
+    }
   }
 }
