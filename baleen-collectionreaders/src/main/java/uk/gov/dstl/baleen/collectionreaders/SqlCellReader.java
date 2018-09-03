@@ -41,17 +41,23 @@ public class SqlCellReader extends AbstractSqlReader {
 
   @Override
   public boolean doHasNext() throws IOException, CollectionException {
-    if (!colsToProcess.isEmpty()) return true;
+    if (!colsToProcess.isEmpty()) {
+      return true;
+    }
 
-    if (!idsToProcess.isEmpty()) return true;
+    if (!idsToProcess.isEmpty()) {
+      return true;
+    }
 
     idsToProcess.addAll(getIds(currId));
     return !idsToProcess.isEmpty();
   }
 
   @Override
-  @SuppressWarnings(
-      "squid:S2077" /* The value of col is read from the database column names and so should be safe to use in this context */)
+  @SuppressWarnings("squid:S2077" /*
+                                   * The value of col is read from the database column names and so
+                                   * should be safe to use in this context
+                                   */)
   protected void doGetNext(JCas jCas) throws IOException, CollectionException {
     if (colsToProcess.isEmpty()) {
       // Get next row
@@ -80,7 +86,7 @@ public class SqlCellReader extends AbstractSqlReader {
 
     String sourceUrl = sqlConn.substring(5) + "." + table + "#" + currId + "." + col;
 
-    extractor.processStream(
+    extractContent(
         new ByteArrayInputStream(content.getBytes(Charset.defaultCharset())), sourceUrl, jCas);
   }
 }

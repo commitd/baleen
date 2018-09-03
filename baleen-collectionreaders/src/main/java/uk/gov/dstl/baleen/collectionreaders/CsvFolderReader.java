@@ -36,9 +36,9 @@ import org.apache.uima.resource.ResourceInitializationException;
 import com.opencsv.CSVParser;
 import com.opencsv.CSVParserBuilder;
 
+import uk.gov.dstl.baleen.core.pipelines.content.ContentExtractor;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
 import uk.gov.dstl.baleen.uima.BaleenCollectionReader;
-import uk.gov.dstl.baleen.uima.IContentExtractor;
 import uk.gov.dstl.baleen.uima.UimaSupport;
 
 /**
@@ -115,7 +115,7 @@ public class CsvFolderReader extends BaleenCollectionReader {
 
   private CSVParser csvParser;
 
-  private IContentExtractor extractor;
+  private ContentExtractor extractor;
 
   @Override
   public void doInitialize(UimaContext context) throws ResourceInitializationException {
