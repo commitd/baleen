@@ -110,13 +110,13 @@
     <skip.integration.tests>true</skip.integration.tests>
 
     <!-- Build and Reporting -->
-    <maven-compiler-plugin.version>3.7.0</maven-compiler-plugin.version>
-    <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-    <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
-    <maven-shade-plugin.version>3.1.0</maven-shade-plugin.version>
-    <maven-surefire-plugin.version>2.20.1</maven-surefire-plugin.version>
+    <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
+    <maven-jar-plugin.version>3.1.0</maven-jar-plugin.version>
+    <maven-javadoc-plugin.version>3.0.1</maven-javadoc-plugin.version>
+    <maven-shade-plugin.version>3.2.0</maven-shade-plugin.version>
+    <maven-surefire-plugin.version>2.22.0</maven-surefire-plugin.version>
     <maven-failsafe-plugin.version>${maven-surefire-plugin.version}</maven-failsafe-plugin.version>
-    <maven-spotless.version>1.0.0.BETA4</maven-spotless.version>
+    <maven-spotless.version>1.15.0</maven-spotless.version>
   </properties>
 
   <dependencies>
