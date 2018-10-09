@@ -2,7 +2,6 @@
 package uk.gov.dstl.baleen.uima;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.uima.UimaContext;
@@ -45,7 +44,7 @@ public abstract class BaleenScheduler extends JCasCollectionReader_ImplBase {
   private UimaMonitor monitor;
 
   /** The config. */
-  private Map<String, String> config;
+  private Map<String, Object> config;
 
   @Override
   public final void initialize(final UimaContext context) throws ResourceInitializationException {
@@ -59,7 +58,7 @@ public abstract class BaleenScheduler extends JCasCollectionReader_ImplBase {
     getMonitor().startFunction("initialize");
 
     // Pull the config parameters out for job settings
-    config = BaleenScheduler.getConfigParameters(context);
+    config = UimaUtils.getConfigParameters(context);
 
     doInitialize(context);
 
@@ -88,8 +87,8 @@ public abstract class BaleenScheduler extends JCasCollectionReader_ImplBase {
     jCas.setDocumentLanguage("en");
 
     final JobSettings settings = new JobSettings(jCas);
-    for (final Map.Entry<String, String> e : config.entrySet()) {
-      settings.set(e.getKey(), e.getValue());
+    for (final Map.Entry<String, Object> e : config.entrySet()) {
+      settings.set(e.getKey(), (String) e.getValue());
     }
 
     getMonitor().finishFunction("getNext");
@@ -150,21 +149,5 @@ public abstract class BaleenScheduler extends JCasCollectionReader_ImplBase {
    */
   protected final UimaMonitor getMonitor() {
     return monitor;
-  }
-
-  /**
-   * Create a configuration map from a context.
-   *
-   * @param context the context
-   * @return non-empty map of config param name to config param value
-   */
-  protected static Map<String, String> getConfigParameters(final UimaContext context) {
-    // <String, String> due to limitations of Metadata
-    final Map<String, String> ret = new HashMap<>();
-    for (final String name : context.getConfigParameterNames()) {
-      ret.put(name, context.getConfigParameterValue(name).toString());
-    }
-
-    return ret;
   }
 }

@@ -18,6 +18,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import uk.gov.dstl.baleen.core.pipelines.content.ContentExtractor;
 import uk.gov.dstl.baleen.exceptions.InvalidParameterException;
 import uk.gov.dstl.baleen.types.metadata.Metadata;
 import uk.gov.dstl.baleen.uima.BaleenCollectionReader;
@@ -46,6 +47,8 @@ public class LineReader extends BaleenCollectionReader {
   private BufferedReader br;
   private String line;
   private Integer lineNumber = 0;
+
+  private ContentExtractor extractor;
 
   @Override
   protected void doInitialize(UimaContext context) throws ResourceInitializationException {

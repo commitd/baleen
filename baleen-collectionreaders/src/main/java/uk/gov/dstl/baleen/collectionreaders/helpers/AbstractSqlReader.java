@@ -149,7 +149,9 @@ public abstract class AbstractSqlReader extends BaleenCollectionReader {
     try (ResultSet rsColumns = psListColumns.executeQuery()) {
       while (rsColumns.next()) {
         String columnName = rsColumns.getString("COLUMN_NAME");
-        if (inArray(columnName, ignore)) continue;
+        if (inArray(columnName, ignore)) {
+          continue;
+        }
 
         cols.add(columnName);
       }
@@ -213,7 +215,9 @@ public abstract class AbstractSqlReader extends BaleenCollectionReader {
   /** Check whether the needle appears in the haystack (case insensitive) */
   protected static boolean inArray(String needle, String[] haystack) {
     for (String h : haystack) {
-      if (needle.equalsIgnoreCase(h)) return true;
+      if (needle.equalsIgnoreCase(h)) {
+        return true;
+      }
     }
 
     return false;

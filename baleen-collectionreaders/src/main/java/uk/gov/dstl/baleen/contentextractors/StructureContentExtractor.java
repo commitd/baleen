@@ -171,7 +171,8 @@ public class StructureContentExtractor extends AbstractContentExtractor {
     contentMapperClasses =
         mappers.stream().map(m -> m.getClass().getName()).collect(Collectors.toList());
 
-    documentConverter = new DocumentToJCasConverter(mappers);
+    documentConverter = createDocumentConverter(mappers);
+
     formatExtractor = new TikaFormatExtractor();
 
     // Run the text block annotator after the configuration
@@ -193,6 +194,19 @@ public class StructureContentExtractor extends AbstractContentExtractor {
       textBlocks = new TextBlocks();
       textBlocks.initialize(context);
     }
+  }
+
+  /**
+   * Create document converter
+   *
+   * <p>This is a separate function to allow it to be overridden during testing (or by other
+   * implementations).
+   *
+   * @param mappers the content mappers to apply
+   * @return the DocumentToJCasConverter
+   */
+  protected DocumentToJCasConverter createDocumentConverter(List<ContentMapper> mappers) {
+    return new DocumentToJCasConverter(mappers);
   }
 
   private void initialiseMappers(UimaContext context) {
@@ -297,7 +311,7 @@ public class StructureContentExtractor extends AbstractContentExtractor {
   /**
    * Perform actual extraction.
    *
-   * <p>THis is a separate function to allow it to be overridden during testing (or by other
+   * <p>This is a separate function to allow it to be overridden during testing (or by other
    * implementations).
    *
    * @param stream the stream

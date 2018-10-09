@@ -76,7 +76,7 @@ public class CsvContentExtractor extends AbstractContentExtractor {
       }
 
       for (int i = 0; i < cols.length; i++) {
-        if (i == (contentColumn - 1)) {
+        if (i == contentColumn - 1) {
           jCas.setDocumentText(cols[i]);
         } else {
           addMetadata(jCas, i, cols[i]);
@@ -89,7 +89,9 @@ public class CsvContentExtractor extends AbstractContentExtractor {
     Metadata md = new Metadata(jCas);
 
     Integer colNameIndex = index;
-    if (index >= contentColumn) colNameIndex--;
+    if (index >= contentColumn) {
+      colNameIndex--;
+    }
 
     if (colNameIndex >= columns.size() || columns.get(colNameIndex).trim().isEmpty()) {
       md.setKey("column" + (index + 1));

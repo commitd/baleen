@@ -1,6 +1,9 @@
 // Dstl (c) Crown Copyright 2017
 package uk.gov.dstl.baleen.uima.utils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.uima.UimaContext;
 
 import uk.gov.dstl.baleen.core.history.BaleenHistoryConstants;
@@ -55,5 +58,20 @@ public class UimaUtils {
    */
   public static String makePipelineSpecificName(String pipelineName, Class<?> clazz) {
     return clazz.getCanonicalName() + "[" + pipelineName + "]";
+  }
+
+  /**
+   * Create a configuration map from a context.
+   *
+   * @param context the context
+   * @return non-empty map of config param name to config param value
+   */
+  public static Map<String, Object> getConfigParameters(UimaContext context) {
+    Map<String, Object> ret = new HashMap<>();
+    for (String name : context.getConfigParameterNames()) {
+      ret.put(name, context.getConfigParameterValue(name));
+    }
+
+    return ret;
   }
 }

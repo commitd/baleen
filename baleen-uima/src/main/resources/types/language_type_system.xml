@@ -156,5 +156,22 @@ This XML file classified as UK OFFICIAL.</description>
 	      </featureDescription>      
       </features>
     </typeDescription>
+  <typeDescription>
+      <name>uk.gov.dstl.baleen.types.language.Translation</name>
+      <description>This annotation holds a translation of the annotated text as the value.</description>
+      <supertypeName>uk.gov.dstl.baleen.types.Base</supertypeName>
+      <features>
+        <featureDescription>
+          <name>language</name>
+          <description>The language of the translation. This could be the 2 letter of 3 letter ISO 639 Code but is not restricted to that.</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      <featureDescription>
+          <name>translation</name>
+          <description>The translation result in the stated language.</description>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
   </types>
 </typeSystemDescription>

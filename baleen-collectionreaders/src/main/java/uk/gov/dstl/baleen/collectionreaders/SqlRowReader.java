@@ -68,7 +68,9 @@ public class SqlRowReader extends AbstractSqlReader {
 
   @Override
   public boolean doHasNext() throws IOException, CollectionException {
-    if (!idsToProcess.isEmpty()) return true;
+    if (!idsToProcess.isEmpty()) {
+      return true;
+    }
 
     idsToProcess.addAll(getIds(currId));
     return !idsToProcess.isEmpty();
